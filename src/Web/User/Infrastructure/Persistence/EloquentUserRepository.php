@@ -81,9 +81,11 @@ class EloquentUserRepository implements UserRepository
     public function syncRoles(int $userId, array $roles): void
     {
         $model = EloquentModel::find($userId);
-        if ($model) {
-            $model->syncRoles($roles);
-        }
+        $rolesForGuard = collect($roles)->map(
+            fn($role) => \Spatie\Permission\Models\Role::findByName($role, 'web')
+        )->all();
+
+        $model->syncRoles($rolesForGuard);
     }
 
     private function toDomain(EloquentModel $model): User
