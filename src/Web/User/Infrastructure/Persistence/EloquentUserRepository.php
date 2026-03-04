@@ -29,6 +29,8 @@ class EloquentUserRepository implements UserRepository
             $model = EloquentModel::create($data);
         }
 
+        $model->load('roles');
+
         return $this->toDomain($model);
     }
 
