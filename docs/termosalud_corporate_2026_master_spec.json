@@ -1,0 +1,1041 @@
+{
+  "project": {
+    "name": "AestheticMed Global Corporate Site",
+    "version": "alpha",
+    "description": "Rediseño completo de www.termosalud.com como plataforma corporativa global multi-mercado y multi-idioma, con API REST desde el inicio para soportar web, apps móviles y futuras integraciones. Incluye contenidos regulados (intended use, MDR, FDA), catálogo de equipos médicos y accesorios, motor unificado de contenidos (blog, noticias, prensa), layouts personalizados, landings con URLs libres, y gestión dinámica de mercados e idiomas. Arquitectura hexagonal con core desacoplado en src/ para independencia del framework."
+  },
+  "goals": {
+    "business": [
+      "Position the brand as a global leader in medical aesthetics in each key market.",
+      "Generate high-quality leads for clinics, distributors and investors worldwide.",
+      "Support sales, training and regulatory compliance with robust documentation."
+    ],
+    "technical": [
+      "Core business logic in src/ with hexagonal architecture, fully decoupled from Laravel framework.",
+      "REST API from day one to support web, mobile apps (Ionic/React Native), and future integrations.",
+      "Laravel 11 as infrastructure layer only - routes, controllers, Eloquent repositories.",
+      "Vue 3 + TypeScript + Inertia + TailwindCSS for web frontend.",
+      "Unified content engine (ContentArticle) for blog, news, and press - same model, different categories.",
+      "Explicit routing without accidental complexity - no generic slug resolution with multiple database checks.",
+      "Dynamic management of markets and languages from backoffice/API without code changes.",
+      "Custom landing pages with free URLs and block-based layouts.",
+      "Corporate content sharing across markets to avoid duplication.",
+      "Achieve top Core Web Vitals on all core templates."
+    ],
+    "seo": [
+      "Maximize organic visibility per country and per language (multi-regional + multilingual).",
+      "Expose markets and languages in the URL following international SEO best practices (Siemens-style).",
+      "Ensure 100% friendly and 100% localizable URLs: every visible segment is translatable.",
+      "Implement hreflang per language-region combination (es-ES, es-MX, en-US, fr-FR, etc.)."
+    ]
+  },
+  "architecture": {
+    "philosophy": "Hexagonal Architecture with framework-agnostic core. Business logic in src/ with modules at root level (no BoundedContexts folder). Shared/ contains reusable domain primitives and infrastructure. Inspired by real production architecture from TermoExpertis.",
+    "structure": {
+      "src/": "Domain modules at root level (Catalog/, Content/, etc.) + Shared/",
+      "src/Shared/": "Reusable domain primitives (AggregateRoot, ValueObjects, Bus, Criteria)",
+      "app/": "Laravel infrastructure layer - HTTP, Eloquent, Jobs, Events, etc.",
+      "resources/": "Frontend Vue 3 + TypeScript + Inertia"
+    },
+    "backend": {
+      "framework": "Laravel 11",
+      "role": "Infrastructure adapter ONLY - HTTP routing, Eloquent ORM, Queue, Cache, Events",
+      "style": "DDD + Hexagonal (pragmatic approach)",
+      "coreLocation": "src/",
+      "modules": [
+        "Catalog (Products - Domain Entity with regulatory variants)",
+        "Treatments (Domain Entity with regulatory variants)",
+        "Content (ContentArticle unified for blog/news/press + CorporatePage + CustomLanding)",
+        "Forms (TermoCRM-based pattern: Form + FormSubmission + FormSubmissionResponse, Anti-spam 6-layer, MiTermosalud CRM OAuth2 integration)",
+        "GeoTargeting (Markets management)",
+        "I18n (Languages management)",
+        "SEO (Sitemaps, redirects, hreflang)",
+        "Auth (Users, roles, OAuth2 Passport for backoffice)",
+        "Shared (AggregateRoot, ValueObjects, Bus, Criteria)"
+      ],
+      "layers": {
+        "domain": "src/{Module}/Domain - Aggregates, Value Objects, Domain Events, Repository Interfaces (Ports)",
+        "application": "src/{Module}/Application - Use Cases organized by action (Create/, Find/, Update/, Delete/)",
+        "infrastructure": "src/{Module}/Infrastructure - Repository implementations (Eloquent Adapters), External Services",
+        "shared": "src/Shared/ - Reusable base classes (AggregateRoot, ValueObjects, Bus, Criteria, Helpers)"
+      },
+      "notes": [
+        "Modules at root level of src/, no nested BoundedContexts/ folder for cleaner paths.",
+        "Shared/ folder is critical: contains AggregateRoot, ValueObjects base classes, Bus (CQRS), Criteria patterns.",
+        "Backoffice is NOT a module - it's an infrastructure orchestration layer (API + Web UI).",
+        "Content module handles blog, news, press with unified ContentArticle entity (type field).",
+        "Each module is 100% framework-independent. Laravel is just infrastructure.",
+        "Repository interfaces (Ports) in Domain, Eloquent implementations (Adapters) in Infrastructure.",
+        "Application layer organizes use cases by action: Create/, Find/, Update/, Delete/ folders.",
+        "Dependencies flow inward: Infrastructure -> Application -> Domain -> Shared. Domain has no external deps.",
+        "Architecture inspired by real production system (TermoExpertis) - pragmatic DDD, not academic."
+      ]
+    },
+    "api": {
+      "style": "REST",
+      "version": "v1",
+      "baseUrl": "/api/v1",
+      "authentication": "Laravel Passport OAuth2 (Client Credentials for backoffice, public endpoints for forms)",
+      "documentation": "OpenAPI 3.0 spec (auto-generated from code)",
+      "consumers": [
+        "Backoffice Web UI (Vue + Inertia) - OAuth2",
+        "Future mobile apps (Ionic, React Native) - OAuth2",
+        "Public forms (no auth required)",
+        "MiTermosalud CRM (bi-directional OAuth2 integration)"
+      ],
+      "publicEndpoints": [
+        "GET /api/v1/markets",
+        "GET /api/v1/markets/{code}/languages",
+        "GET /api/v1/{market}/{language}/products",
+        "GET /api/v1/{market}/{language}/products/{slug}",
+        "GET /api/v1/{market}/{language}/treatments",
+        "GET /api/v1/{market}/{language}/treatments/{slug}",
+        "GET /api/v1/{market}/{language}/content-articles?type={blog|news|press}&category={id}",
+        "GET /api/v1/{market}/{language}/content-articles/{slug}",
+        "GET /api/v1/{market}/{language}/corporate-pages/{slug}",
+        "GET /api/v1/{market}/{language}/landings/{slug}",
+        "POST /api/v1/public/forms/{formKey}/submit",
+        "GET /api/v1/public/forms/{formKey}/config"
+      ],
+      "backofficeEndpoints": [
+        "POST /api/v1/backoffice/products",
+        "PUT /api/v1/backoffice/products/{id}",
+        "POST /api/v1/backoffice/content-articles",
+        "PUT /api/v1/backoffice/content-articles/{id}",
+        "POST /api/v1/backoffice/workflow/approve",
+        "POST /api/v1/backoffice/markets",
+        "PUT /api/v1/backoffice/markets/{code}",
+        "POST /api/v1/backoffice/languages",
+        "PUT /api/v1/backoffice/languages/{code}",
+        "GET /api/v1/backoffice/forms",
+        "POST /api/v1/backoffice/forms",
+        "PUT /api/v1/backoffice/forms/{id}",
+        "DELETE /api/v1/backoffice/forms/{id}",
+        "GET /api/v1/backoffice/forms/{id}/submissions",
+        "GET /api/v1/backoffice/submissions/{id}",
+        "POST /api/v1/backoffice/submissions/{id}/resend-to-crm"
+      ]
+    },
+    "frontend": {
+      "web": {
+        "framework": "Vue 3",
+        "pattern": "Inertia.js SPA-like with SSR",
+        "language": "TypeScript",
+        "styling": "TailwindCSS v4",
+        "buildTool": "Vite",
+        "ssr": {
+          "enabled": true,
+          "engine": "Inertia SSR (Node.js)",
+          "command": "php artisan inertia:start-ssr",
+          "benefits": [
+            "SEO: Google ve HTML completo pre-renderizado",
+            "LCP optimizado: Primera carga < 1.8s",
+            "Meta tags dinámicos por página",
+            "Hreflang automático por mercado/idioma"
+          ]
+        },
+        "rationale": {
+          "whyInertiaNotNuxt": [
+            "Laravel ya es backend sólido (hexagonal architecture en src/)",
+            "No duplicar lógica: auth, routing, middleware ya en Laravel",
+            "SSR simple sin Node server en producción (opcional)",
+            "Un solo deploy (Laravel + Inertia)",
+            "40% menos código (no API REST para todo)",
+            "Validación server-side reutilizable (FormRequest)",
+            "Pre-fetch automático en hover (Core Web Vitals)"
+          ],
+          "whenNuxtWouldBeNeeded": [
+            "Frontend completamente desacoplado (hoy Laravel, mañana otro backend)",
+            "ISR (Incremental Static Regeneration) intensivo",
+            "Multiple clients distintos (web + mobile app con mismo frontend)"
+          ]
+        },
+        "structure": {
+          "resources/js/Pages/Public/": "Public-facing pages (products, treatments, blog, corporate)",
+          "resources/js/Pages/Backoffice/": "Admin panel pages",
+          "resources/js/Components/": "Reusable Vue components",
+          "resources/js/Composables/": "Vue composables (useI18n, useMarket, useSEO)",
+          "resources/js/Types/": "TypeScript definitions",
+          "resources/js/ssr.ts": "Inertia SSR entry point"
+        }
+      },
+      "mobile": {
+        "planned": "Ionic or React Native consuming REST API (/api/v1/*)",
+        "authentication": "Laravel Passport OAuth2",
+        "sharing": "Same API endpoints as web, different UI"
+      }
+    }
+  },
+  "i18n": {
+    "isDynamic": true,
+    "managedFrom": "Backoffice > Configuration > Languages",
+    "supportedLanguages": [
+      "es",
+      "en",
+      "fr",
+      "de",
+      "it",
+      "pt",
+      "lt"
+    ],
+    "defaultLanguage": "en",
+    "description": "Languages are explicit in the URL, separate from market/country. All content types and path segments are fully localizable. Languages can be added, edited, activated/deactivated from backoffice without code changes.",
+    "principles": [
+      "Language segment is always the second path segment: /{marketCode}/{language}/...",
+      "All translatable fields (titles, descriptions, section names, slugs) exist per language.",
+      "Fallbacks are allowed from language-region to base language, but URLs remain language+market specific for SEO."
+    ]
+  },
+  "marketsConfig": {
+    "description": "Definition of markets/countries and their relationship with languages and regulation regions. Markets are fully manageable from backoffice - can be added, edited, activated/deactivated dynamically without code changes.",
+    "isDynamic": true,
+    "managedFrom": "Backoffice > Configuration > Markets",
+    "markets": [
+      {
+        "code": "es",
+        "name": "España",
+        "hreflangRegion": "ES",
+        "regulatoryRegion": "EU_MDR",
+        "defaultLanguage": "es",
+        "supportedLanguages": [
+          "es",
+          "en"
+        ]
+      },
+      {
+        "code": "mx",
+        "name": "México",
+        "hreflangRegion": "MX",
+        "regulatoryRegion": "LATAM_GENERIC",
+        "defaultLanguage": "es",
+        "supportedLanguages": [
+          "es"
+        ]
+      },
+      {
+        "code": "us",
+        "name": "Estados Unidos",
+        "hreflangRegion": "US",
+        "regulatoryRegion": "FDA",
+        "defaultLanguage": "en",
+        "supportedLanguages": [
+          "en",
+          "es"
+        ]
+      },
+      {
+        "code": "fr",
+        "name": "Francia",
+        "hreflangRegion": "FR",
+        "regulatoryRegion": "EU_MDR",
+        "defaultLanguage": "fr",
+        "supportedLanguages": [
+          "fr",
+          "en"
+        ]
+      },
+      {
+        "code": "de",
+        "name": "Alemania",
+        "hreflangRegion": "DE",
+        "regulatoryRegion": "EU_MDR",
+        "defaultLanguage": "de",
+        "supportedLanguages": [
+          "de",
+          "en"
+        ]
+      }
+    ],
+    "detectionRules": [
+      "Market is the first URL segment: /{marketCode}/... (e.g. /es/, /mx/, /us/).",
+      "If a user lands on the root domain, detect country by GeoIP and redirect (with 302) to the best market-language combo or show a country selector.",
+      "Internally, each market maps to a regulatoryRegion (FDA, EU_MDR, LATAM_GENERIC, etc.)."
+    ]
+  },
+  "urlStrategy": {
+    "description": "Siemens-style, 100% friendly, 100% localizable URLs with explicit market and language segments.",
+    "patternSummary": "/{marketCode}/{language}/{sectionSlugLocalized}/{contentSlugLocalized}",
+    "segments": {
+      "marketCode": "Two-letter lowercase country/market code (es, mx, us, fr, de, ...).",
+      "language": "Two-letter lowercase language code (es, en, fr, de, it, pt, lt).",
+      "sectionSlugLocalized": "Localized section name (e.g. 'productos', 'products', 'produits').",
+      "contentSlugLocalized": "Localized content slug for product, treatment, article, etc."
+    },
+    "patterns": {
+      "home": "/{marketCode}/{language}",
+      "productList": "/{marketCode}/{language}/{productsSectionSlug}",
+      "productDetail": "/{marketCode}/{language}/{productsSectionSlug}/{productSlug}",
+      "treatmentList": "/{marketCode}/{language}/{treatmentsSectionSlug}",
+      "treatmentDetail": "/{marketCode}/{language}/{treatmentsSectionSlug}/{treatmentSlug}",
+      "contentArticleList": "/{marketCode}/{language}/{contentSectionSlug}",
+      "contentArticleDetail": "/{marketCode}/{language}/{contentSectionSlug}/{articleSlug}",
+      "blogList": "/{marketCode}/{language}/blog",
+      "blogDetail": "/{marketCode}/{language}/blog/{articleSlug}",
+      "newsList": "/{marketCode}/{language}/noticias",
+      "newsDetail": "/{marketCode}/{language}/noticias/{articleSlug}",
+      "pressList": "/{marketCode}/{language}/prensa",
+      "pressDetail": "/{marketCode}/{language}/prensa/{articleSlug}",
+      "corporatePage": "/{marketCode}/{language}/{corporateSectionSlug}/{pageSlug}",
+      "customLanding": "/{marketCode}/{language}/{customSlug}"
+    },
+    "rules": [
+      "Every public page URL includes both marketCode and language for maximum international SEO clarity.",
+      "Section segments are ALWAYS fully localized per language (no internal keys or English-only words forced).",
+      "Content slugs are localized per language.",
+      "When a section slug changes, a 301 redirect is created from old to new URL automatically.",
+      "When a content slug changes, a 301 redirect is created from old to new URL automatically.",
+      "No query parameters or hashes are required to differentiate language/market; everything is in the path."
+    ],
+    "examples": [
+      {
+        "description": "Product page – Spain, Spanish (Zionic Pro Max)",
+        "url": "/es/es/productos/zionic-pro-max",
+        "hreflang": "es-ES"
+      },
+      {
+        "description": "Product page – Mexico, Spanish (Zionic Pro Max)",
+        "url": "/mx/es/productos/zionic-pro-max",
+        "hreflang": "es-MX"
+      },
+      {
+        "description": "Product page – USA, English (Eneka Pro)",
+        "url": "/us/en/products/eneka-pro",
+        "hreflang": "en-US"
+      },
+      {
+        "description": "Product page – France, French (Zionic)",
+        "url": "/fr/fr/produits/zionic",
+        "hreflang": "fr-FR"
+      },
+      {
+        "description": "Corporate page – Spain, Spanish (shared content)",
+        "url": "/es/es/empresa/quienes-somos",
+        "hreflang": "es-ES"
+      },
+      {
+        "description": "Custom landing – Spain, Spanish (promotion)",
+        "url": "/es/es/promocion-zionic-2025",
+        "hreflang": "es-ES"
+      }
+    ]
+  },
+  "sectionSlugConfig": {
+    "description": "Mapping between internal section keys and localized URL segments per language. Blog, news, and press share the same ContentArticle backend but have different URL sections.",
+    "sections": {
+      "products": {
+        "internalKey": "products",
+        "localizedSlugs": {
+          "es": "productos",
+          "en": "products",
+          "fr": "produits",
+          "de": "produkte",
+          "it": "prodotti",
+          "pt": "produtos",
+          "lt": "produktai"
+        }
+      },
+      "treatments": {
+        "internalKey": "treatments",
+        "localizedSlugs": {
+          "es": "tratamientos",
+          "en": "treatments",
+          "fr": "traitements",
+          "de": "behandlungen",
+          "it": "trattamenti",
+          "pt": "tratamentos",
+          "lt": "gydymas"
+        }
+      },
+      "blog": {
+        "internalKey": "blog",
+        "contentType": "ContentArticle (type=blog)",
+        "localizedSlugs": {
+          "es": "blog",
+          "en": "blog",
+          "fr": "blog",
+          "de": "blog",
+          "it": "blog",
+          "pt": "blog",
+          "lt": "tinklarastis"
+        }
+      },
+      "news": {
+        "internalKey": "news",
+        "contentType": "ContentArticle (type=news)",
+        "localizedSlugs": {
+          "es": "noticias",
+          "en": "news",
+          "fr": "actualites",
+          "de": "news",
+          "it": "notizie",
+          "pt": "noticias",
+          "lt": "naujienos"
+        }
+      },
+      "press": {
+        "internalKey": "press",
+        "contentType": "ContentArticle (type=press)",
+        "localizedSlugs": {
+          "es": "prensa",
+          "en": "press",
+          "fr": "presse",
+          "de": "presse",
+          "it": "stampa",
+          "pt": "imprensa",
+          "lt": "spauda"
+        }
+      },
+      "corporate": {
+        "internalKey": "corporate",
+        "localizedSlugs": {
+          "es": "empresa",
+          "en": "company",
+          "fr": "entreprise",
+          "de": "unternehmen",
+          "it": "azienda",
+          "pt": "empresa",
+          "lt": "imone"
+        }
+      }
+    },
+    "rules": [
+      "Localized section slugs are defined per language, not per market; same language can be reused across markets.",
+      "Backoffice can update localized section slugs; system generates 301 redirects from old to new URLs.",
+      "Routing uses the internalKey + language to resolve the correct localized section slug."
+    ]
+  },
+  "contentModel": {
+    "description": "Separation of global entities, regulatory variants, and localized content to avoid duplication while supporting per-market regulation. Unified content engine: ContentArticle handles blog, news, and press (differentiated by type/category). All content types managed through block-based CMS with per-page layouts. Corporate content shareable across markets. Custom landing pages with free URLs.",
+    "entities": {
+      "Market": [
+        "id",
+        "code",
+        "name",
+        "hreflangRegion",
+        "regulatoryRegion",
+        "defaultLanguage",
+        "isActive",
+        "sortOrder"
+      ],
+      "MarketLanguage": [
+        "id",
+        "marketId",
+        "languageCode",
+        "isDefault",
+        "isActive"
+      ],
+      "Language": [
+        "id",
+        "code",
+        "name",
+        "nativeName",
+        "direction",
+        "fallbackLanguageCode",
+        "isActive"
+      ],
+      "Product": [
+        "id",
+        "globalCode",
+        "familyId",
+        "defaultSortOrder",
+        "productType",
+        "productCategoryId"
+      ],
+      "ProductRegulatoryVariant": [
+        "id",
+        "productId",
+        "marketCode",
+        "regulatoryRegionCode",
+        "regulatoryStatus",
+        "isActive",
+        "validFrom",
+        "validUntil",
+        "intendedUse",
+        "indications",
+        "contraindications",
+        "warningsPrecautions",
+        "mdrClassification",
+        "mdrRuleReference",
+        "fdaPathway",
+        "fdaRegulationNumber",
+        "udiDi",
+        "udiPi"
+      ],
+      "Treatment": [
+        "id",
+        "globalCode",
+        "categoryId"
+      ],
+      "TreatmentRegulatoryVariant": [
+        "id",
+        "treatmentId",
+        "marketCode",
+        "regulatoryRegionCode",
+        "regulatoryStatus",
+        "isActive",
+        "validFrom",
+        "validUntil",
+        "intendedUse",
+        "indications",
+        "contraindications",
+        "warningsPrecautions"
+      ],
+      "ContentMaster": [
+        "id",
+        "entityType",
+        "entityId",
+        "language",
+        "title",
+        "body",
+        "claims",
+        "seoTitle",
+        "seoDescription",
+        "slugLocalized"
+      ],
+      "ContentMarketOverride": [
+        "id",
+        "contentMasterId",
+        "marketCode",
+        "overridesJson",
+        "isPublished",
+        "workflowState"
+      ],
+      "ContentMarketLanguageAvailability": [
+        "id",
+        "contentMasterId",
+        "marketCode",
+        "language",
+        "isEnabled",
+        "isIndexed",
+        "noIndexReason",
+        "publishAt",
+        "unpublishAt"
+      ],
+      "ProductCategory": [
+        "id",
+        "parentId",
+        "code",
+        "position",
+        "isActive"
+      ],
+      "RegulatoryReference": [
+        "id",
+        "region",
+        "referenceCode",
+        "shortLabel",
+        "officialUrl",
+        "notes"
+      ],
+      "ProductAccessoryRelation": [
+        "id",
+        "equipmentProductId",
+        "accessoryProductId",
+        "isRequired",
+        "isRecommended"
+      ],
+      "ContentCategory": [
+        "id",
+        "slug",
+        "parentId",
+        "type",
+        "position",
+        "isActive"
+      ],
+      "ContentTag": [
+        "id",
+        "slug",
+        "isActive"
+      ],
+      "ContentCategoryTranslation": [
+        "id",
+        "categoryId",
+        "language",
+        "name",
+        "description"
+      ],
+      "ContentTagTranslation": [
+        "id",
+        "tagId",
+        "language",
+        "name",
+        "description"
+      ],
+      "ContentCategoryPivot": [
+        "id",
+        "entityType",
+        "entityId",
+        "categoryId"
+      ],
+      "ContentTagPivot": [
+        "id",
+        "entityType",
+        "entityId",
+        "tagId"
+      ],
+      "CorporatePage": [
+        "id",
+        "code",
+        "isSharedAcrossMarkets",
+        "restrictedToMarkets"
+      ],
+      "CustomLanding": [
+        "id",
+        "marketCode",
+        "language",
+        "customSlug",
+        "layoutId",
+        "seoTitle",
+        "seoDescription",
+        "isActive",
+        "publishAt",
+        "unpublishAt",
+        "workflowState"
+      ],
+      "ContentArticle": [
+        "id",
+        "globalCode",
+        "type",
+        "categoryId",
+        "authorId",
+        "featuredImageUrl",
+        "publishedAt",
+        "isHighlighted",
+        "viewCount"
+      ],
+      "Form": [
+        "id",
+        "name",
+        "displayName",
+        "description",
+        "elements",
+        "createdBy",
+        "updatedBy"
+      ],
+      "FormSubmission": [
+        "id",
+        "formId",
+        "name",
+        "submittedAt",
+        "marketCode",
+        "languageCode",
+        "ipAddress",
+        "userAgent",
+        "pageUrl",
+        "referrer",
+        "spamScore",
+        "spamFlags",
+        "status",
+        "crmLeadId",
+        "crmSentAt",
+        "crmResponse",
+        "createdBy",
+        "updatedBy"
+      ],
+      "FormSubmissionResponse": [
+        "id",
+        "formSubmissionId",
+        "name",
+        "value",
+        "element"
+      ]
+    },
+    "contentTypes": {
+      "description": "Blog, News, and Press use the same ContentArticle entity, differentiated by 'type' field.",
+      "unified": true,
+      "types": [
+        {
+          "key": "blog",
+          "label": "Blog Post",
+          "description": "Long-form educational content, thought leadership, case studies",
+          "urlPattern": "/{market}/{language}/blog/{slug}"
+        },
+        {
+          "key": "news",
+          "label": "News Article",
+          "description": "Corporate news, product launches, company announcements",
+          "urlPattern": "/{market}/{language}/noticias/{slug}"
+        },
+        {
+          "key": "press",
+          "label": "Press Release",
+          "description": "Official press releases, media coverage, press clippings",
+          "urlPattern": "/{market}/{language}/prensa/{slug}"
+        }
+      ],
+      "rationale": "Same data model (title, body, author, categories, tags, images) but different presentation and URL sections. Avoids code duplication and simplifies backoffice management."
+    },
+    "formsPattern": {
+      "description": "Forms system based on proven TermoCRM production pattern (3-entity architecture)",
+      "basedOn": "TermoCRM Form/FormSubmission/FormSubmissionResponse (production-proven)",
+      "entities": [
+        {
+          "name": "Form",
+          "description": "Form template with dynamic structure stored in elements JSON field",
+          "fields": [
+            "id - Primary key",
+            "name - Internal identifier (e.g. 'contact_form')",
+            "displayName - Human-readable name",
+            "description - Form description",
+            "elements - JSON array with form structure (field types, validation, labels)",
+            "createdBy, updatedBy - Audit fields"
+          ],
+          "features": [
+            "Dynamic form structure (no migrations for new fields)",
+            "Validation rules defined in elements JSON",
+            "Reusable across markets/languages"
+          ]
+        },
+        {
+          "name": "FormSubmission",
+          "description": "Instance of a form submission from public website",
+          "fields": [
+            "id - Primary key",
+            "formId - FK to forms.id",
+            "name - Submission name (from form or generated)",
+            "submittedAt - Timestamp of submission",
+            "marketCode, languageCode - Context (es/spain, en/us, etc)",
+            "ipAddress, userAgent, pageUrl, referrer - Tracking fields",
+            "spamScore - reCAPTCHA v3 score (0-100)",
+            "spamFlags - JSON array of spam indicators",
+            "status - ENUM (pending, validated, notified, sent_to_crm, failed, spam)",
+            "crmLeadId, crmSentAt, crmResponse - CRM integration fields",
+            "createdBy, updatedBy - Audit fields"
+          ],
+          "differences_from_termocrm": [
+            "NO polymorphic relationship (public forms, not attached to entities)",
+            "ADDED market/language context",
+            "ADDED tracking fields (IP, UA, URL, referrer)",
+            "ADDED anti-spam fields (score, flags)",
+            "ADDED CRM integration fields",
+            "ADDED status enum for workflow tracking"
+          ]
+        },
+        {
+          "name": "FormSubmissionResponse",
+          "description": "Individual field response (one record per form field)",
+          "fields": [
+            "id - Primary key",
+            "formSubmissionId - FK to form_submissions.id",
+            "name - Field name/key",
+            "value - User input",
+            "element - JSON with field configuration"
+          ],
+          "features": [
+            "Flexible schema (no rigid columns per field)",
+            "Queryable by field values (indexed on name, value)",
+            "Stores field configuration with response for audit"
+          ]
+        }
+      ],
+      "antiSpamSystem": {
+        "description": "6-layer anti-spam protection (not in TermoCRM, added for public web)",
+        "layers": [
+          "1. Honeypot field (hidden field that bots fill)",
+          "2. Time throttle (min 3 seconds between page load and submit)",
+          "3. reCAPTCHA v3 (invisible, score-based, min score 0.5)",
+          "4. Rate limiting per IP (5 submissions/hour)",
+          "5. Rate limiting per email (3 submissions/hour)",
+          "6. Disposable email blocking (mailinator.com, etc)"
+        ],
+        "implementation": "SpamProtection service + middleware + background validation"
+      },
+      "crmIntegration": {
+        "description": "Background integration with MiTermosalud CRM via OAuth2",
+        "flow": [
+          "1. FormSubmission created (status: pending)",
+          "2. Anti-spam validation (status: validated or spam)",
+          "3. SendFormNotificationJob dispatched (email to admin)",
+          "4. SendToCrmJob dispatched (send to MiTermosalud CRM)",
+          "5. CRM responds with lead ID (status: sent_to_crm)",
+          "6. Retry 3 times on failure (status: failed after 3 attempts)"
+        ],
+        "authentication": "OAuth2 Client Credentials",
+        "endpoint": "POST /api/v1/leads (MiTermosalud CRM)",
+        "retryStrategy": "3 attempts with exponential backoff (5s, 30s, 2m)"
+      },
+      "validationFlow": {
+        "description": "Dynamic validation from Form.elements JSON (TermoCRM pattern)",
+        "example": [
+          "Form.elements contains: [{name: 'email', type: 'email', required: true, validation: 'email'}]",
+          "FormSubmissionRequest dynamically generates rules: ['email' => 'required|email']",
+          "After validation passes, Creator service creates FormSubmission + individual FormSubmissionResponse per field"
+        ]
+      }
+    },
+    "rules": [
+      "Markets and Languages are fully configurable entities managed from backoffice.",
+      "Each Market can have multiple Languages enabled via MarketLanguage relation.",
+      "Each logical entity (Product, Treatment, etc.) has one ContentMaster per language.",
+      "ContentMarketOverride exists only when a specific market requires changes to the base language content (claims, disclaimers, images, extra sections...).",
+      "Rendering merges ContentMaster(language) + ContentMarketOverride(marketCode) when override exists.",
+      "URLs are always generated as /{marketCode}/{language}/{localizedSection}/{slugLocalized}.",
+      "If no override exists for a given market, ContentMaster(language) is used as-is (still under the market+language URL).",
+      "Every ContentMaster(language) can be enabled or disabled per market via ContentMarketLanguageAvailability.",
+      "If ContentMarketLanguageAvailability.isEnabled=false for a given market+language, the corresponding URL /{market}/{language}/... returns 404 or a controlled 'not available in this market' page.",
+      "isIndexed allows disabling indexation (noindex) for specific market+language combinations while keeping the content visible.",
+      "All content types (products, treatments, content articles, corporate pages, landings) follow the same scheme: global entity -> ContentMaster(language) -> MarketOverride (optional) -> MarketLanguageAvailability.",
+      "ContentArticle is a unified entity for blog, news, and press - same model, different 'type' field and URL patterns.",
+      "CorporatePage can be marked as isSharedAcrossMarkets=true, meaning the same content appears in all markets (or restricted list) without duplication - only one ContentMaster per language is needed.",
+      "CustomLanding entities have fully customizable URLs (/{marketCode}/{language}/{customSlug}) outside predefined sections, ideal for promotions, events, webinars.",
+      "CustomLanding can be market-specific or language-specific, allowing flexible campaign targeting.",
+      "ProductRegulatoryVariant incluye campos para intended use, indicaciones, contraindicaciones y referencias explícitas a MDR (Reglamento (UE) 2017/745) y FDA (21 CFR, tipo de vía regulatoria).",
+      "Los equipos (EQUIPMENT) y accesorios (ACCESSORY) se modelan como Product con productType distinto, pudiendo relacionarse mediante ProductAccessoryRelation.",
+      "La web soporta marketing de contenidos con taxonomías de ContentCategory y ContentTag, traducibles por idioma, reutilizables en blog, noticias, productos, tratamientos y landings.",
+      "Las categorías y tags se usan para navegación temática, recomendaciones internas y señal fuerte de SEO (URLs, breadcrumbs, meta, schema.org)."
+    ],
+    "productTyping": {
+      "description": "Tipificación de productos para distinguir equipos principales, accesorios, consumibles y software.",
+      "allowedTypes": [
+        "EQUIPMENT",
+        "ACCESSORY",
+        "CONSUMABLE",
+        "SOFTWARE"
+      ],
+      "rules": [
+        "EQUIPMENT: equipos principales de tratamiento (ej. Zionic Pro Max, Zionic, Eneka Pro).",
+        "ACCESSORY: manípulos, aplicadores, piezas de mano, kits complementarios asociados a uno o varios equipos.",
+        "CONSUMABLE: geles conductores, electrodos, fundas, elementos de un solo uso o consumo recurrente.",
+        "SOFTWARE: módulos de software independientes o add-ons de los equipos."
+      ],
+      "examples": [
+        {
+          "name": "Zionic Pro Max",
+          "type": "EQUIPMENT",
+          "description": "Equipo de radiofrecuencia multipolar + ultrasonidos para tratamientos corporales y faciales"
+        },
+        {
+          "name": "Zionic",
+          "type": "EQUIPMENT",
+          "description": "Sistema de radiofrecuencia avanzada"
+        },
+        {
+          "name": "Eneka Pro",
+          "type": "EQUIPMENT",
+          "description": "Plataforma de criolipólisis + cavitación + radiofrecuencia"
+        }
+      ]
+    }
+  },
+  "seo": {
+    "hreflangStrategy": {
+      "description": "Generate hreflang tags per market+language combination to maximize Google understanding and avoid duplication.",
+      "rules": [
+        "For each canonical URL /{marketCode}/{language}/... generate a hreflang tag language-region derived from language + market.hreflangRegion.",
+        "Example: /es/es/... => hreflang='es-ES', /mx/es/... => hreflang='es-MX', /us/en/... => hreflang='en-US'.",
+        "All alternate versions of the same logical page (same product or article) must reference each other in hreflang tags.",
+        "Define an x-default URL for global fallback (e.g. /us/en/ or /es/es/) for generic queries."
+      ]
+    },
+    "sitemaps": {
+      "rules": [
+        "Generate XML sitemaps per market+language combination.",
+        "Include only published URLs (approved by Quality workflow).",
+        "Update sitemaps when slugs or section names change."
+      ]
+    },
+    "coreWebVitals": {
+      "targets": {
+        "LCP": "< 1.8s",
+        "CLS": "< 0.1",
+        "INP": "< 200ms"
+      }
+    }
+  },
+  "productLayouts": {
+    "description": "mi.com-style product pages with per-market, per-language layout flexibility.",
+    "entities": {
+      "ProductLayout": [
+        "id",
+        "productRegulatoryVariantId",
+        "marketCode",
+        "language",
+        "name",
+        "isDefault",
+        "blocksOrderJson",
+        "status",
+        "workflowState"
+      ],
+      "ProductLayoutBlock": [
+        "id",
+        "layoutId",
+        "blockType",
+        "position",
+        "configJson",
+        "customJsBundleKey",
+        "customCssKey",
+        "visibilityRulesJson"
+      ]
+    },
+    "blockTypes": [
+      "HeroProduct",
+      "KeyBenefitsGrid",
+      "TechnicalSpecsTable",
+      "IndicationsList",
+      "BeforeAfterCarousel",
+      "DoctorTestimonial",
+      "VideoShowcase",
+      "ClinicalEvidenceHighlight",
+      "FAQAccordion",
+      "ProtocolStepByStep",
+      "InteractiveDoseCalculator",
+      "Viewer3DOr360",
+      "StickyContactBar",
+      "RelatedProductsSlider",
+      "RelatedTreatmentsSlider",
+      "DownloadCenter"
+    ]
+  },
+  "workflow": {
+    "description": "Quality-gated publishing workflow to ensure regulatory compliance.",
+    "states": [
+      "draft",
+      "pending_quality_review",
+      "changes_requested",
+      "approved",
+      "scheduled",
+      "published",
+      "archived"
+    ],
+    "actors": [
+      "Marketing",
+      "Communication",
+      "Quality",
+      "Admin"
+    ],
+    "keyRules": [
+      "Marketing and Communication edit content in draft state.",
+      "Any content affecting regulated information must go through pending_quality_review.",
+      "Only Quality (and Admin exceptionally) can move content to approved or published.",
+      "Public site always reads from the latest published version only.",
+      "Version history is kept for all regulated content, with field-level diffs (claims, disclaimers, layouts...)."
+    ]
+  },
+  "routes": {
+    "public": [
+      "GET /{marketCode}/{language}",
+      "GET /{marketCode}/{language}/{productsSectionSlug}",
+      "GET /{marketCode}/{language}/{productsSectionSlug}/{productSlug}",
+      "GET /{marketCode}/{language}/{treatmentsSectionSlug}",
+      "GET /{marketCode}/{language}/{treatmentsSectionSlug}/{treatmentSlug}",
+      "GET /{marketCode}/{language}/{blogSectionSlug}",
+      "GET /{marketCode}/{language}/{blogSectionSlug}/{articleSlug}",
+      "GET /{marketCode}/{language}/{newsSectionSlug}",
+      "GET /{marketCode}/{language}/{newsSectionSlug}/{articleSlug}",
+      "GET /{marketCode}/{language}/{pressSectionSlug}",
+      "GET /{marketCode}/{language}/{pressSectionSlug}/{articleSlug}",
+      "GET /{marketCode}/{language}/{corporateSectionSlug}/{pageSlug}",
+      "GET /{marketCode}/{language}/{customSlug}",
+      "GET /sitemap.xml",
+      "GET /sitemap-{marketCode}-{language}.xml"
+    ],
+    "api": [
+      "GET /api/v1/markets",
+      "GET /api/v1/languages",
+      "GET /api/v1/{market}/{language}/products",
+      "GET /api/v1/{market}/{language}/products/{slug}",
+      "GET /api/v1/{market}/{language}/treatments",
+      "GET /api/v1/{market}/{language}/treatments/{slug}",
+      "GET /api/v1/{market}/{language}/content-articles?type={blog|news|press}",
+      "GET /api/v1/{market}/{language}/content-articles/{slug}",
+      "GET /api/v1/{market}/{language}/corporate-pages/{slug}",
+      "GET /api/v1/{market}/{language}/landings/{slug}",
+      "POST /api/v1/backoffice/* (authenticated)"
+    ],
+    "routingStrategy": {
+      "description": "Explicit routing without accidental complexity. Each section has dedicated route handler.",
+      "order": [
+        "1. Home page: /{market}/{lang}",
+        "2. Predefined sections with explicit matching:",
+        "   - Products: /{market}/{lang}/productos|products|produits/...",
+        "   - Treatments: /{market}/{lang}/tratamientos|treatments|...",
+        "   - Blog: /{market}/{lang}/blog/... (ContentArticle type=blog)",
+        "   - News: /{market}/{lang}/noticias|news|.../... (ContentArticle type=news)",
+        "   - Press: /{market}/{lang}/prensa|press|.../... (ContentArticle type=press)",
+        "   - Corporate: /{market}/{lang}/empresa|company|.../...",
+        "3. Custom landings: /{market}/{lang}/{customSlug}",
+        "4. 404 if nothing matches"
+      ],
+      "rationale": "No generic slug resolution with multiple DB checks. Each route knows exactly where to look. Fast, cacheable, debuggable."
+    }
+  },
+  "frontend": {
+    "framework": "Vue 3",
+    "pattern": "Inertia SPA-like with SSR",
+    "language": "TypeScript",
+    "styling": "TailwindCSS",
+    "buildTool": "Vite",
+    "notes": [
+      "TailwindCSS is the primary styling system; Bootstrap is not used.",
+      "Custom CSS per page or layout SHOULD be implemented as small Tailwind layer extensions or component-level styles whenever possible."
+    ]
+  },
+  "layoutSystem": {
+    "description": "Global layout system to allow each page (product, treatment, blog, corporate, landing) to have its own design, blocks, custom CSS/JS, Tailwind-based, mi.com-style.",
+    "entities": {
+      "Layout": [
+        "id",
+        "targetType",
+        "targetId",
+        "marketCode",
+        "language",
+        "name",
+        "isTemplate",
+        "isDefault",
+        "blocksOrderJson",
+        "customCss",
+        "customJs",
+        "tailwindSafelistJson",
+        "status",
+        "workflowState"
+      ],
+      "LayoutBlock": [
+        "id",
+        "layoutId",
+        "blockType",
+        "position",
+        "configJson",
+        "visibilityRulesJson"
+      ]
+    },
+    "blockTypes": [
+      "Hero",
+      "Jumbotron",
+      "TwoColumnTextImage",
+      "ThreeColumnFeatures",
+      "GalleryGrid",
+      "GalleryCarousel",
+      "VideoSection",
+      "QuoteHighlight",
+      "StatisticCounters",
+      "FAQAccordion",
+      "Timeline",
+      "CardsGrid",
+      "CallToAction",
+      "FormSection",
+      "TabsContent",
+      "CodeHighlight",
+      "MarkdownBlock",
+      "HTMLRawBlock",
+      "ProductHero",
+      "ProductSpecs",
+      "ProductBenefits",
+      "ProductClinicalEvidence",
+      "ProductFAQ",
+      "ProductInteractiveTool",
+      "BlogPostBody",
+      "RelatedContentSlider"
+    ],
+    "jsAndCssRules": [
+      "Each Layout can define customCss and customJs, loaded only on pages using that layout.",
+      "customJs should be modular, scoped to data-layout-id attributes to avoid global pollution.",
+      "TailwindCSS is the base design system; customCss should extend components or utilities rather than redefining global styles.",
+      "Layout-level tailwindSafelistJson defines additional classes to be kept during purge to support highly dynamic blocks."
+    ],
+    "usageRules": [
+      "Any page type (product, treatment, blog post, corporate page, generic landing) can reference a specific Layout.",
+      "If no specific Layout is assigned, a default template per content type and per market+language is used.",
+      "Blog posts can either use a common blog layout template or a fully custom Layout, allowing hero images, galleries, jumbotrons, etc.",
+      "Layouts themselves are subject to the same Quality workflow as content (draft, pending_quality_review, approved, published)."
+    ]
+  }
+}

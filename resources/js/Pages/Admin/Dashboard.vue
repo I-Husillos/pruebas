@@ -1,0 +1,131 @@
+<template>
+  <AdminLayout>
+    <div class="space-y-8">
+      <div>
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h2>
+        <p class="mt-2 text-sm text-gray-500">Bienvenido al panel de control de Termosalud.</p>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <StatsCard 
+          title="Productos" 
+          :value="stats.products" 
+          :icon="Package" 
+          :link="route('admin.products.index')"
+        />
+        <StatsCard 
+          title="Tratamientos" 
+          :value="stats.treatments" 
+          :icon="HealIcon" 
+          :link="route('admin.treatments.index')"
+        />
+        <StatsCard 
+          title="Artículos" 
+          :value="stats.articles" 
+          :icon="FileText" 
+          :link="route('admin.articles.index')"
+        />
+        <StatsCard 
+          title="Mercados Activos" 
+          :value="stats.markets" 
+          :icon="Globe" 
+          :link="route('admin.markets.index')"
+        />
+      </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Content Distribution Chart -->
+        <div class="rounded-xl bg-white p-6 shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold text-gray-900 mb-6">Distribución de Contenido</h3>
+          <ClientOnly>
+            <apexchart height="300" type="pie" :options="pieOptions" :series="pieSeries" />
+          </ClientOnly>
+        </div>
+
+        <!-- Activity Chart (Placeholder for now) -->
+        <div class="rounded-xl bg-white p-6 shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold text-gray-900 mb-6">Publicaciones Recientes</h3>
+          <ClientOnly>
+            <apexchart height="300" type="bar" :options="barOptions" :series="barSeries" />
+          </ClientOnly>
+        </div>
+      </div>
+      
+      <!-- Quick Actions -->
+      <div class="rounded-xl bg-indigo-600 p-8 shadow-lg text-white">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h3 class="text-2xl font-bold">¿Necesitas crear contenido nuevo?</h3>
+            <p class="mt-2 text-indigo-100 italic">Accede rápidamente a las secciones de creación.</p>
+          </div>
+          <div class="flex flex-wrap gap-4">
+            <Link :href="route('admin.products.create')" class="bg-white text-indigo-600 px-6 py-2 rounded-lg font-semibold hover:bg-indigo-50 transition-colors">
+              Nuevo Producto
+            </Link>
+            <Link :href="route('admin.articles.create')" class="bg-indigo-500 text-white border border-indigo-400 px-6 py-2 rounded-lg font-semibold hover:bg-indigo-400 transition-colors">
+              Nuevo Artículo
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  </AdminLayout>
+</template>
+
+<script setup>
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import StatsCard from '@/Components/Admin/StatsCard.vue';
+import { Link } from '@inertiajs/vue3';
+import { Package, Globe, FileText, Activity as HealIcon } from 'lucide-vue-next';
+import { defineComponent, h } from 'vue';
+
+const props = defineProps({
+  stats: Object,
+});
+
+// Helper component for Client-side only rendering (ApexCharts needs window)
+const ClientOnly = defineComponent({
+  setup(_, { slots }) {
+    if (typeof window === 'undefined') return () => null;
+    return () => slots.default ? slots.default() : null;
+  }
+});
+
+// Chart Data
+const pieSeries = [
+  props.stats.products, 
+  props.stats.treatments, 
+  props.stats.articles, 
+  props.stats.pages
+];
+const pieOptions = {
+  labels: ['Productos', 'Tratamientos', 'Artículos', 'Páginas'],
+  colors: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444'],
+  legend: { position: 'bottom' },
+  responsive: [{ breakpoint: 480, options: { chart: { width: 200 }, legend: { position: 'bottom' } } }]
+};
+
+const barSeries = [{
+  name: 'Registros',
+  data: [props.stats.products, props.stats.treatments, props.stats.articles]
+}];
+const barOptions = {
+  chart: { toolbar: { show: false } },
+  plotOptions: { bar: { borderRadius: 4, horizontal: true } },
+  dataLabels: { enabled: false },
+  xaxis: { categories: ['Productos', 'Tratamientos', 'Artículos'] },
+  colors: ['#4f46e5']
+};
+</script>
+
+<script>
+// ApexCharts requires being registered globally or handled as ClientOnly
+import VueApexCharts from 'vue3-apexcharts';
+export default {
+  components: {
+    apexchart: VueApexCharts,
+  }
+}
+</script>
