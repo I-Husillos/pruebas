@@ -8,7 +8,7 @@ use App\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
-use Termosalud\Web\Product\Application\Delete\RemoveProductCommand;
+use Termosalud\Web\Product\Application\Delete\DeleteProductCommand;
 
 #[OA\Tag(
     name: "Products",
@@ -30,7 +30,7 @@ final class ProductDeleteController extends ApiController
     #[OA\Response(response: 401, description: "No autenticado")]
     public function __invoke(int $id): JsonResponse
     {
-        $this->commandBus->dispatch(new RemoveProductCommand($id));
+        $this->commandBus->dispatch(new DeleteProductCommand($id));
 
         return $this->sendResponse([], 'Producto eliminado exitosamente');
     }

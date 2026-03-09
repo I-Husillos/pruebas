@@ -43,18 +43,41 @@ final class EloquentArticleCategoryRepository extends EloquentRepository impleme
         return $query->count();
     }
 
-    public function findById(int $id): ?ArticleCategory
+    public function search(int $id): ?ArticleCategory
     {
         $model = $this->model->find($id);
 
-        return $model ? ArticleCategory::fromPrimitives($model->toArray()) : null;
+        return $model ? $this->toDomain($model) : null;
     }
 
     public function findBySlug(string $slug, string $locale): ?ArticleCategory
     {
-        $model = $this->model->where('slug', $slug)->where('locale', $locale)->first();
+        $model = $this->model->where("slug->$locale", $slug)->first();
 
-        return $model ? ArticleCategory::fromPrimitives($model->toArray()) : null;
+        return $model ? $this->toDomain($model) : null;
+    }
+
+    public function save(ArticleCategory $category): void
+    {
+        $data = $category->toPrimitives();
+
+        $id = $data['id'] ?? null;
+        unset($data['id'], $data['created_at'], $data['updated_at']);
+
+        $model = ($id !== null && $id > 0) ? $this->model->find($id) : null;
+
+        if ($model) {
+            $model->update($data);
+
+            return;
+        }
+
+        $this->model->create($data);
+    }
+
+    public function remove(int $id): void
+    {
+        $this->model->destroy($id);
     }
 
     private function toDomain(EloquentModel $model): ArticleCategory
@@ -65,9 +88,9 @@ final class EloquentArticleCategoryRepository extends EloquentRepository impleme
             $model->slug,
             $model->description,
             $model->active,
-            (int)$model->sortOrder,
-            $model->createdAt,
-            $model->updatedAt
+            (int) $model->sort_order,
+            $model->created_at?->toDateTimeString(),
+            $model->updated_at?->toDateTimeString()
         );
     }
 }

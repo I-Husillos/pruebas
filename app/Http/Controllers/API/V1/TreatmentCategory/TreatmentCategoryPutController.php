@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\API\V1\TreatmentCategory;
 
 use App\Http\Controllers\ApiController;
+use App\Http\Requests\Admin\TreatmentCategory\UpdateTreatmentCategoryRequest;
+use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
-use Illuminate\Http\Request;
-use App\Models\TreatmentCategory;
+use Termosalud\Web\TreatmentCategory\Application\Update\UpdateTreatmentCategoryCommand;
 
 #[OA\Tag(
     name: "Treatment Categories",
@@ -16,6 +17,8 @@ use App\Models\TreatmentCategory;
 )]
 final class TreatmentCategoryPutController extends ApiController
 {
+    public function __construct(private readonly CommandBus $commandBus) {}
+
     #[OA\Put(
         path: "/api/v1/treatment-categories/{id}",
         tags: ["Treatment Categories"],
@@ -27,25 +30,18 @@ final class TreatmentCategoryPutController extends ApiController
     #[OA\PathParameter(name: "id", description: "ID de TreatmentCategory", required: true, schema: new OA\Schema(type: "string"))]
     #[OA\Response(response: 200, description: "Éxito")]
     #[OA\Response(response: 401, description: "No autenticado")]
-    public function __invoke(Request $request, int $id): JsonResponse
+    public function __invoke(UpdateTreatmentCategoryRequest $request, int $id): JsonResponse
     {
-        $category = TreatmentCategory::findOrFail($id);
+        $validated = $request->validated();
 
-        $validated = $request->validate([
-            'name' => 'required|array',
-            'name.es' => 'required|string|max:255',
-            'name.en' => 'nullable|string|max:255',
-            'slug' => 'required|array',
-            'slug.es' => 'required|string|max:255',
-            'slug.en' => 'nullable|string|max:255',
-            'description' => 'nullable|array',
-            'description.es' => 'nullable|string',
-            'description.en' => 'nullable|string',
-            'active' => 'boolean',
-            'sort_order' => 'integer',
-        ]);
-
-        $category->update($validated);
+        $this->commandBus->dispatch(new UpdateTreatmentCategoryCommand(
+            $id,
+            $validated['name'],
+            $validated['slug'],
+            $validated['description'] ?? null,
+            (bool) ($validated['active'] ?? false),
+            (int) ($validated['sort_order'] ?? 0),
+        ));
 
         return $this->sendResponse([], 'Categoría de tratamiento actualizada exitosamente');
     }

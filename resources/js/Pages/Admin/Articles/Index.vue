@@ -12,6 +12,11 @@
         resource-name-plural="artículos"
         create-button-text="Nuevo Artículo"
     >
+        <!-- Custom Name (Multilingual) -->
+        <template #cell-name="{ item }">
+            {{ item.title?.es || item.title?.en || 'Sin nombre' }}
+        </template>
+
         <!-- Custom Status Badge -->
         <template #cell-published="{ value }">
             <StatusBadge :value="value" true-text="Publicado" false-text="Inactivo" />
@@ -34,7 +39,7 @@ const { props } = usePage();
 const { apiToken, apiUrl } = props;
 
 const columns = [
-    { key: 'title', label: 'Título', format: (value, row) => value || row.name },
+    { key: 'name', label: 'Nombre' },
     { key: 'type', label: 'Tipo', format: (value) => value ? value.charAt(0).toUpperCase() + value.slice(1) : 'N/A' },
     { key: 'created_at', label: 'Fecha' },
     { key: 'published', label: 'Estado' },

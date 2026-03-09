@@ -17,6 +17,7 @@ final class UpdateContentArticleCommand implements Command
         private ?array $content,
         private ?string $author,
         private bool $published,
+        private ?int $categoryId,
         private ?\DateTimeImmutable $publishedAt,
     ) {}
 
@@ -54,8 +55,13 @@ final class UpdateContentArticleCommand implements Command
     public function published(): bool
     {
         return $this->published;
-    }   
-    
+    }
+
+    public function categoryId(): ?int
+    {
+        return $this->categoryId;
+    }
+
     public function publishedAt(): ?\DateTimeImmutable
     {
         return $this->publishedAt;

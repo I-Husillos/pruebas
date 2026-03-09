@@ -13,10 +13,10 @@
                 <div class="sm:col-span-2">
                     <label class="block text-sm font-medium leading-6 text-gray-900">Mercado</label>
                     <div class="mt-2">
-                        <select v-model="form.market_code" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors.market_code}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                        <select v-model="form.market_code" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.market_code}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                             <option v-for="m in markets" :key="m.code" :value="m.code">{{ m.name }} ({{ m.code }})</option>
                         </select>
-                        <p v-if="form.errors.market_code" class="mt-1 text-sm text-red-600">{{ form.errors.market_code }}</p>
+                        <p v-if="errors.market_code" class="mt-1 text-sm text-red-600">{{ errors.market_code }}</p>
                     </div>
                 </div>
 
@@ -24,10 +24,10 @@
                 <div class="sm:col-span-2">
                     <label class="block text-sm font-medium leading-6 text-gray-900">Idioma</label>
                     <div class="mt-2">
-                        <select v-model="form.language_code" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors.language_code}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                        <select v-model="form.language_code" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.language_code}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                             <option v-for="l in languages" :key="l.code" :value="l.code">{{ l.name }} ({{ l.code }})</option>
                         </select>
-                        <p v-if="form.errors.language_code" class="mt-1 text-sm text-red-600">{{ form.errors.language_code }}</p>
+                        <p v-if="errors.language_code" class="mt-1 text-sm text-red-600">{{ errors.language_code }}</p>
                     </div>
                 </div>
 
@@ -41,18 +41,18 @@
                 <div class="sm:col-span-6">
                     <label class="block text-sm font-medium leading-6 text-gray-900">Slug (URL)</label>
                     <div class="mt-2">
-                        <input v-model="form.slug" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors.slug}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                        <input v-model="form.slug" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.slug}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                         <p class="mt-1 text-xs text-gray-500">Ej: promo-verano-2024</p>
                     </div>
-                    <div v-if="form.errors.slug" class="mt-2 text-sm text-red-600">{{ form.errors.slug }}</div>
+                    <div v-if="errors.slug" class="mt-2 text-sm text-red-600">{{ errors.slug }}</div>
                 </div>
 
                 <!-- SEO Title -->
                 <div class="sm:col-span-3">
                     <label class="block text-sm font-medium leading-6 text-gray-900">SEO Título</label>
                     <div class="mt-2">
-                        <input v-model="form.seo_title" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors.seo_title}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
-                        <p v-if="form.errors.seo_title" class="mt-1 text-sm text-red-600">{{ form.errors.seo_title }}</p>
+                        <input v-model="form.seo_title" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.seo_title}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                        <p v-if="errors.seo_title" class="mt-1 text-sm text-red-600">{{ errors.seo_title }}</p>
                     </div>
                 </div>
 
@@ -60,8 +60,8 @@
                 <div class="sm:col-span-6">
                     <label class="block text-sm font-medium leading-6 text-gray-900">SEO Descripción</label>
                     <div class="mt-2">
-                        <textarea v-model="form.seo_description" rows="2" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors.seo_description}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
-                        <p v-if="form.errors.seo_description" class="mt-1 text-sm text-red-600">{{ form.errors.seo_description }}</p>
+                        <textarea v-model="form.seo_description" rows="2" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.seo_description}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
+                        <p v-if="errors.seo_description" class="mt-1 text-sm text-red-600">{{ errors.seo_description }}</p>
                     </div>
                 </div>
 
@@ -69,9 +69,9 @@
                 <div class="sm:col-span-6">
                     <label class="block text-sm font-medium leading-6 text-gray-900">Meta Keywords</label>
                     <div class="mt-2">
-                        <input v-model="form.meta_keywords" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors.meta_keywords}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="palabra1, palabra2, palabra3" />
+                        <input v-model="form.meta_keywords" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.meta_keywords}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="palabra1, palabra2, palabra3" />
                         <p class="mt-1 text-xs text-gray-500">Palabras clave separadas por comas</p>
-                        <p v-if="form.errors.meta_keywords" class="mt-1 text-sm text-red-600">{{ form.errors.meta_keywords }}</p>
+                        <p v-if="errors.meta_keywords" class="mt-1 text-sm text-red-600">{{ errors.meta_keywords }}</p>
                     </div>
                 </div>
             </div>
@@ -84,7 +84,7 @@
 
             <div class="flex items-center justify-end gap-x-6 pt-6">
                 <Link :href="route('admin.pages.index')" class="text-sm font-semibold leading-6 text-gray-900">Cancelar</Link>
-                <button type="submit" :disabled="form.processing" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Actualizar</button>
+                <button type="submit" :disabled="processing" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Actualizar</button>
             </div>
         </form>
     </AdminLayout>
@@ -93,7 +93,9 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import BlockEditor from '@/Components/Admin/BlockEditor.vue';
-import { useForm, Link } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import ApiClient from '@/api/client';
 
 const props = defineProps({
     page: Object,
@@ -102,18 +104,37 @@ const props = defineProps({
     forms: Array,
 });
 
-const form = useForm({
-    market_code: props.page.marketCode,
-    language_code: props.page.languageCode,
+const api = new ApiClient(usePage().props.apiToken);
+
+const form = ref({
+    market_code: props.page.market_code ?? props.page.marketCode,
+    language_code: props.page.language_code ?? props.page.languageCode,
     slug: props.page.slug,
-    is_active: !!props.page.isActive,
-    seo_title: props.page.seoTitle || '',
-    seo_description: props.page.seoDescription || '',
-    meta_keywords: props.page.metaKeywords || '', // Added metaKeywords if present in prop, otherwise string
-    blocks_json: props.page.blocks || [],
+    is_active: !!(props.page.is_active ?? props.page.isActive),
+    seo_title: props.page.seo_title ?? props.page.seoTitle ?? '',
+    seo_description: props.page.seo_description ?? props.page.seoDescription ?? '',
+    meta_keywords: props.page.meta_keywords ?? props.page.metaKeywords ?? '',
+    blocks_json: props.page.blocks ?? props.page.blocks_json ?? [],
 });
 
-const submit = () => {
-    form.put(route('admin.pages.update', props.page.id));
+const errors = ref({});
+const processing = ref(false);
+
+
+const submit = async() => {
+  console.log('Datos que se envían:', JSON.stringify(form.value));
+  processing.value = true;
+  errors.value = {};
+  try {
+        await api.put(`/api/v1/pages/${props.page.id}`, form.value);
+        router.visit(route('admin.pages.index'));
+    } catch (e) {
+      console.log('Error completo:', e.response?.data);
+        errors.value = e.response?.status === 422
+            ? e.response.data.errors
+            : { general: 'Error inesperado.' };
+    } finally {
+        processing.value = false;
+    }
 };
 </script>

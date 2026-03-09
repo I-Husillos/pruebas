@@ -6,17 +6,27 @@ namespace App\Http\Controllers\Admin\Product;
 
 use App\Http\Controllers\Admin\BaseController;
 use Inertia\Response;
+use Termosalud\Web\Product\Application\Find\FindProductQuery;
+use Dba\DddSkeleton\Shared\Domain\Bus\Query\QueryBus;
+use Inertia\Inertia;
 
 final class ProductEditController extends BaseController
 {
-    public function __invoke(string $id): Response
+    public function __construct(private readonly QueryBus $queryBus) {}
+
+    public function __invoke(int $id): Response
     {
-        return $this->render('Admin/Products/Edit', [
-            'productId' => $id,
-            'apiUrl' => route('api.v1.products.update', $id),
-            'categoriesUrl' => route('api.v1.product-categories.list'),
-            'formsUrl' => route('api.v1.forms.list'),
-            'marketsUrl' => route('api.v1.markets.list'),
+        $product = $this->queryBus->ask(new FindProductQuery($id));
+
+        if (! $product) {
+            abort(404);
+        }
+
+        return Inertia::render('Admin/Products/Edit', [
+            'product' => $product->toArray(),
+            'categories' => \App\Models\ProductCategory::all(['id', 'name']),
+            'markets'    => \App\Models\Market::where('active', true)->get(['id', 'code', 'name']),
+            'forms'      => \App\Models\Form::all(['id', 'name']),
         ]);
     }
 }

@@ -31,7 +31,7 @@
         <template #actions="{ item, edit, remove }">
             <div class="flex justify-end gap-2">
                 <!-- View -->
-                <a :href="`/${item.marketCode}/${item.languageCode}/pages/${item.slug}`" 
+                <a :href="`/es/es/pages/${item.slug}`" 
                    target="_blank"
                    class="text-gray-400 hover:text-indigo-600 transition-colors"
                    title="Ver en web">
@@ -63,8 +63,8 @@ const { apiToken, apiUrl } = props;
 
 const columns = [
     { key: 'slug', label: 'Slug' },
-    { key: 'marketCode', label: 'Mercado' },
-    { key: 'languageCode', label: 'Idioma' },
+    { key: 'market_code', label: 'Mercado' },
+    { key: 'language_code', label: 'Idioma' },
     { key: 'isActive', label: 'Estado' },
 ];
 </script>

@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\API\V1\ProductCategory;
 
 use App\Http\Controllers\ApiController;
+use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
-use App\Models\ProductCategory;
+use Termosalud\Web\ProductCategory\Application\Delete\DeleteProductCategoryCommand;
 
 #[OA\Tag(
     name: "Product Categories",
@@ -15,6 +16,8 @@ use App\Models\ProductCategory;
 )]
 final class ProductCategoryDeleteController extends ApiController
 {
+    public function __construct(private readonly CommandBus $commandBus) {}
+
     #[OA\Delete(
         path: "/api/v1/product-categories/{id}",
         tags: ["Product Categories"],
@@ -28,8 +31,7 @@ final class ProductCategoryDeleteController extends ApiController
     #[OA\Response(response: 401, description: "No autenticado")]
     public function __invoke(int $id): JsonResponse
     {
-        $category = ProductCategory::findOrFail($id);
-        $category->delete();
+        $this->commandBus->dispatch(new DeleteProductCategoryCommand($id));
 
         return $this->sendResponse([], 'Categoría de producto eliminada exitosamente');
     }

@@ -63,4 +63,30 @@ final class Language extends AggregateRoot
     {
         return $this->fallbackLanguage;
     }
+
+    public static function fromPrimitives(array $data): self
+    {
+        return new self(
+            isset($data['id']) ? (int) $data['id'] : null,
+            (string) $data['code'],
+            (string) $data['name'],
+            (string) $data['native_name'],
+            (string) $data['direction'],
+            (bool) $data['active'],
+            isset($data['fallback_language']) ? (string) $data['fallback_language'] : null
+        );
+    }
+
+    public function toPrimitives(): array
+    {
+        return [
+            'id' => $this->id,
+            'code' => $this->code,
+            'name' => $this->name,
+            'native_name' => $this->nativeName,
+            'direction' => $this->direction,
+            'active' => $this->active,
+            'fallback_language' => $this->fallbackLanguage,
+        ];
+    }
 }

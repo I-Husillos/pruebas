@@ -8,7 +8,8 @@ use App\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 use App\Http\Requests\Admin\Treatment\StoreTreatmentRequest;
-use App\Models\Treatment;
+use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
+use Termosalud\Web\Treatment\Application\Create\CreateTreatmentCommand;
 
 #[OA\Tag(
     name: "Treatments",
@@ -16,6 +17,8 @@ use App\Models\Treatment;
 )]
 final class TreatmentPostController extends ApiController
 {
+    public function __construct(private readonly CommandBus $commandBus) {}
+
     #[OA\Post(
         path: "/api/v1/treatments",
         tags: ["Treatments"],
@@ -30,7 +33,16 @@ final class TreatmentPostController extends ApiController
     {
         $validated = $request->validated();
 
-        Treatment::create($validated);
+        $this->commandBus->dispatch(new CreateTreatmentCommand(
+            $validated['name'],
+            $validated['slug'],
+            $validated['description'] ?? null,
+            (bool) ($validated['published'] ?? false),
+            $validated['available_markets'] ?? null,
+            (int) ($validated['sort_order'] ?? 0),
+            isset($validated['category_id']) ? (int) $validated['category_id'] : null,
+            $validated['blocks_json'] ?? null
+        ));
 
         return $this->sendResponse([], 'Tratamiento creado exitosamente', 201);
     }

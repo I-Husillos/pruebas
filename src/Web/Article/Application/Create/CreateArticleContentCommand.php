@@ -9,18 +9,19 @@ use Dba\DddSkeleton\Shared\Domain\Bus\Command\Command;
 final class CreateArticleContentCommand implements Command
 {
     public function __construct(
-        private readonly string $id,
+        private readonly int $id,
         private readonly string $type,
-        private readonly string $title,
-        private readonly string $slug,
-        private readonly string $excerpt,
-        private readonly string $content,
-        private readonly string $author,
+        private readonly array $title,
+        private readonly array $slug,
+        private readonly ?array $excerpt,
+        private readonly ?array $content,
+        private readonly ?string $author,
         private readonly bool $published,
+        private readonly ?int $categoryId = null,
         private readonly ?\DateTimeImmutable $publishedAt = null
     ) {}
 
-    public function id(): string
+    public function id(): int
     {
         return $this->id;
     }
@@ -30,27 +31,27 @@ final class CreateArticleContentCommand implements Command
         return $this->type;
     }
 
-    public function title(): string
+    public function title(): array
     {
         return $this->title;
     }
 
-    public function slug(): string
+    public function slug(): array
     {
         return $this->slug;
     }
 
-    public function excerpt(): string
+    public function excerpt(): ?array
     {
         return $this->excerpt;
     }
 
-    public function content(): string
+    public function content(): ?array
     {
         return $this->content;
     }
 
-    public function author(): string
+    public function author(): ?string
     {
         return $this->author;
     }
@@ -58,6 +59,11 @@ final class CreateArticleContentCommand implements Command
     public function published(): bool
     {
         return $this->published;
+    }
+
+    public function categoryId(): ?int
+    {
+        return $this->categoryId;
     }
 
     public function publishedAt(): ?\DateTimeImmutable

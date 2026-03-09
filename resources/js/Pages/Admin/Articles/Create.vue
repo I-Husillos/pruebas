@@ -33,19 +33,19 @@
           <div v-show="activeLang === 'es'" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Título (ES)</label>
-              <input v-model="form.title.es" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors['title.es']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required />
-              <p v-if="form.errors['title.es']" class="mt-1 text-sm text-red-600">{{ form.errors['title.es'] }}</p>
+              <input v-model="form.title.es" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors['title.es']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required />
+              <p v-if="errors['title.es']" class="mt-1 text-sm text-red-600">{{ errors['title.es'] }}</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Extracto / SEO Description (ES)</label>
-              <textarea v-model="form.excerpt.es" rows="3" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors['excerpt.es']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
-              <p v-if="form.errors['excerpt.es']" class="mt-1 text-sm text-red-600">{{ form.errors['excerpt.es'] }}</p>
+              <textarea v-model="form.excerpt.es" rows="3" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors['excerpt.es']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+              <p v-if="errors['excerpt.es']" class="mt-1 text-sm text-red-600">{{ errors['excerpt.es'] }}</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Contenido (ES)</label>
               <div class="mt-1">
                 <Wysiwyg v-model="form.content.es" />
-                <p v-if="form.errors['content.es']" class="mt-1 text-sm text-red-600">{{ form.errors['content.es'] }}</p>
+                <p v-if="errors['content.es']" class="mt-1 text-sm text-red-600">{{ errors['content.es'] }}</p>
               </div>
             </div>
           </div>
@@ -53,19 +53,19 @@
           <div v-show="activeLang === 'en'" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Title (EN)</label>
-              <input v-model="form.title.en" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors['title.en']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-              <p v-if="form.errors['title.en']" class="mt-1 text-sm text-red-600">{{ form.errors['title.en'] }}</p>
+              <input v-model="form.title.en" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors['title.en']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+              <p v-if="errors['title.en']" class="mt-1 text-sm text-red-600">{{ errors['title.en'] }}</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Excerpt / SEO Description (EN)</label>
-              <textarea v-model="form.excerpt.en" rows="3" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors['excerpt.en']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
-               <p v-if="form.errors['excerpt.en']" class="mt-1 text-sm text-red-600">{{ form.errors['excerpt.en'] }}</p>
+              <textarea v-model="form.excerpt.en" rows="3" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors['excerpt.en']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+               <p v-if="errors['excerpt.en']" class="mt-1 text-sm text-red-600">{{ errors['excerpt.en'] }}</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Content (EN)</label>
               <div class="mt-1">
                 <Wysiwyg v-model="form.content.en" />
-                <p v-if="form.errors['content.en']" class="mt-1 text-sm text-red-600">{{ form.errors['content.en'] }}</p>
+                <p v-if="errors['content.en']" class="mt-1 text-sm text-red-600">{{ errors['content.en'] }}</p>
               </div>
             </div>
           </div>
@@ -81,23 +81,23 @@
           <div class="space-y-4">
             <div>
               <label for="type" class="block text-sm font-medium text-gray-700">Tipo de Artículo</label>
-              <select v-model="form.type" id="type" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors.type}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+              <select v-model="form.type" id="type" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.type}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="blog">Blog / Noticia</option>
                 <option value="news">Novedad</option>
                 <option value="press">Prensa</option>
               </select>
-              <p v-if="form.errors.type" class="mt-1 text-sm text-red-600">{{ form.errors.type }}</p>
+              <p v-if="errors.type" class="mt-1 text-sm text-red-600">{{ errors.type }}</p>
             </div>
 
             <div>
               <label for="category" class="block text-sm font-medium text-gray-700">Categoría</label>
-              <select v-model="form.category_id" id="category" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors.category_id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+              <select v-model="form.category_id" id="category" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.category_id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option :value="null">Sin categoría</option>
                 <option v-for="category in categories" :key="category.id" :value="category.id">
                   {{ category.name?.es || category.name?.en || 'Sin nombre' }}
                 </option>
               </select>
-              <p v-if="form.errors.category_id" class="mt-1 text-sm text-red-600">{{ form.errors.category_id }}</p>
+              <p v-if="errors.category_id" class="mt-1 text-sm text-red-600">{{ errors.category_id }}</p>
             </div>
 
             <div class="flex items-center">
@@ -114,8 +114,8 @@
 
             <div>
               <label class="block text-sm font-medium text-gray-700">Fecha de Publicación</label>
-              <input v-model="form.published_at" type="datetime-local" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors.published_at}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-              <p v-if="form.errors.published_at" class="mt-1 text-sm text-red-600">{{ form.errors.published_at }}</p>
+              <input v-model="form.published_at" type="datetime-local" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.published_at}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+              <p v-if="errors.published_at" class="mt-1 text-sm text-red-600">{{ errors.published_at }}</p>
             </div>
           </div>
         </div>
@@ -144,7 +144,7 @@
           <Link :href="route('admin.articles.index')" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors">
             Cancelar
           </Link>
-          <button type="submit" :disabled="form.processing" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-6 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors">
+          <button type="submit" :disabled="processing" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-6 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors">
             Guardar Artículo
           </button>
         </div>
@@ -157,21 +157,25 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue';
 import Wysiwyg from '@/Components/Wysiwyg.vue';
-import { useForm, Link } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import ApiClient from '@/api/client';
 
 const breadcrumbItems = [
   { label: 'Artículos', link: route('admin.articles.index') },
   { label: 'Crear' }
 ];
 
+const api = new ApiClient(usePage().props.apiToken);
+
 const activeLang = ref('es');
 
-defineProps({
+const props = defineProps({
+  forms: Array,
   categories: Array,
 });
 
-const form = useForm({
+const form = ref({
   type: 'blog',
   title: { es: '', en: '' },
   slug: { es: '', en: '' },
@@ -179,11 +183,27 @@ const form = useForm({
   content: { es: '', en: '' },
   published: true,
   published_at: new Date().toISOString().slice(0, 16),
-  category_id: null,
   featured_image: null,
+  category_id: null,
 });
 
-const submit = () => {
-  form.post(route('admin.articles.store'));
+const errors = ref({});
+const processing = ref(false);
+
+const submit = async() => {
+  console.log('Datos que se envían:', JSON.stringify(form.value));
+  processing.value = true;
+  errors.value = {};
+  try {
+        await api.post('/api/v1/articles', form.value);
+        router.visit(route('admin.articles.index'));
+    } catch (e) {
+      console.log('Error completo:', e.response?.data);
+        errors.value = e.response?.status === 422
+            ? e.response.data.errors
+            : { general: 'Error inesperado.' };
+    } finally {
+        processing.value = false;
+    }
 };
 </script>

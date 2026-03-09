@@ -14,7 +14,7 @@ final class FindPageByIdQueryHandler implements QueryHandler
 
     public function __invoke(FindPageByIdQuery $query): ?PageResponse
     {
-        $page = $this->repository->findById($query->id());
+        $page = $this->repository->search($query->id());
         return $page ? PageResponse::fromPage($page) : null;
     }
 }

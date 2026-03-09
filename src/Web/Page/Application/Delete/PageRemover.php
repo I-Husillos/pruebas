@@ -12,6 +12,6 @@ final class PageRemover
 
     public function __invoke(int $id): void
     {
-        $this->repository->delete($id);
+        $this->repository->remove($id);
     }
 }

@@ -22,6 +22,8 @@ use Termosalud\Web\Language\Infrastructure\Persistence\EloquentLanguageRepositor
 use Termosalud\Web\Market\Infrastructure\Persistence\EloquentMarketRepository;
 use Termosalud\Web\Treatment\Domain\TreatmentRepository;
 use Termosalud\Web\Treatment\Infrastructure\Persistence\EloquentTreatmentRepository;
+use Termosalud\Web\TreatmentCategory\Domain\TreatmentCategoryRepository;
+use Termosalud\Web\TreatmentCategory\Infrastructure\Persistence\EloquentTreatmentCategoryRepository;
 use Termosalud\Web\User\Domain\UserRepository;
 use Termosalud\Web\User\Infrastructure\Persistence\EloquentUserRepository;
 
@@ -86,6 +88,11 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             TreatmentRepository::class,
             EloquentTreatmentRepository::class
+        );
+
+        $this->app->bind(
+            TreatmentCategoryRepository::class,
+            EloquentTreatmentCategoryRepository::class
         );
     }
 

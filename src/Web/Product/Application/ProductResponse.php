@@ -25,7 +25,9 @@ final class ProductResponse implements Response
 
     private ?array $images;
 
-    private ?string $category;
+    private ?int $categoryId;
+
+    private ?array $categoryName;
 
     private ?array $tags;
 
@@ -52,7 +54,8 @@ final class ProductResponse implements Response
         ?array $description,
         ?array $technicalSpecs,
         ?array $images,
-        ?string $category,
+        ?int $categoryId,
+        ?array $categoryName,
         ?array $tags,
         bool $published,
         ?string $publishedAt,
@@ -70,7 +73,8 @@ final class ProductResponse implements Response
         $this->description = $description;
         $this->technicalSpecs = $technicalSpecs;
         $this->images = $images;
-        $this->category = $category;
+        $this->categoryId = $categoryId;
+        $this->categoryName = $categoryName;
         $this->tags = $tags;
         $this->published = $published;
         $this->publishedAt = $publishedAt;
@@ -94,7 +98,10 @@ final class ProductResponse implements Response
             $primitives['description'] ?? null,
             $primitives['technical_specs'] ?? null,
             $primitives['images'] ?? null,
-            $primitives['category'] ?? null,
+            isset($primitives['category_id'])
+                ? (int) $primitives['category_id']
+                : (isset($primitives['category']) ? (int) $primitives['category'] : null),
+            $primitives['category_name'] ?? null,
             $primitives['tags'] ?? null,
             (bool) $primitives['published'],
             $primitives['published_at'] ?? null,
@@ -117,7 +124,8 @@ final class ProductResponse implements Response
             'description' => $this->description,
             'technical_specs' => $this->technicalSpecs,
             'images' => $this->images,
-            'category' => $this->category,
+            'category_id' => $this->categoryId,
+            'category_name' => $this->categoryName,
             'tags' => $this->tags,
             'published' => $this->published,
             'published_at' => $this->publishedAt,

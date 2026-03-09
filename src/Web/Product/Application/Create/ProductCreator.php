@@ -6,7 +6,6 @@ namespace Termosalud\Web\Product\Application\Create;
 
 use Termosalud\Web\Product\Domain\ProductRepository;
 use Termosalud\Web\Product\Domain\Product;
-use Termosalud\Web\Product\Domain\ProductId;
 use Termosalud\Web\Product\Domain\ProductCode;
 
 final class ProductCreator
@@ -14,7 +13,7 @@ final class ProductCreator
     public function __construct(private readonly ProductRepository $repository) {}
 
     public function __invoke(
-        ProductId $id,
+        int $id,
         ProductCode $code,
         array $name,
         array $slug,
@@ -22,7 +21,8 @@ final class ProductCreator
         ?array $description,
         ?array $technicalSpecs,
         ?array $images,
-        ?string $category,
+        ?int $categoryId,
+        ?array $categoryName,
         ?array $tags,
         bool $published,
         ?string $publishedAt,
@@ -39,7 +39,8 @@ final class ProductCreator
             $description,
             $technicalSpecs,
             $images,
-            $category,
+            $categoryId,
+            $categoryName,
             $tags,
             $published,
             $publishedAt,

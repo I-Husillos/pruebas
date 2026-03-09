@@ -43,7 +43,7 @@ final class ArticleGetController extends ApiController
     {
         try {
             /** @var \Termosalud\Content\Application\ArticleResponse|null $article */
-            $article = $this->queryBus->ask(new FindArticleByIdQuery($id));
+            $article = $this->queryBus->ask(new FindArticleByIdQuery((int) $id));
 
             if (!$article) {
                 return $this->sendError('Article not found', [], 404);

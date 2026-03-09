@@ -47,7 +47,7 @@ class EloquentPageRepository implements PageRepository
         return $model ? $this->toDomain($model) : null;
     }
 
-    public function findById(int $id): ?Page
+    public function search(int $id): ?Page
     {
         $model = EloquentModel::find($id);
 
@@ -79,9 +79,14 @@ class EloquentPageRepository implements PageRepository
         }
     }
 
-    public function delete(int $id): void
+    public function remove(int $id): void
     {
         EloquentModel::destroy($id);
+    }
+
+    public function delete(int $id): void
+    {
+        $this->remove($id);
     }
 
     public function searchByCriteria(Criteria $criteria): array

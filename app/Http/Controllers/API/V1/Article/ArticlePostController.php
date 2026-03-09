@@ -7,8 +7,9 @@ namespace App\Http\Controllers\API\V1\Article;
 use App\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
-use Illuminate\Http\Request;
-use App\Models\ContentArticle;
+use App\Http\Requests\Admin\Article\StoreArticleRequest;
+use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
+use Termosalud\Web\Article\Application\Create\CreateArticleContentCommand;
 
 #[OA\Tag(
     name: "Articles",
@@ -16,6 +17,7 @@ use App\Models\ContentArticle;
 )]
 final class ArticlePostController extends ApiController
 {
+    public function __construct(private readonly CommandBus $commandBus) {}
     #[OA\Post(
         path: "/api/v1/articles",
         tags: ["Articles"],
@@ -26,23 +28,25 @@ final class ArticlePostController extends ApiController
     )]
     #[OA\Response(response: 200, description: "Éxito")]
     #[OA\Response(response: 401, description: "No autenticado")]
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(StoreArticleRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'type' => 'required|in:blog,news,press',
-            'title' => 'required|array',
-            'title.es' => 'required|string|max:255',
-            'slug' => 'required|array',
-            'slug.es' => 'required|string|max:255',
-            'excerpt' => 'nullable|array',
-            'content' => 'nullable|array',
-            'published' => 'boolean',
-            'published_at' => 'nullable|date',
-            'category_id' => 'nullable|exists:article_categories,id',
-            'featured_image' => 'nullable|array',
-        ]);
+        $validated = $request->validated();
+        $publishedAt = isset($validated['published_at'])
+            ? new \DateTimeImmutable((string) $validated['published_at'])
+            : null;
 
-        ContentArticle::create($validated);
+        $this->commandBus->dispatch(new CreateArticleContentCommand(
+            0, // New articles don't have an ID yet
+            $validated['type'],
+            $validated['title'],
+            $validated['slug'],
+            $validated['excerpt'] ?? null,
+            $validated['content'] ?? null,
+            $validated['author'] ?? 'admin',
+            (bool) ($validated['published'] ?? false),
+            isset($validated['category_id']) ? (int) $validated['category_id'] : null,
+            $publishedAt
+        ));
 
         return $this->sendResponse([], 'Artículo creado exitosamente', 201);
     }

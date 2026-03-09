@@ -12,6 +12,17 @@ final class UpdateContentArticleCommandHandler implements CommandHandler
 
     public function __invoke(UpdateContentArticleCommand $command): void
     {
-        $this->updater->__invoke($command->id(), $command->type(), $command->title(), $command->slug(), $command->excerpt(), $command->content(), $command->author(), $command->published(), $command->publishedAt());
+        $this->updater->__invoke(
+            (int) $command->id(),
+            $command->type(),
+            $command->title(),
+            $command->slug(),
+            $command->excerpt(),
+            $command->content(),
+            $command->author(),
+            $command->published(),
+            $command->categoryId(),
+            $command->publishedAt()
+        );
     }
 }

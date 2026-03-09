@@ -12,8 +12,18 @@
         resource-name-plural="productos"
         create-button-text="Nuevo Producto"
     >
+        <!-- Custom Name (Multilingual) -->
+        <template #cell-name="{ item }">
+            {{ item.name?.es || item.name?.en || 'Sin nombre' }}
+        </template>
+
+        <!-- Custom Category Name (Multilingual) -->
+        <template #cell-category_name="{ item }">
+            {{ item.category_name?.es || item.category_name?.en || 'Sin categoría' }}
+        </template>
+
         <!-- Custom Status Badge -->
-        <template #cell-active="{ value }">
+        <template #cell-published="{ value }">
             <StatusBadge :value="value" />
         </template>
     </ResourceListTable>
@@ -29,7 +39,7 @@ const { apiToken, apiUrl } = props;
 
 const columns = [
     { key: 'name', label: 'Nombre' },
-    { key: 'category.name', label: 'Categoría' },
-    { key: 'active', label: 'Estado' },
+    { key: 'category_name', label: 'Categoría' },
+    { key: 'published', label: 'Estado' },
 ];
 </script>

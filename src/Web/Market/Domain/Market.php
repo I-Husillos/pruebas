@@ -31,6 +31,40 @@ final class Market extends AggregateRoot
         return new self(null, $code, $name, $region, $defaultLanguage, $enabledLanguages, $active, $priority);
     }
 
+    public static function fromPrimitives(array $data): self
+    {
+        $enabledLanguages = $data['enabled_languages'] ?? [];
+
+        if (is_string($enabledLanguages)) {
+            $enabledLanguages = json_decode($enabledLanguages, true) ?? [];
+        }
+
+        return new self(
+            isset($data['id']) ? (int) $data['id'] : null,
+            new MarketCode((string) $data['code']),
+            (string) $data['name'],
+            (string) $data['region'],
+            (string) $data['default_language'],
+            is_array($enabledLanguages) ? $enabledLanguages : [],
+            (bool) $data['active'],
+            (int) $data['priority']
+        );
+    }
+
+    public function toPrimitives(): array
+    {
+        return [
+            'id' => $this->id,
+            'code' => $this->code->value(),
+            'name' => $this->name,
+            'region' => $this->region,
+            'default_language' => $this->defaultLanguage,
+            'enabled_languages' => $this->enabledLanguages,
+            'active' => $this->active,
+            'priority' => $this->priority,
+        ];
+    }
+
     public function id(): ?int
     {
         return $this->id;

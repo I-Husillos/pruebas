@@ -6,7 +6,6 @@ namespace Termosalud\Web\Product\Application\Update;
 
 use Termosalud\Web\Product\Domain\ProductRepository;
 use Termosalud\Web\Product\Domain\Product;
-use Termosalud\Web\Product\Domain\ProductId;
 use Termosalud\Web\Product\Domain\ProductCode;
 
 final class ProductUpdater
@@ -14,7 +13,7 @@ final class ProductUpdater
     public function __construct(private readonly ProductRepository $repository) {}
 
     public function __invoke(
-        ProductId $id,
+        int $id,
         ProductCode $code,
         array $name,
         array $slug,
@@ -22,13 +21,14 @@ final class ProductUpdater
         ?array $description,
         ?array $technicalSpecs,
         ?array $images,
-        ?string $category,
+        ?int $categoryId,
+        ?array $categoryName,
         ?array $tags,
-        bool $published,
+        ?bool $published,
         ?string $publishedAt,
         ?array $availableMarkets,
         ?array $metaSeo,
-        int $sortOrder
+        ?int $sortOrder
     ): void {
         $product = Product::create(
             $id,
@@ -39,13 +39,14 @@ final class ProductUpdater
             $description,
             $technicalSpecs,
             $images,
-            $category,
+            $categoryId,
+            $categoryName,
             $tags,
-            $published,
+            $published ?? false,
             $publishedAt,
             $availableMarkets,
             $metaSeo,
-            $sortOrder
+            $sortOrder ?? 0
         );
 
         $this->repository->save($product);

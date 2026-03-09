@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Termosalud\Web\Article\Domain;
 
+use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
+
 interface ContentArticleRepository
 {
     public function save(ContentArticle $article): void;
 
-    public function search(array $criteria): array; // Returns ContentArticle[]
+    public function search(int $id): ?ContentArticle;
 
     /** @return ContentArticle[] */
-    public function searchByCriteria(\Dba\DddSkeleton\Shared\Domain\Criteria\Criteria $criteria): array;
+    public function searchByCriteria(Criteria $criteria): array;
 
-    public function countByCriteria(\Dba\DddSkeleton\Shared\Domain\Criteria\Criteria $criteria): int;
-
-    public function findById(int $id): ?ContentArticle;
-
-    public function findBySlug(string $slug, string $locale): ?ContentArticle;
+    public function countByCriteria(Criteria $criteria): int;
 
     public function remove(int $id): void;
+
+    public function findBySlug(string $slug, string $locale): ?ContentArticle;
 }

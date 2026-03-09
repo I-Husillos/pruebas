@@ -9,7 +9,7 @@ use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 use App\Http\Requests\Admin\Page\StorePageRequest;
 use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
-use Termosalud\Web\Page\Application\Command;
+use Termosalud\Web\Page\Application\Create\CreatePageCommand;
 
 #[OA\Tag(
     name: "Pages",

@@ -60,4 +60,43 @@ class Page
             $blocks
         );
     }
+
+    public static function fromPrimitives(
+        ?int $id,
+        string $marketCode,
+        string $languageCode,
+        string $slug,
+        bool $isActive,
+        ?string $seoTitle,
+        ?string $seoDescription,
+        array $blocks
+    ): self {
+        return new self(
+            $id,
+            $marketCode,
+            $languageCode,
+            $slug,
+            $isActive,
+            $seoTitle,
+            $seoDescription,
+            $blocks
+        );
+    }
+
+
+    public function toPrimitives(): array
+    {
+        return [
+            'id' => $this->id,
+            'market_code' => $this->marketCode,
+            'language_code' => $this->languageCode,
+            'slug' => $this->slug,
+            'is_active' => $this->isActive,
+            'seo_title' => $this->seoTitle,
+            'seo_description' => $this->seoDescription,
+            'blocks' => $this->blocks,
+        ];
+    }
+
+
 }

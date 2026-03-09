@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\API\V1\TreatmentCategory;
 
 use App\Http\Controllers\ApiController;
+use App\Http\Requests\Admin\TreatmentCategory\StoreTreatmentCategoryRequest;
+use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
-use Illuminate\Http\Request;
-use App\Models\TreatmentCategory;
+use Termosalud\Web\TreatmentCategory\Application\Create\CreateTreatmentCategoryCommand;
 
 #[OA\Tag(
     name: "Treatment Categories",
@@ -16,6 +17,8 @@ use App\Models\TreatmentCategory;
 )]
 final class TreatmentCategoryPostController extends ApiController
 {
+    public function __construct(private readonly CommandBus $commandBus) {}
+
     #[OA\Post(
         path: "/api/v1/treatment-categories",
         tags: ["Treatment Categories"],
@@ -26,23 +29,18 @@ final class TreatmentCategoryPostController extends ApiController
     )]
     #[OA\Response(response: 200, description: "Éxito")]
     #[OA\Response(response: 401, description: "No autenticado")]
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(StoreTreatmentCategoryRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|array',
-            'name.es' => 'required|string|max:255',
-            'name.en' => 'nullable|string|max:255',
-            'slug' => 'required|array',
-            'slug.es' => 'required|string|max:255',
-            'slug.en' => 'nullable|string|max:255',
-            'description' => 'nullable|array',
-            'description.es' => 'nullable|string',
-            'description.en' => 'nullable|string',
-            'active' => 'boolean',
-            'sort_order' => 'integer',
-        ]);
+        $validated = $request->validated();
 
-        TreatmentCategory::create($validated);
+        $this->commandBus->dispatch(new CreateTreatmentCategoryCommand(
+            0,
+            $validated['name'],
+            $validated['slug'],
+            $validated['description'] ?? null,
+            (bool) ($validated['active'] ?? false),
+            (int) ($validated['sort_order'] ?? 0),
+        ));
 
         return $this->sendResponse([], 'Categoría de tratamiento creada exitosamente', 201);
     }

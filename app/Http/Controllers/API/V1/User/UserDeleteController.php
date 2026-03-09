@@ -8,7 +8,7 @@ use App\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
-use Termosalud\Web\User\Application\Delete\RemoveUserCommand;
+use Termosalud\Web\User\Application\Delete\DeleteUserCommand;
 
 #[OA\Tag(
     name: "Users",
@@ -34,7 +34,7 @@ final class UserDeleteController extends ApiController
             return $this->sendError('Forbidden', ['error' => 'No puedes eliminar tu propio usuario.'], 403);
         }
 
-        $this->commandBus->dispatch(new RemoveUserCommand($id));
+        $this->commandBus->dispatch(new DeleteUserCommand($id));
 
         return $this->sendResponse([], 'Usuario eliminado exitosamente');
     }

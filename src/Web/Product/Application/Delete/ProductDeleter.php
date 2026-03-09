@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Termosalud\Web\Product\Application\Delete;
 
-use Termosalud\Web\Product\Domain\ProductId;
 use Termosalud\Web\Product\Domain\ProductRepository;
 
 final class ProductDeleter
@@ -13,6 +12,6 @@ final class ProductDeleter
 
     public function __invoke(int $id): void
     {
-        $this->repository->remove(new ProductId($id));
+        $this->repository->remove($id);
     }
 }

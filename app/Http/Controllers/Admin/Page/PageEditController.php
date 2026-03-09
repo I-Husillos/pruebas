@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin\Page;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\BaseController;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
 use Dba\DddSkeleton\Shared\Domain\Bus\Query\QueryBus;
-use Termosalud\Web\Page\Application\ByIdQuery;
+use Termosalud\Web\Page\Application\Find\FindPageByIdQuery;
 
-final class PageEditController extends Controller
+final class PageEditController extends BaseController
 {
     public function __construct(private readonly QueryBus $queryBus) {}
 
@@ -25,10 +25,10 @@ final class PageEditController extends Controller
         }
 
         return Inertia::render('Admin/Pages/Edit', [
-            'page' => $page,
-            'markets' => DB::table('markets')->get(),
-            'languages' => DB::table('languages')->get(),
-            'forms' => DB::table('forms')->select('id', 'name', 'key')->get(),
+            'page' => $page->toArray(),
+            'markets'    => \App\Models\Market::where('active', true)->get(['id', 'code', 'name']),
+            'languages'  => \App\Models\Language::where('active', true)->get(['id', 'code', 'name']),
+            'forms'      => \App\Models\Form::all(['id', 'name']),
         ]);
     }
 }

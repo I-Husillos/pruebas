@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
 use Termosalud\Web\Page\Application\Command;
+use Termosalud\Web\Page\Application\Delete\RemovePageCommand;
 
 #[OA\Tag(
     name: "Pages",

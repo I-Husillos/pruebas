@@ -25,7 +25,7 @@ final class UserEditController extends Controller
         }
 
         return Inertia::render('Admin/Users/Edit', [
-            'user' => $user,
+            'user' => $user->toArray(),
             'roles' => Role::all()->pluck('name'),
         ]);
     }

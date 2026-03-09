@@ -6,14 +6,15 @@ namespace App\Http\Controllers\Admin\Article;
 
 use App\Http\Controllers\Admin\BaseController;
 use Inertia\Response;
+use Inertia\Inertia;
+use App\Models\ArticleCategory;
 
 final class ArticleCreateController extends BaseController
 {
     public function __invoke(): Response
     {
-        return $this->render('Admin/Articles/Create', [
-            'apiUrl' => route('api.v1.articles.store'),
-            'categoriesUrl' => route('api.v1.article-categories.list'),
+        return Inertia::render('Admin/Articles/Create', [
+            'categories' => ArticleCategory::all()
         ]);
     }
 }

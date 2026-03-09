@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\API\V1\ArticleCategory;
 
 use App\Http\Controllers\ApiController;
+use App\Http\Requests\Admin\ArticleCategory\UpdateArticleCategoryRequest;
+use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
-use Illuminate\Http\Request;
-use App\Models\ArticleCategory;
+use Termosalud\Web\ArticleCategory\Application\Update\UpdateArticleCategoryCommand;
 
 #[OA\Tag(
     name: "Article Categories",
@@ -16,6 +17,8 @@ use App\Models\ArticleCategory;
 )]
 final class ArticleCategoryPutController extends ApiController
 {
+    public function __construct(private readonly CommandBus $commandBus) {}
+
     #[OA\Put(
         path: "/api/v1/article-categories/{id}",
         tags: ["Article Categories"],
@@ -27,25 +30,18 @@ final class ArticleCategoryPutController extends ApiController
     #[OA\PathParameter(name: "id", description: "ID de ArticleCategory", required: true, schema: new OA\Schema(type: "string"))]
     #[OA\Response(response: 200, description: "Éxito")]
     #[OA\Response(response: 401, description: "No autenticado")]
-    public function __invoke(Request $request, int $id): JsonResponse
+    public function __invoke(UpdateArticleCategoryRequest $request, int $id): JsonResponse
     {
-        $category = ArticleCategory::findOrFail($id);
+        $validated = $request->validated();
 
-        $validated = $request->validate([
-            'name' => 'required|array',
-            'name.es' => 'required|string|max:255',
-            'name.en' => 'nullable|string|max:255',
-            'slug' => 'required|array',
-            'slug.es' => 'required|string|max:255',
-            'slug.en' => 'nullable|string|max:255',
-            'description' => 'nullable|array',
-            'description.es' => 'nullable|string',
-            'description.en' => 'nullable|string',
-            'active' => 'boolean',
-            'sort_order' => 'integer',
-        ]);
-
-        $category->update($validated);
+        $this->commandBus->dispatch(new UpdateArticleCategoryCommand(
+            $id,
+            $validated['name'],
+            $validated['slug'],
+            $validated['description'] ?? null,
+            (bool) ($validated['active'] ?? false),
+            (int) ($validated['sort_order'] ?? 0),
+        ));
 
         return $this->sendResponse([], 'Categoría de artículo actualizada exitosamente');
     }

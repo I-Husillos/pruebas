@@ -10,15 +10,12 @@ interface ProductRepository
 {
     public function save(Product $product): void;
 
-    public function search(ProductId $id): ?Product;
-
-    /** @return Product[] */
-    public function searchAll(): array;
+    public function search(int $id): ?Product;
 
     /** @return Product[] */
     public function searchByCriteria(Criteria $criteria): array;
 
     public function countByCriteria(Criteria $criteria): int;
 
-    public function remove(ProductId $id): void;
+    public function remove(int $id): void;
 }

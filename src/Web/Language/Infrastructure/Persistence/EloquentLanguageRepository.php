@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Termosalud\Web\Language\Infrastructure\Persistence;
 
 use App\Models\Language as EloquentModel;
+use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
+use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentCriteriaConverter;
 use Termosalud\Web\Language\Domain\Language;
 use Termosalud\Web\Language\Domain\LanguageRepository;
 
@@ -12,16 +14,36 @@ final class EloquentLanguageRepository implements LanguageRepository
 {
     public function save(Language $language): void
     {
-        EloquentModel::updateOrCreate(
-            ['code' => $language->code()],
-            [
-                'name' => $language->name(),
-                'native_name' => $language->nativeName(),
-                'direction' => $language->direction(),
-                'active' => $language->isActive(),
-                'fallback_language' => $language->fallbackLanguage(),
-            ]
-        );
+        $data = $language->toPrimitives();
+        $model = EloquentModel::where('code', $data['code'])->first();
+
+        if (! $model) {
+            $model = new EloquentModel();
+            $model->code = $data['code'];
+        }
+
+        $model->name = $data['name'];
+        $model->native_name = $data['native_name'];
+        $model->direction = $data['direction'];
+        $model->active = $data['active'];
+        $model->fallback_language = $data['fallback_language'];
+
+        $model->save();
+    }
+
+    public function search(int $id): ?Language
+    {
+        $model = EloquentModel::find($id);
+
+        return $model ? $this->toDomain($model) : null;
+    }
+
+    public function remove(int $id): void
+    {
+        $model = EloquentModel::find($id);
+        if ($model) {
+            $model->forceDelete();
+        }
     }
 
     public function findByCode(string $code): ?Language
@@ -37,7 +59,7 @@ final class EloquentLanguageRepository implements LanguageRepository
 
         return $models->map(fn($m) => $this->toDomain($m))->toArray();
     }
-    public function searchByCriteria(\Dba\DddSkeleton\Shared\Domain\Criteria\Criteria $criteria): array
+    public function searchByCriteria(Criteria $criteria): array
     {
         $query = EloquentModel::query();
         $this->applyCriteria($query, $criteria);
@@ -45,12 +67,12 @@ final class EloquentLanguageRepository implements LanguageRepository
         return $query->get()->map(fn($m) => $this->toDomain($m))->toArray();
     }
 
-    public function countByCriteria(\Dba\DddSkeleton\Shared\Domain\Criteria\Criteria $criteria): int
+    public function countByCriteria(Criteria $criteria): int
     {
         $query = EloquentModel::query();
         
         // Create criteria without pagination for counting
-        $countCriteria = new \Dba\DddSkeleton\Shared\Domain\Criteria\Criteria(
+        $countCriteria = new Criteria(
             $criteria->filters(),
             $criteria->order(),
             null,
@@ -62,9 +84,9 @@ final class EloquentLanguageRepository implements LanguageRepository
         return $query->count();
     }
 
-    private function applyCriteria($query, \Dba\DddSkeleton\Shared\Domain\Criteria\Criteria $criteria): void
+    private function applyCriteria($query, Criteria $criteria): void
     {
-        $eloquentCriteria = \Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentCriteriaConverter::convert($criteria);
+        $eloquentCriteria = EloquentCriteriaConverter::convert($criteria);
         $criteriaList = is_array($eloquentCriteria) === false ? [$eloquentCriteria] : $eloquentCriteria;
 
         array_reduce($criteriaList, static function ($query, $criteria) {
@@ -76,14 +98,6 @@ final class EloquentLanguageRepository implements LanguageRepository
     }
     private function toDomain(EloquentModel $model): Language
     {
-        return new Language(
-            isset($model->id) ? (int) $model->id : null,
-            $model->code,
-            $model->name,
-            $model->native_name,
-            $model->direction,
-            $model->active,
-            $model->fallback_language
-        );
+        return Language::fromPrimitives($model->toArray());
     }
 }

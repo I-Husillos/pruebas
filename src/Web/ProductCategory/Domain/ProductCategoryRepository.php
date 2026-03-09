@@ -8,10 +8,14 @@ use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
 
 interface ProductCategoryRepository
 {
-    public function search(ProductCategoryId $id): ?ProductCategory;
+    public function save(ProductCategory $category): void;
 
     /** @return ProductCategory[] */
     public function searchByCriteria(Criteria $criteria): array;
 
     public function countByCriteria(Criteria $criteria): int;
+
+    public function search(int $id): ?ProductCategory;
+
+    public function remove(int $id): void;
 }

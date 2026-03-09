@@ -7,7 +7,8 @@ namespace App\Http\Controllers\API\V1\Treatment;
 use App\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
-use App\Models\Treatment;
+use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
+use Termosalud\Web\Treatment\Application\Delete\DeleteTreatmentCommand;
 
 #[OA\Tag(
     name: "Treatments",
@@ -15,6 +16,8 @@ use App\Models\Treatment;
 )]
 final class TreatmentDeleteController extends ApiController
 {
+    public function __construct(private readonly CommandBus $commandBus) {}
+
     #[OA\Delete(
         path: "/api/v1/treatments/{id}",
         tags: ["Treatments"],
@@ -28,8 +31,7 @@ final class TreatmentDeleteController extends ApiController
     #[OA\Response(response: 401, description: "No autenticado")]
     public function __invoke(int $id): JsonResponse
     {
-        $treatment = Treatment::findOrFail($id);
-        $treatment->delete();
+        $this->commandBus->dispatch(new DeleteTreatmentCommand($id));
 
         return $this->sendResponse([], 'Tratamiento eliminado exitosamente');
     }

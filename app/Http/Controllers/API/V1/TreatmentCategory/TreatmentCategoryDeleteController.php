@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\API\V1\TreatmentCategory;
 
 use App\Http\Controllers\ApiController;
+use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
-use App\Models\TreatmentCategory;
+use Termosalud\Web\TreatmentCategory\Application\Delete\DeleteTreatmentCategoryCommand;
 
 #[OA\Tag(
     name: "Treatment Categories",
@@ -15,6 +16,8 @@ use App\Models\TreatmentCategory;
 )]
 final class TreatmentCategoryDeleteController extends ApiController
 {
+    public function __construct(private readonly CommandBus $commandBus) {}
+
     #[OA\Delete(
         path: "/api/v1/treatment-categories/{id}",
         tags: ["Treatment Categories"],
@@ -28,8 +31,7 @@ final class TreatmentCategoryDeleteController extends ApiController
     #[OA\Response(response: 401, description: "No autenticado")]
     public function __invoke(int $id): JsonResponse
     {
-        $category = TreatmentCategory::findOrFail($id);
-        $category->delete();
+        $this->commandBus->dispatch(new DeleteTreatmentCategoryCommand($id));
 
         return $this->sendResponse([], 'Categoría de tratamiento eliminada exitosamente');
     }

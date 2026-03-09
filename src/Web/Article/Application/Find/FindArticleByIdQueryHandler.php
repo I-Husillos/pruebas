@@ -14,7 +14,7 @@ final class FindArticleByIdQueryHandler implements QueryHandler
 
     public function __invoke(FindArticleByIdQuery $query): ?ArticleResponse
     {
-        $article = $this->repository->findById((int) $query->id());
+        $article = $this->repository->search($query->id());
 
         return $article ? ArticleResponse::fromArticle($article) : null;
     }

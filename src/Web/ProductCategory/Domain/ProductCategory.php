@@ -22,7 +22,7 @@ final class ProductCategory extends AggregateRoot
         array $name,
         array $slug,
         ?array $description,
-        bool $published,
+        bool $active,
         int $sortOrder,
         ?string $createdAt = null,
         ?string $updatedAt = null
@@ -31,7 +31,7 @@ final class ProductCategory extends AggregateRoot
         $this->name = $name;
         $this->slug = $slug;
         $this->description = $description;
-        $this->active = $published;
+        $this->active = $active;
         $this->sortOrder = $sortOrder;
         $this->createdAt = $createdAt;
         $this->updatedAt = $updatedAt;

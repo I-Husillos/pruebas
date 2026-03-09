@@ -6,7 +6,6 @@ namespace Termosalud\Web\Product\Application\Update;
 
 use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandHandler;
 use Termosalud\Web\Product\Domain\Product;
-use Termosalud\Web\Product\Domain\ProductId;
 use Termosalud\Web\Product\Domain\ProductCode;
 
 final class UpdateProductCommandHandler implements CommandHandler
@@ -18,7 +17,7 @@ final class UpdateProductCommandHandler implements CommandHandler
     public function __invoke(UpdateProductCommand $command): void
     {
         $this->updater->__invoke(
-            new ProductId((int) $command->id()),
+            (int) $command->id(),
             new ProductCode($command->code()),
             $command->name(),
             $command->slug(),
@@ -26,7 +25,8 @@ final class UpdateProductCommandHandler implements CommandHandler
             $command->description(),
             $command->technicalSpecs(),
             $command->images(),
-            $command->category(),
+            $command->categoryId(),
+            $command->categoryName(),
             $command->tags(),
             $command->published(),
             $command->publishedAt(),

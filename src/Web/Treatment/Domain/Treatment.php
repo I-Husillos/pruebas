@@ -8,7 +8,7 @@ use Dba\DddSkeleton\Shared\Domain\Aggregate\AggregateRoot;
 
 final class Treatment extends AggregateRoot
 {
-    private TreatmentId $id;
+    private int $id;
 
     private array $name;
 
@@ -49,7 +49,7 @@ final class Treatment extends AggregateRoot
     private ?string $updatedAt;
 
     public function __construct(
-        TreatmentId $id,
+        int $id,
         array $name,
         array $slug,
         ?array $description,
@@ -93,7 +93,7 @@ final class Treatment extends AggregateRoot
     }
 
     public static function create(
-        TreatmentId $id,
+        int $id,
         array $name,
         array $slug,
         ?array $description = null,
@@ -137,7 +137,7 @@ final class Treatment extends AggregateRoot
     public static function fromPrimitives(array $data): self
     {
         return new self(
-            new TreatmentId((int) $data['id']),
+            (int) $data['id'],
             $data['name'] ?? [],
             $data['slug'] ?? [],
             $data['description'] ?? null,
@@ -163,7 +163,7 @@ final class Treatment extends AggregateRoot
     public function toPrimitives(): array
     {
         return [
-            'id' => $this->id->value(),
+            'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,

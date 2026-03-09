@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\API\V1\ProductCategory;
 
 use App\Http\Controllers\ApiController;
+use App\Http\Requests\Admin\ProductCategory\UpdateProductCategoryRequest;
+use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
-use Illuminate\Http\Request;
-use App\Models\ProductCategory;
+use Termosalud\Web\ProductCategory\Application\Update\UpdateProductCategoryCommand;
 
 #[OA\Tag(
     name: "Product Categories",
@@ -16,6 +17,8 @@ use App\Models\ProductCategory;
 )]
 final class ProductCategoryPutController extends ApiController
 {
+    public function __construct(private readonly CommandBus $commandBus) {}
+
     #[OA\Put(
         path: "/api/v1/product-categories/{id}",
         tags: ["Product Categories"],
@@ -27,25 +30,18 @@ final class ProductCategoryPutController extends ApiController
     #[OA\PathParameter(name: "id", description: "ID de ProductCategory", required: true, schema: new OA\Schema(type: "string"))]
     #[OA\Response(response: 200, description: "Éxito")]
     #[OA\Response(response: 401, description: "No autenticado")]
-    public function __invoke(Request $request, int $id): JsonResponse
+    public function __invoke(UpdateProductCategoryRequest $request, int $id): JsonResponse
     {
-        $category = ProductCategory::findOrFail($id);
+        $validated = $request->validated();
 
-        $validated = $request->validate([
-            'name' => 'required|array',
-            'name.es' => 'required|string|max:255',
-            'name.en' => 'nullable|string|max:255',
-            'slug' => 'required|array',
-            'slug.es' => 'required|string|max:255',
-            'slug.en' => 'nullable|string|max:255',
-            'description' => 'nullable|array',
-            'description.es' => 'nullable|string',
-            'description.en' => 'nullable|string',
-            'active' => 'boolean',
-            'sort_order' => 'integer',
-        ]);
-
-        $category->update($validated);
+        $this->commandBus->dispatch(new UpdateProductCategoryCommand(
+            $id,
+            $validated['name'],
+            $validated['slug'],
+            $validated['description'] ?? null,
+            (bool) ($validated['active'] ?? false),
+            (int) ($validated['sort_order'] ?? 0),
+        ));
 
         return $this->sendResponse([], 'Categoría de producto actualizada exitosamente');
     }

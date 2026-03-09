@@ -4,30 +4,41 @@ declare(strict_types=1);
 
 namespace Termosalud\Web\ProductCategory\Infrastructure\Persistence;
 
-use App\Models\ProductCategory as ProductCategoryEloquentModel;
+use App\Models\ProductCategory as EloquentModel;
 use Termosalud\Web\ProductCategory\Domain\ProductCategory;
 use Termosalud\Web\ProductCategory\Domain\ProductCategoryRepository;
-use Termosalud\Web\ProductCategory\Domain\ProductCategoryId;
 use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
 use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentRepository;
 use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentCriteriaConverter;
 
 final class EloquentProductCategoryRepository extends EloquentRepository implements ProductCategoryRepository
 {
-    public function __construct(ProductCategoryEloquentModel $model)
+    public function __construct(EloquentModel $model)
     {
         $this->model = $model;
     }
 
-    public function search(ProductCategoryId $id): ?ProductCategory
+    public function save(ProductCategory $category): void
     {
-        $model = $this->model->find($id->value());
+        $data = $category->toPrimitives();
 
-        if (! $model) {
-            return null;
+        $id = $data['id'] ?? null;
+        unset($data['id'], $data['created_at'], $data['updated_at']);
+
+        $model = ($id !== null && $id > 0) ? $this->model->find($id) : null;
+
+        if ($model) {
+            $model->update($data);
+
+            return;
         }
 
-        return ProductCategory::fromPrimitives($model->toArray());
+        $this->model->create($data);
+    }
+
+    public function remove(int $id): void
+    {
+        $this->model->destroy($id);
     }
 
     public function searchByCriteria(Criteria $criteria): array
@@ -36,10 +47,7 @@ final class EloquentProductCategoryRepository extends EloquentRepository impleme
         $query = $this->matching($eloquentCriteria);
         $models = $query->get();
 
-        return array_map(
-            fn($model) => ProductCategory::fromPrimitives($model->toArray()),
-            $models->toArray()
-        );
+        return collect($models)->map(fn($model) => $this->toDomain($model))->toArray();
     }
 
     public function countByCriteria(Criteria $criteria): int
@@ -56,5 +64,26 @@ final class EloquentProductCategoryRepository extends EloquentRepository impleme
         $query = $this->matching($eloquentCriteria);
 
         return $query->count();
+    }
+
+    public function search(int $id): ?ProductCategory
+    {
+        $model = $this->model->find($id);
+
+        return $model ? $this->toDomain($model) : null;
+    }
+
+    private function toDomain(EloquentModel $model): ProductCategory
+    {
+        return new ProductCategory(
+            $model->id,
+            $model->name,
+            $model->slug,
+            $model->description,
+            $model->active,
+            (int) $model->sort_order,
+            $model->created_at?->toDateTimeString(),
+            $model->updated_at?->toDateTimeString()
+        );
     }
 }

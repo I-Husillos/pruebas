@@ -503,7 +503,9 @@ const editItem = (item) => {
 
 // Helper function to get nested properties (e.g., 'category.name')
 const getNestedValue = (obj, path) => {
-    return path.split('.').reduce((acc, part) => acc?.[part], obj) || 'N/A';
+    const value = path.split('.').reduce((acc, part) => acc?.[part], obj);
+
+    return value ?? 'N/A';
 };
 
 // Expose methods for parent components

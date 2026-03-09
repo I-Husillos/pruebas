@@ -6,16 +6,18 @@ namespace App\Http\Controllers\Admin\Product;
 
 use App\Http\Controllers\Admin\BaseController;
 use Inertia\Response;
+use App\Models\ProductCategory;
+use App\Models\Market;
+use App\Models\Form;
 
 final class ProductCreateController extends BaseController
 {
     public function __invoke(): Response
     {
         return $this->render('Admin/Products/Create', [
-            'apiUrl' => route('api.v1.products.store'),
-            'categoriesUrl' => route('api.v1.product-categories.list'),
-            'formsUrl' => route('api.v1.forms.list'),
-            'marketsUrl' => route('api.v1.markets.list'),
+            'categories' => ProductCategory::all(['id', 'name']),
+            'markets'    => Market::where('active', true)->get(['id', 'code', 'name']),
+            'forms'      => Form::all(['id', 'name']),
         ]);
     }
 }

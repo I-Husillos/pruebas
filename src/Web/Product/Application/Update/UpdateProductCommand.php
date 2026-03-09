@@ -17,7 +17,8 @@ final class UpdateProductCommand implements Command
         private readonly ?array $description = null,
         private readonly ?array $technicalSpecs = null,
         private readonly ?array $images = null,
-        private readonly ?string $category = null,
+        private readonly ?int $categoryId = null,
+        private readonly ?array $categoryName = null,
         private readonly ?array $tags = null,
         private readonly ?bool $published = null,
         private readonly ?string $publishedAt = null,
@@ -66,9 +67,14 @@ final class UpdateProductCommand implements Command
         return $this->images;
     }
 
-    public function category(): ?string
+    public function categoryId(): ?int
     {
-        return $this->category;
+        return $this->categoryId;
+    }
+
+    public function categoryName(): ?array
+    {
+        return $this->categoryName;
     }
 
     public function tags(): ?array

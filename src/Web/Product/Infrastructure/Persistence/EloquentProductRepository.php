@@ -6,7 +6,6 @@ namespace Termosalud\Web\Product\Infrastructure\Persistence;
 
 use App\Models\Product as ProductEloquentModel;
 use Termosalud\Web\Product\Domain\Product;
-use Termosalud\Web\Product\Domain\ProductId;
 use Termosalud\Web\Product\Domain\ProductRepository;
 use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
 use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentRepository;
@@ -22,32 +21,24 @@ final class EloquentProductRepository extends EloquentRepository implements Prod
     public function save(Product $product): void
     {
         $data = $product->toPrimitives();
+        $id = $data['id'] ?? null;
 
-        $this->updateOrCreate(
-            ['id' => $data['id']],
-            $data
-        );
-    }
+        $model = $id ? $this->model->find($id) : null;
 
-    public function search(ProductId $id): ?Product
-    {
-        $model = $this->model->find($id->value());
+        if ($model) {
+            $model->update($data);
 
-        if (! $model) {
-            return null;
+            return;
         }
 
-        return Product::fromPrimitives($model->toArray());
+        $this->model->create($data);
     }
 
-    public function searchAll(): array
+    public function search(int $id): ?Product
     {
-        $models = $this->model::all();
+        $model = $this->model->find($id);
 
-        return array_map(
-            fn($model) => Product::fromPrimitives($model->toArray()),
-            $models->toArray()
-        );
+        return $model ? $this->toDomain($model) : null;
     }
 
     public function searchByCriteria(Criteria $criteria): array
@@ -56,10 +47,7 @@ final class EloquentProductRepository extends EloquentRepository implements Prod
         $query = $this->matching($eloquentCriteria);
         $models = $query->get();
 
-        return array_map(
-            fn($model) => Product::fromPrimitives($model->toArray()),
-            $models->toArray()
-        );
+        return collect($models)->map(fn($m) => $this->toDomain($m))->toArray();
     }
 
     public function countByCriteria(Criteria $criteria): int
@@ -78,8 +66,16 @@ final class EloquentProductRepository extends EloquentRepository implements Prod
         return $query->count();
     }
 
-    public function remove(ProductId $id): void
+    private function toDomain(ProductEloquentModel $model): Product
     {
-        $this->model->destroy($id->value());
+        return Product::fromPrimitives($model->toArray());
+    }
+
+    public function remove(int $id): void
+    {
+        $model = $this->model->find($id);
+        if ($model) {
+            $model->forceDelete();
+        }
     }
 }

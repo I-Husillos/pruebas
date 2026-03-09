@@ -14,6 +14,6 @@ final class ProductCategoryFinder
 
     public function __invoke(ProductCategoryId $id): ?ProductCategory
     {
-        return $this->repository->search($id);
+        return $this->repository->search($id->value());
     }
 }

@@ -28,6 +28,8 @@ class EloquentUserRepository implements UserRepository
         } else {
             $model = EloquentModel::create($data);
         }
+        
+        $model->load('roles');
 
         $model->load('roles');
 

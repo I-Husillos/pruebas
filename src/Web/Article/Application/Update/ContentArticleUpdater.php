@@ -20,6 +20,7 @@ final class ContentArticleUpdater
         ?array $content,
         ?string $author,
         bool $published,
+        ?int $categoryId,
         ?\DateTimeImmutable $publishedAt
     ): void
     {
@@ -32,6 +33,7 @@ final class ContentArticleUpdater
             $content,
             $author,
             $published,
+            $categoryId,
             $publishedAt
         );
         $this->repository->save($contentArticle);

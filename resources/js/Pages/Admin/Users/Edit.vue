@@ -12,27 +12,27 @@
             <div>
                 <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Nombre</label>
                 <div class="mt-2">
-                    <input v-model="form.name" type="text" name="name" id="name" autocomplete="name" :class="{'ring-red-300 focus:ring-red-600': form.errors.name, 'ring-gray-300 focus:ring-indigo-600': !form.errors.name}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
+                    <input v-model="form.name" type="text" name="name" id="name" autocomplete="name" :class="{'ring-red-300 focus:ring-red-600': errors.name, 'ring-gray-300 focus:ring-indigo-600': !errors.name}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
                 </div>
-                <div v-if="form.errors.name" class="mt-2 text-sm text-red-600">{{ form.errors.name }}</div>
+                <div v-if="errors.name" class="mt-2 text-sm text-red-600">{{ errors.name }}</div>
             </div>
 
             <!-- Email -->
             <div>
                 <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email</label>
                 <div class="mt-2">
-                    <input v-model="form.email" type="email" name="email" id="email" autocomplete="email" :class="{'ring-red-300 focus:ring-red-600': form.errors.email, 'ring-gray-300 focus:ring-indigo-600': !form.errors.email}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
+                    <input v-model="form.email" type="email" name="email" id="email" autocomplete="email" :class="{'ring-red-300 focus:ring-red-600': errors.email, 'ring-gray-300 focus:ring-indigo-600': !errors.email}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
                 </div>
-                <div v-if="form.errors.email" class="mt-2 text-sm text-red-600">{{ form.errors.email }}</div>
+                <div v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email }}</div>
             </div>
 
             <!-- Password -->
             <div>
                 <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Contraseña (Dejar en blanco para no cambiar)</label>
                 <div class="mt-2">
-                    <input v-model="form.password" type="password" name="password" id="password" :class="{'ring-red-300 focus:ring-red-600': form.errors.password, 'ring-gray-300 focus:ring-indigo-600': !form.errors.password}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
+                    <input v-model="form.password" type="password" name="password" id="password" :class="{'ring-red-300 focus:ring-red-600': errors.password, 'ring-gray-300 focus:ring-indigo-600': !errors.password}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
                 </div>
-                <div v-if="form.errors.password" class="mt-2 text-sm text-red-600">{{ form.errors.password }}</div>
+                <div v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</div>
             </div>
 
             <!-- Confirm Password -->
@@ -56,12 +56,12 @@
                         </div>
                     </div>
                 </div>
-                <div v-if="form.errors.roles" class="mt-2 text-sm text-red-600">{{ form.errors.roles }}</div>
+                <div v-if="errors.roles" class="mt-2 text-sm text-red-600">{{ errors.roles }}</div>
             </fieldset>
 
             <div class="flex items-center justify-end gap-x-6">
                 <Link :href="route('admin.users.index')" class="text-sm font-semibold leading-6 text-gray-900">Cancelar</Link>
-                <button type="submit" :disabled="form.processing" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Actualizar</button>
+                <button type="submit" :disabled="processing" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Actualizar</button>
             </div>
         </form>
     </AdminLayout>
@@ -69,22 +69,45 @@
 
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { useForm, Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import ApiClient from '@/api/client';
 
 const props = defineProps({
     user: Object,
     roles: Array,
 });
 
-const form = useForm({
+const { props: pageProps } = usePage();
+const api = new ApiClient(pageProps.apiToken);
+
+const form = ref({
     name: props.user.name,
     email: props.user.email,
     password: '',
     password_confirmation: '',
-    roles: props.user.roles,
+    roles: props.user.roles ?? [],
 });
 
-const submit = () => {
-    form.put(route('admin.users.update', props.user.id));
+const errors = ref({});
+const processing = ref(false);
+
+const submit = async () => {
+    processing.value = true;
+    errors.value = {};
+
+    try {
+        await api.put(`/api/v1/users/${props.user.id}`, form.value);
+        router.visit(route('admin.users.index'));
+    } catch (error) {
+        if (error.response?.status === 422) {
+            errors.value = error.response.data.errors ?? {};
+        } else {
+            errors.value = { general: 'Error al actualizar el usuario.' };
+        }
+    } finally {
+        processing.value = false;
+    }
 };
 </script>

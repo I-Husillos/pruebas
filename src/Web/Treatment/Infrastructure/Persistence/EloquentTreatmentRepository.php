@@ -6,7 +6,6 @@ namespace Termosalud\Web\Treatment\Infrastructure\Persistence;
 
 use App\Models\Treatment as TreatmentEloquentModel;
 use Termosalud\Web\Treatment\Domain\Treatment;
-use Termosalud\Web\Treatment\Domain\TreatmentId;
 use Termosalud\Web\Treatment\Domain\TreatmentRepository;
 use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
 use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentRepository;
@@ -23,15 +22,25 @@ final class EloquentTreatmentRepository extends EloquentRepository implements Tr
     {
         $data = $treatment->toPrimitives();
 
-        $this->updateOrCreate(
-            ['id' => $data['id']],
-            $data
-        );
+        if (empty($data['id'])) {
+            unset($data['id']);
+            $this->model->create($data);
+        } else {
+            $model = $this->model->find($data['id']);
+
+            if ($model) {
+                $model->update($data);
+
+                return;
+            }
+
+            $this->model->create($data);
+        }
     }
 
-    public function search(TreatmentId $id): ?Treatment
+    public function search(int $id): ?Treatment
     {
-        $model = $this->model->find($id->value());
+        $model = $this->model->find($id);
 
         if (! $model) {
             return null;
@@ -40,26 +49,13 @@ final class EloquentTreatmentRepository extends EloquentRepository implements Tr
         return Treatment::fromPrimitives($model->toArray());
     }
 
-    public function searchAll(): array
-    {
-        $models = $this->model::all();
-
-        return array_map(
-            fn($model) => Treatment::fromPrimitives($model->toArray()),
-            $models->toArray()
-        );
-    }
-
     public function searchByCriteria(Criteria $criteria): array
     {
         $eloquentCriteria = EloquentCriteriaConverter::convert($criteria);
         $query = $this->matching($eloquentCriteria);
         $models = $query->get();
 
-        return array_map(
-            fn($model) => Treatment::fromPrimitives($model->toArray()),
-            $models->toArray()
-        );
+        return collect($models)->map(fn($m) => $this->toDomain($m))->toArray();
     }
 
     public function countByCriteria(Criteria $criteria): int
@@ -77,9 +73,17 @@ final class EloquentTreatmentRepository extends EloquentRepository implements Tr
 
         return $query->count();
     }
-
-    public function remove(TreatmentId $id): void
+    public function toDomain(TreatmentEloquentModel $model): Treatment
     {
-        $this->model->destroy($id->value());
+        return Treatment::fromPrimitives($model->toArray());
+    }
+
+
+    public function remove(int $id): void
+    {
+        $model = $this->model->find($id);
+        if ($model) {
+            $model->forceDelete();
+        }
     }
 }

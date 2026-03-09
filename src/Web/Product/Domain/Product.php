@@ -8,7 +8,7 @@ use Dba\DddSkeleton\Shared\Domain\Aggregate\AggregateRoot;
 
 final class Product extends AggregateRoot
 {
-    private ProductId $id;
+    private int $id;
 
     private ProductCode $code;
 
@@ -24,7 +24,9 @@ final class Product extends AggregateRoot
 
     private ?array $images;
 
-    private ?string $category;
+    private ?int $categoryId;
+
+    private ?array $categoryName;
 
     private ?array $tags;
 
@@ -43,7 +45,7 @@ final class Product extends AggregateRoot
     private ?string $updatedAt;
 
     public function __construct(
-        ProductId $id,
+        int $id,
         ProductCode $code,
         array $name,
         array $slug,
@@ -51,7 +53,8 @@ final class Product extends AggregateRoot
         ?array $description,
         ?array $technicalSpecs,
         ?array $images,
-        ?string $category,
+        ?int $categoryId,
+        ?array $categoryName,
         ?array $tags,
         bool $published,
         ?string $publishedAt,
@@ -69,7 +72,8 @@ final class Product extends AggregateRoot
         $this->description = $description;
         $this->technicalSpecs = $technicalSpecs;
         $this->images = $images;
-        $this->category = $category;
+        $this->categoryId = $categoryId;
+        $this->categoryName = $categoryName;
         $this->tags = $tags;
         $this->published = $published;
         $this->publishedAt = $publishedAt;
@@ -81,7 +85,7 @@ final class Product extends AggregateRoot
     }
 
     public static function create(
-        ProductId $id,
+        int $id,
         ProductCode $code,
         array $name,
         array $slug,
@@ -89,7 +93,8 @@ final class Product extends AggregateRoot
         ?array $description = null,
         ?array $technicalSpecs = null,
         ?array $images = null,
-        ?string $category = null,
+        ?int $categoryId = null,
+        ?array $categoryName = null,
         ?array $tags = null,
         bool $published = false,
         ?string $publishedAt = null,
@@ -106,7 +111,8 @@ final class Product extends AggregateRoot
             $description,
             $technicalSpecs,
             $images,
-            $category,
+            $categoryId,
+            $categoryName,
             $tags,
             $published,
             $publishedAt,
@@ -119,7 +125,7 @@ final class Product extends AggregateRoot
     public static function fromPrimitives(array $data): self
     {
         return new self(
-            new ProductId((int) $data['id']),
+            (int) $data['id'],
             new ProductCode($data['code']),
             $data['name'],
             $data['slug'],
@@ -127,7 +133,10 @@ final class Product extends AggregateRoot
             $data['description'] ?? null,
             $data['technical_specs'] ?? null,
             $data['images'] ?? null,
-            $data['category'] ?? null,
+            isset($data['category_id'])
+                ? (int) $data['category_id']
+                : (isset($data['category']) ? (int) $data['category'] : null),
+            $data['category_name'] ?? null,
             $data['tags'] ?? null,
             (bool) ($data['published'] ?? false),
             $data['published_at'] ?? null,
@@ -142,7 +151,7 @@ final class Product extends AggregateRoot
     public function toPrimitives(): array
     {
         return [
-            'id' => $this->id->value(),
+            'id' => $this->id,
             'code' => $this->code->value(),
             'name' => $this->name,
             'slug' => $this->slug,
@@ -150,7 +159,8 @@ final class Product extends AggregateRoot
             'description' => $this->description,
             'technical_specs' => $this->technicalSpecs,
             'images' => $this->images,
-            'category' => $this->category,
+            'category_id' => $this->categoryId,
+            'category_name' => $this->categoryName,
             'tags' => $this->tags,
             'published' => $this->published,
             'published_at' => $this->publishedAt,

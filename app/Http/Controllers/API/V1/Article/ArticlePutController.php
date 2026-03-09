@@ -7,8 +7,9 @@ namespace App\Http\Controllers\API\V1\Article;
 use App\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
-use Illuminate\Http\Request;
-use App\Models\ContentArticle;
+use App\Http\Requests\Admin\Article\UpdateArticleRequest;
+use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
+use Termosalud\Web\Article\Application\Update\UpdateContentArticleCommand;
 
 #[OA\Tag(
     name: "Articles",
@@ -16,6 +17,8 @@ use App\Models\ContentArticle;
 )]
 final class ArticlePutController extends ApiController
 {
+    public function __construct(private readonly CommandBus $commandBus) {}
+
     #[OA\Put(
         path: "/api/v1/articles/{id}",
         tags: ["Articles"],
@@ -27,25 +30,25 @@ final class ArticlePutController extends ApiController
     #[OA\PathParameter(name: "id", description: "ID de Article", required: true, schema: new OA\Schema(type: "string"))]
     #[OA\Response(response: 200, description: "Éxito")]
     #[OA\Response(response: 401, description: "No autenticado")]
-    public function __invoke(Request $request, int $id): JsonResponse
+    public function __invoke(UpdateArticleRequest $request, int $id): JsonResponse
     {
-        $article = ContentArticle::findOrFail($id);
+        $validated = $request->validated();
+        $publishedAt = isset($validated['published_at'])
+            ? new \DateTimeImmutable((string) $validated['published_at'])
+            : null;
 
-        $validated = $request->validate([
-            'type' => 'required|in:blog,news,press',
-            'title' => 'required|array',
-            'title.es' => 'required|string|max:255',
-            'slug' => 'required|array',
-            'slug.es' => 'required|string|max:255',
-            'excerpt' => 'nullable|array',
-            'content' => 'nullable|array',
-            'published' => 'boolean',
-            'published_at' => 'nullable|date',
-            'category_id' => 'nullable|exists:article_categories,id',
-            'featured_image' => 'nullable|array',
-        ]);
-
-        $article->update($validated);
+        $this->commandBus->dispatch(new UpdateContentArticleCommand(
+            $id,
+            $validated['type'] ?? null,
+            $validated['title'] ?? null,
+            $validated['slug'] ?? null,
+            $validated['excerpt'] ?? null,
+            $validated['content'] ?? null,
+            $validated['author'] ?? 'admin',
+            (bool) ($validated['published'] ?? false),
+            isset($validated['category_id']) ? (int) $validated['category_id'] : null,
+            $publishedAt
+        ));
 
         return $this->sendResponse([], 'Artículo actualizado exitosamente');
     }

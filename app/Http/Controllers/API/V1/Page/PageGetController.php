@@ -7,8 +7,8 @@ namespace App\Http\Controllers\API\V1\Page;
 use App\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 use Dba\DddSkeleton\Shared\Domain\Bus\Query\QueryBus;
-use Termosalud\Web\Page\Application\ByIdQuery;
 use OpenApi\Attributes as OA;
+use Termosalud\Web\Page\Application\Find\FindPageByIdQuery;
 
 #[OA\Tag(
     name: "Content",

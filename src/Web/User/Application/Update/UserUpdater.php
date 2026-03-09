@@ -13,6 +13,8 @@ final class UserUpdater
 
     public function __invoke(int $id, string $name, string $email, ?string $password, array $roles = []): void
     {
+
+        \Illuminate\Support\Facades\Log::info('UserUpdater id: ' . $id . ' type: ' . gettype($id));
         $user = new User($id, $name, $email);
         $this->repository->save($user, $password);
 

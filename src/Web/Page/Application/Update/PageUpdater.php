@@ -22,7 +22,7 @@ final class PageUpdater
         ?string $seoDescription,
         ?array $blocks
     ): void {
-        $existingPage = $this->repository->findById($id);
+        $existingPage = $this->repository->search($id);
         if (! $existingPage) {
             throw new Exception('Page not found');
         }

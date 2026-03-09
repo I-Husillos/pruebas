@@ -47,19 +47,19 @@
           <div v-show="activeLang === 'es'" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Nombre del Tratamiento (ES)</label>
-              <input v-model="form.name.es" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors['name.es']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required />
-              <p v-if="form.errors['name.es']" class="mt-1 text-sm text-red-600">{{ form.errors['name.es'] }}</p>
+              <input v-model="form.name.es" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors['name.es']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required />
+              <p v-if="errors['name.es']" class="mt-1 text-sm text-red-600">{{ errors['name.es'] }}</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Slug (ES)</label>
-              <input v-model="form.slug.es" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors['slug.es']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-500" />
-               <p v-if="form.errors['slug.es']" class="mt-1 text-sm text-red-600">{{ form.errors['slug.es'] }}</p>
+              <input v-model="form.slug.es" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors['slug.es']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-500" />
+               <p v-if="errors['slug.es']" class="mt-1 text-sm text-red-600">{{ errors['slug.es'] }}</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Descripción detallada (ES)</label>
               <div class="mt-1">
                 <Wysiwyg v-model="form.description.es" />
-                 <p v-if="form.errors['description.es']" class="mt-1 text-sm text-red-600">{{ form.errors['description.es'] }}</p>
+                 <p v-if="errors['description.es']" class="mt-1 text-sm text-red-600">{{ errors['description.es'] }}</p>
               </div>
             </div>
           </div>
@@ -67,19 +67,19 @@
           <div v-show="activeLang === 'en'" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Treatment Name (EN)</label>
-              <input v-model="form.name.en" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors['name.en']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-               <p v-if="form.errors['name.en']" class="mt-1 text-sm text-red-600">{{ form.errors['name.en'] }}</p>
+              <input v-model="form.name.en" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors['name.en']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+               <p v-if="errors['name.en']" class="mt-1 text-sm text-red-600">{{ errors['name.en'] }}</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Slug (EN)</label>
-              <input v-model="form.slug.en" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors['slug.en']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-500" />
-               <p v-if="form.errors['slug.en']" class="mt-1 text-sm text-red-600">{{ form.errors['slug.en'] }}</p>
+              <input v-model="form.slug.en" type="text" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors['slug.en']}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-500" />
+               <p v-if="errors['slug.en']" class="mt-1 text-sm text-red-600">{{ errors['slug.en'] }}</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Detailed Description (EN)</label>
               <div class="mt-1">
                 <Wysiwyg v-model="form.description.en" />
-                 <p v-if="form.errors['description.en']" class="mt-1 text-sm text-red-600">{{ form.errors['description.en'] }}</p>
+                 <p v-if="errors['description.en']" class="mt-1 text-sm text-red-600">{{ errors['description.en'] }}</p>
               </div>
             </div>
           </div>
@@ -103,13 +103,13 @@
           <!-- Category Selector -->
           <div class="mt-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
-            <select v-model="form.category_id" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors.category_id}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <select v-model="form.category_id" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.category_id}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
               <option :value="null">Sin categoría</option>
               <option v-for="category in categories" :key="category.id" :value="category.id">
                 {{ category.name?.es || category.name?.en || 'Sin nombre' }}
               </option>
             </select>
-             <p v-if="form.errors.category_id" class="mt-1 text-sm text-red-600">{{ form.errors.category_id }}</p>
+             <p v-if="errors.category_id" class="mt-1 text-sm text-red-600">{{ errors.category_id }}</p>
           </div>
 
           <!-- Markets Selector -->
@@ -127,7 +127,7 @@
                 </label>
               </div>
             </div>
-            <p v-if="form.errors.available_markets" class="mt-1 text-sm text-red-600">{{ form.errors.available_markets }}</p>
+            <p v-if="errors.available_markets" class="mt-1 text-sm text-red-600">{{ errors.available_markets }}</p>
           </div>
         </div>
 
@@ -144,8 +144,8 @@
           <Link :href="route('admin.treatments.index')" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors">
             Cancelar
           </Link>
-          <button type="submit" :disabled="form.processing" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-6 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors">
-            <span v-if="form.processing">Actualizando...</span>
+          <button type="submit" :disabled="processing" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-6 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors">
+            <span v-if="processing">Actualizando...</span>
             <span v-else>Actualizar Tratamiento</span>
           </button>
         </div>
@@ -158,8 +158,10 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue';
 import Wysiwyg from '@/Components/Wysiwyg.vue';
-import { useForm, Link } from '@inertiajs/vue3';
+import BlockEditor from '@/Components/Admin/BlockEditor.vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import ApiClient from '@/api/client';
 
 const props = defineProps({
   treatment: Object,
@@ -173,20 +175,22 @@ const breadcrumbItems = [
   { label: 'Editar' }
 ];
 
+const api = new ApiClient(usePage().props.apiToken);
+
 const activeLang = ref('es');
 
-const form = useForm({
+const form = ref({
   name: { 
-    es: props.treatment.name.es || '', 
-    en: props.treatment.name.en || '' 
+    es: props.treatment.name?.es || '', 
+    en: props.treatment.name?.en || '' 
   },
   slug: { 
-    es: props.treatment.slug.es || '', 
-    en: props.treatment.slug.en || '' 
+    es: props.treatment.slug?.es || '', 
+    en: props.treatment.slug?.en || '' 
   },
   description: { 
-    es: props.treatment.description.es || '', 
-    en: props.treatment.description.en || '' 
+    es: props.treatment.description?.es || '', 
+    en: props.treatment.description?.en || '' 
   },
   sort_order: props.treatment.sort_order,
   published: props.treatment.published,
@@ -195,7 +199,24 @@ const form = useForm({
   blocks_json: props.treatment.blocks_json || [],
 });
 
-const submit = () => {
-  form.put(route('admin.treatments.update', props.treatment.id));
+const errors = ref({});
+const processing = ref(false);
+
+const submit = async () => {
+    processing.value = true;
+    errors.value = {};
+
+    try {
+        await api.put(`/api/v1/treatments/${props.treatment.id}`, form.value);
+        router.visit(route('admin.treatments.index'));
+    } catch (error) {
+        if (error.response?.status === 422) {
+            errors.value = error.response.data.errors ?? {};
+        } else {
+            errors.value = { general: 'Error al actualizar el tratamiento.' };
+        }
+    } finally {
+        processing.value = false;
+    }
 };
 </script>

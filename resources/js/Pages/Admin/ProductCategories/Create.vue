@@ -22,13 +22,13 @@
           <div v-show="activeLang === 'es'" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Nombre (ES)</label>
-              <input v-model="form.name.es" type="text" :class="{'ring-red-300 focus:ring-red-600': form.errors['name.es'], 'ring-gray-300 focus:ring-indigo-600': !form.errors['name.es']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" required />
-              <div v-if="form.errors['name.es']" class="mt-1 text-sm text-red-600">{{ form.errors['name.es'] }}</div>
+              <input v-model="form.name.es" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['name.es'], 'ring-gray-300 focus:ring-indigo-600': !errors['name.es']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" required />
+              <div v-if="errors['name.es']" class="mt-1 text-sm text-red-600">{{ errors['name.es'] }}</div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Slug (ES)</label>
-              <input v-model="form.slug.es" type="text" :class="{'ring-red-300 focus:ring-red-600': form.errors['slug.es'], 'ring-gray-300 focus:ring-indigo-600': !form.errors['slug.es']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" required />
-              <div v-if="form.errors['slug.es']" class="mt-1 text-sm text-red-600">{{ form.errors['slug.es'] }}</div>
+              <input v-model="form.slug.es" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['slug.es'], 'ring-gray-300 focus:ring-indigo-600': !errors['slug.es']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" required />
+              <div v-if="errors['slug.es']" class="mt-1 text-sm text-red-600">{{ errors['slug.es'] }}</div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Descripción (ES)</label>
@@ -39,13 +39,13 @@
           <div v-show="activeLang === 'en'" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Name (EN)</label>
-              <input v-model="form.name.en" type="text" :class="{'ring-red-300 focus:ring-red-600': form.errors['name.en'], 'ring-gray-300 focus:ring-indigo-600': !form.errors['name.en']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" />
-              <div v-if="form.errors['name.en']" class="mt-1 text-sm text-red-600">{{ form.errors['name.en'] }}</div>
+              <input v-model="form.name.en" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['name.en'], 'ring-gray-300 focus:ring-indigo-600': !errors['name.en']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" />
+              <div v-if="errors['name.en']" class="mt-1 text-sm text-red-600">{{ errors['name.en'] }}</div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Slug (EN)</label>
-              <input v-model="form.slug.en" type="text" :class="{'ring-red-300 focus:ring-red-600': form.errors['slug.en'], 'ring-gray-300 focus:ring-indigo-600': !form.errors['slug.en']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" />
-              <div v-if="form.errors['slug.en']" class="mt-1 text-sm text-red-600">{{ form.errors['slug.en'] }}</div>
+              <input v-model="form.slug.en" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['slug.en'], 'ring-gray-300 focus:ring-indigo-600': !errors['slug.en']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" />
+              <div v-if="errors['slug.en']" class="mt-1 text-sm text-red-600">{{ errors['slug.en'] }}</div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Description (EN)</label>
@@ -74,7 +74,7 @@
           <Link :href="route('admin.product-categories.index')" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
             Cancelar
           </Link>
-          <button type="submit" :disabled="form.processing" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
+          <button type="submit" :disabled="processing" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
             Crear Categoría
           </button>
         </div>
@@ -86,8 +86,11 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue';
-import { useForm, Link } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import ApiClient from '@/api/client';
+
+const api = new ApiClient(usePage().props.apiToken);
 
 const activeLang = ref('es');
 
@@ -96,7 +99,7 @@ const breadcrumbItems = [
   { label: 'Crear' }
 ];
 
-const form = useForm({
+const form = ref({
   name: { es: '', en: '' },
   slug: { es: '', en: '' },
   description: { es: '', en: '' },
@@ -104,7 +107,23 @@ const form = useForm({
   sort_order: 0,
 });
 
-const submit = () => {
-  form.post(route('admin.product-categories.store'));
+const errors = ref({});
+const processing = ref(false);
+
+const submit = async() => {
+  console.log('Datos que se envían:', JSON.stringify(form.value));
+  processing.value = true;
+  errors.value = {};
+  try {
+        await api.post('/api/v1/product-categories', form.value);
+        router.visit(route('admin.product-categories.index'));
+    } catch (e) {
+      console.log('Error completo:', e.response?.data);
+        errors.value = e.response?.status === 422
+            ? e.response.data.errors
+            : { general: 'Error inesperado.' };
+    } finally {
+        processing.value = false;
+    }
 };
 </script>

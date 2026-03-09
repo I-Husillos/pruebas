@@ -14,7 +14,7 @@ final class FindArticleCategoryByIdQueryHandler implements QueryHandler
 
     public function __invoke(FindArticleCategoryByIdQuery $query): ?ArticleCategoryResponse
     {
-        $articleCategory = $this->repository->findById((int) $query->id());
+        $articleCategory = $this->repository->search($query->id());
 
         return $articleCategory ? ArticleCategoryResponse::fromCategory($articleCategory) : null;
     }

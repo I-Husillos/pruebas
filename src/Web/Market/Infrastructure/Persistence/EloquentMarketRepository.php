@@ -15,17 +15,37 @@ final class EloquentMarketRepository implements MarketRepository
 {
     public function save(Market $market): void
     {
-        EloquentModel::updateOrCreate(
-            ['code' => $market->code()->value()],
-            [
-                'name' => $market->name(),
-                'region' => $market->region(),
-                'default_language' => $market->defaultLanguage(),
-                'enabled_languages' => json_encode($market->enabledLanguages()),
-                'active' => $market->isActive(),
-                'priority' => $market->priority(),
-            ]
-        );
+        $data = $market->toPrimitives();
+        $model = EloquentModel::where('code', $data['code'])->first();
+
+        if (! $model) {
+            $model = new EloquentModel();
+            $model->code = $data['code'];
+        }
+
+        $model->name = $data['name'];
+        $model->region = $data['region'];
+        $model->default_language = $data['default_language'];
+        $model->enabled_languages = json_encode($data['enabled_languages']);
+        $model->active = $data['active'];
+        $model->priority = $data['priority'];
+
+        $model->save();
+    }
+
+    public function search(int $id): ?Market
+    {
+        $model = EloquentModel::find($id);
+
+        return $model ? $this->toDomain($model) : null;
+    }
+
+    public function remove(int $id): void
+    {
+        $model = EloquentModel::find($id);
+        if ($model) {
+            $model->forceDelete();
+        }
     }
 
     public function findByCode(MarketCode $code): ?Market
@@ -69,16 +89,7 @@ final class EloquentMarketRepository implements MarketRepository
 
     private function toDomain(EloquentModel $model): Market
     {
-        return new Market(
-            isset($model->id) ? (int) $model->id : null,
-            new MarketCode($model->code),
-            $model->name,
-            $model->region,
-            $model->default_language,
-            is_string($model->enabled_languages) ? json_decode($model->enabled_languages, true) : ($model->enabled_languages ?? []),
-            (bool) $model->active,
-            (int) $model->priority
-        );
+        return Market::fromPrimitives($model->toArray());
     }
 
     private function matching($criteria)

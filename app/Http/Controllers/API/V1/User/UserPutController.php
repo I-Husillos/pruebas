@@ -27,11 +27,21 @@ final class UserPutController extends ApiController
         operationId: "updateUser",
         security: [["bearerAuth" => []]]
     )]
-    #[OA\PathParameter(name: "id", description: "ID de User", required: true, schema: new OA\Schema(type: "string"))]
+    #[OA\PathParameter(name: "id", description: "ID de User", required: true, schema: new OA\Schema(type: "integer"))]
     #[OA\Response(response: 200, description: "Éxito")]
     #[OA\Response(response: 401, description: "No autenticado")]
-    public function __invoke(Request $request, int $id): JsonResponse
+    public function __invoke(Request $request, string $id): JsonResponse
     {
+        \Illuminate\Support\Facades\Log::info('PUT request', [
+            'route_id' => $id,
+            'request_all' => $request->all(),
+            'url' => $request->fullUrl(),
+        ]);
+
+        if (!ctype_digit($id)) {
+            return $this->sendError('ID inválido', [], 422);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
@@ -40,7 +50,7 @@ final class UserPutController extends ApiController
         ]);
 
         $this->commandBus->dispatch(new UpdateUserCommand(
-            $id,
+            (int)$id,
             $request->name,
             $request->email,
             $request->password,

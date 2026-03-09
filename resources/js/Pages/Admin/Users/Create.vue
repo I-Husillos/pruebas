@@ -8,7 +8,10 @@
 
         <form @submit.prevent="submit" class="mt-8 space-y-6 max-w-2xl bg-white p-6 rounded-lg shadow">
 
+<<<<<<< HEAD
             <!-- Nombre -->
+=======
+>>>>>>> 60cdbaf (si)
             <div>
                 <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Nombre</label>
                 <div class="mt-2">
@@ -19,7 +22,6 @@
                 <div v-if="errors.name" class="mt-2 text-sm text-red-600">{{ errors.name[0] }}</div>
             </div>
 
-            <!-- Email -->
             <div>
                 <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email</label>
                 <div class="mt-2">
@@ -30,7 +32,10 @@
                 <div v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email[0] }}</div>
             </div>
 
+<<<<<<< HEAD
             <!-- Contraseña -->
+=======
+>>>>>>> 60cdbaf (si)
             <div>
                 <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
                 <div class="mt-2">
@@ -41,7 +46,10 @@
                 <div v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password[0] }}</div>
             </div>
 
+<<<<<<< HEAD
             <!-- Confirmar Contraseña -->
+=======
+>>>>>>> 60cdbaf (si)
             <div>
                 <label for="password_confirmation" class="block text-sm font-medium leading-6 text-gray-900">Confirmar Contraseña</label>
                 <div class="mt-2">
@@ -50,7 +58,6 @@
                 </div>
             </div>
 
-            <!-- Roles -->
             <fieldset>
                 <legend class="text-sm font-semibold leading-6 text-gray-900">Roles</legend>
                 <div class="mt-4 space-y-3">
@@ -67,7 +74,10 @@
                 <div v-if="errors.roles" class="mt-2 text-sm text-red-600">{{ errors.roles[0] }}</div>
             </fieldset>
 
+<<<<<<< HEAD
             <!-- Error general (por si la API devuelve algo inesperado) -->
+=======
+>>>>>>> 60cdbaf (si)
             <div v-if="errors.general" class="rounded-md bg-red-50 p-4">
                 <p class="text-sm text-red-700">{{ errors.general }}</p>
             </div>
