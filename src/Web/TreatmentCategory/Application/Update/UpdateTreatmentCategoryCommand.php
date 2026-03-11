@@ -10,40 +10,25 @@ final class UpdateTreatmentCategoryCommand implements Command
 {
     public function __construct(
         private readonly int $id,
-        private readonly array $name,
-        private readonly array $slug,
-        private readonly ?array $description,
-        private readonly bool $active,
-        private readonly int $sortOrder,
+        private readonly string $status,
+        private readonly int $order,
+        private readonly array $translations
     ) {}
 
     public function id(): int
     {
         return $this->id;
     }
-
-    public function name(): array
+    public function status(): string
     {
-        return $this->name;
+        return $this->status;
     }
-
-    public function slug(): array
+    public function order(): int
     {
-        return $this->slug;
+        return $this->order;
     }
-
-    public function description(): ?array
+    public function translations(): array
     {
-        return $this->description;
-    }
-
-    public function active(): bool
-    {
-        return $this->active;
-    }
-
-    public function sortOrder(): int
-    {
-        return $this->sortOrder;
+        return $this->translations;
     }
 }

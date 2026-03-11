@@ -3,26 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TreatmentCategory extends Model
 {
     protected $fillable = [
-        'name',
-        'slug',
-        'description',
-        'active',
-        'sort_order',
+        'status',
+        'order',
     ];
 
     protected $casts = [
-        'name' => 'array',
-        'slug' => 'array',
-        'description' => 'array',
-        'active' => 'boolean',
+        'order' => 'integer',
     ];
 
-    public function treatments()
+    public function treatments(): HasMany
     {
-        return $this->hasMany(Treatment::class, 'category_id');
+        return $this->hasMany(Treatment::class, 'treatment_category_id');
+    }
+
+    public function translations(): HasMany
+    {
+        return $this->hasMany(TreatmentCategoryTranslation::class, 'treatment_category_id');
     }
 }

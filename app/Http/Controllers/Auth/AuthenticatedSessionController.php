@@ -33,12 +33,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $user = Auth::user();
-
-        $user->tokens()->delete();
-
-        $user->createToken('web-session');
-
         return redirect()->intended(route('admin.dashboard', absolute: false));
     }
 

@@ -13,13 +13,11 @@ final class ArticleCategoryUpdater
 
     public function __invoke(
         int $id,
-        array $name,
-        array $slug,
-        ?array $description,
-        bool $active,
-        int $sortOrder
+        string $status,
+        int $order,
+        array $translations
     ): void {
-        $category = new ArticleCategory($id, $name, $slug, $description, $active, $sortOrder);
+        $category = new ArticleCategory($id, $status, $order, $translations);
 
         $this->repository->save($category);
     }

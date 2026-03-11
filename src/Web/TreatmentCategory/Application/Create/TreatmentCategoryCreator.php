@@ -12,14 +12,11 @@ final class TreatmentCategoryCreator
     public function __construct(private readonly TreatmentCategoryRepository $repository) {}
 
     public function __invoke(
-        int $id,
-        array $name,
-        array $slug,
-        ?array $description,
-        bool $active,
-        int $sortOrder
+        string $status,
+        int $order,
+        array $translations
     ): void {
-        $category = new TreatmentCategory($id, $name, $slug, $description, $active, $sortOrder);
+        $category = new TreatmentCategory(0, $status, $order, $translations);
 
         $this->repository->save($category);
     }

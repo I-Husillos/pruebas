@@ -12,6 +12,10 @@ final class CreateArticleCategoryCommandHandler implements CommandHandler
 
     public function __invoke(CreateArticleCategoryCommand $command): void
     {
-        $this->creator->__invoke($command->id(), $command->name(), $command->slug(), $command->description(), $command->active(), $command->sortOrder());
+        $this->creator->__invoke(
+            $command->status(),
+            $command->order(),
+            $command->translations()
+        );
     }
 }

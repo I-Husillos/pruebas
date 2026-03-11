@@ -22,8 +22,8 @@
           <div v-show="activeLang === 'es'" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Nombre (ES)</label>
-              <input v-model="form.name.es" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['name.es'], 'ring-gray-300 focus:ring-indigo-600': !errors['name.es']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" required />
-              <div v-if="errors['name.es']" class="mt-1 text-sm text-red-600">{{ errors['name.es'] }}</div>
+              <input v-model="form.title.es" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['title.es'], 'ring-gray-300 focus:ring-indigo-600': !errors['title.es']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" required />
+              <div v-if="errors['title.es']" class="mt-1 text-sm text-red-600">{{ errors['title.es'] }}</div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Slug (ES)</label>
@@ -39,8 +39,8 @@
           <div v-show="activeLang === 'en'" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Name (EN)</label>
-              <input v-model="form.name.en" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['name.en'], 'ring-gray-300 focus:ring-indigo-600': !errors['name.en']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" />
-              <div v-if="errors['name.en']" class="mt-1 text-sm text-red-600">{{ errors['name.en'] }}</div>
+              <input v-model="form.title.en" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['title.en'], 'ring-gray-300 focus:ring-indigo-600': !errors['title.en']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" />
+              <div v-if="errors['title.en']" class="mt-1 text-sm text-red-600">{{ errors['title.en'] }}</div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Slug (EN)</label>
@@ -58,10 +58,6 @@
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold text-gray-900 mb-6">Configuración</h3>
           <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Orden</label>
-              <input v-model.number="form.sort_order" type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-            </div>
             <div class="flex items-center">
               <input v-model="form.active" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600" />
               <label class="ml-3 text-sm font-medium text-gray-900">Categoría Activa</label>
@@ -105,11 +101,20 @@ const breadcrumbItems = [
 ];
 
 const form = ref({
-  name: props.category.name || { es: '', en: '' },
-  slug: props.category.slug || { es: '', en: '' },
-  description: props.category.description || { es: '', en: '' },
-  active: props.category.active,
-  sort_order: props.category.sort_order,
+  title: {
+    es: props.category?.translations?.find((t) => Number(t.language_id) === 1)?.title || '',
+    en: props.category?.translations?.find((t) => Number(t.language_id) === 2)?.title || '',
+  },
+  slug: {
+    es: props.category?.translations?.find((t) => Number(t.language_id) === 1)?.slug || '',
+    en: props.category?.translations?.find((t) => Number(t.language_id) === 2)?.slug || '',
+  },
+  description: {
+    es: props.category?.translations?.find((t) => Number(t.language_id) === 1)?.description || '',
+    en: props.category?.translations?.find((t) => Number(t.language_id) === 2)?.description || '',
+  },
+  active: props.category?.status === 'active',
+  sort_order: Number(props.category?.order ?? 0),
 });
 
 const errors = ref({});
@@ -121,7 +126,26 @@ const submit = async () => {
     errors.value = {};
 
     try {
-        await api.put(`/api/v1/treatment-categories/${props.category.id}`, form.value);
+        await api.put(`/api/v1/treatment-categories/${props.category.id}`, {
+          status: form.value.active ? 'active' : 'inactive',
+          order: Number(form.value.sort_order ?? 0),
+          translations: [
+            ...(form.value.title.es?.trim() && form.value.slug.es?.trim() ? [{
+              language_id: 1,
+              title: form.value.title.es.trim(),
+              slug: form.value.slug.es.trim(),
+              description: form.value.description.es?.trim() || null,
+              seo_metadata: null,
+            }] : []),
+            ...(form.value.title.en?.trim() && form.value.slug.en?.trim() ? [{
+              language_id: 2,
+              title: form.value.title.en.trim(),
+              slug: form.value.slug.en.trim(),
+              description: form.value.description.en?.trim() || null,
+              seo_metadata: null,
+            }] : []),
+          ],
+        });
         router.visit(route('admin.treatment-categories.index'));
     } catch (error) {
         if (error.response?.status === 422) {

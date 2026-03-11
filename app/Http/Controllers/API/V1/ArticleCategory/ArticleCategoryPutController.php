@@ -36,11 +36,9 @@ final class ArticleCategoryPutController extends ApiController
 
         $this->commandBus->dispatch(new UpdateArticleCategoryCommand(
             $id,
-            $validated['name'],
-            $validated['slug'],
-            $validated['description'] ?? null,
-            (bool) ($validated['active'] ?? false),
-            (int) ($validated['sort_order'] ?? 0),
+            $validated['status'],
+            (int) ($validated['order'] ?? 0),
+            $validated['translations'],
         ));
 
         return $this->sendResponse([], 'Categoría de artículo actualizada exitosamente');

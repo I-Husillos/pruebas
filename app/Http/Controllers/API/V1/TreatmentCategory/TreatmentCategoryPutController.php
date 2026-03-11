@@ -36,11 +36,9 @@ final class TreatmentCategoryPutController extends ApiController
 
         $this->commandBus->dispatch(new UpdateTreatmentCategoryCommand(
             $id,
-            $validated['name'],
-            $validated['slug'],
-            $validated['description'] ?? null,
-            (bool) ($validated['active'] ?? false),
-            (int) ($validated['sort_order'] ?? 0),
+            $validated['status'],
+            (int) ($validated['order'] ?? 0),
+            $validated['translations'],
         ));
 
         return $this->sendResponse([], 'Categoría de tratamiento actualizada exitosamente');

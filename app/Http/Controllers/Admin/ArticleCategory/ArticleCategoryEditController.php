@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\ArticleCategory;
 
 use App\Http\Controllers\Controller;
-use App\Models\ArticleCategory;
 use Dba\DddSkeleton\Shared\Domain\Bus\Query\QueryBus;
 use Inertia\Inertia;
 use Inertia\Response;

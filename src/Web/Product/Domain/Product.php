@@ -136,7 +136,7 @@ final class Product extends AggregateRoot
             isset($data['category_id'])
                 ? (int) $data['category_id']
                 : (isset($data['category']) ? (int) $data['category'] : null),
-            $data['category_name'] ?? null,
+            $data['category'] ?? null,
             $data['tags'] ?? null,
             (bool) ($data['published'] ?? false),
             $data['published_at'] ?? null,
@@ -160,7 +160,7 @@ final class Product extends AggregateRoot
             'technical_specs' => $this->technicalSpecs,
             'images' => $this->images,
             'category_id' => $this->categoryId,
-            'category_name' => $this->categoryName,
+            'category' => $this->categoryName,
             'tags' => $this->tags,
             'published' => $this->published,
             'published_at' => $this->publishedAt,

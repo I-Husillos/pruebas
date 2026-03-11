@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Termosalud\Web\TreatmentCategory\Infrastructure\Persistence;
 
 use App\Models\TreatmentCategory as EloquentModel;
+use App\Models\TreatmentCategoryTranslation;
 use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
 use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentCriteriaConverter;
 use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentRepository;
@@ -13,6 +14,16 @@ use Termosalud\Web\TreatmentCategory\Domain\TreatmentCategoryRepository;
 
 final class EloquentTreatmentCategoryRepository extends EloquentRepository implements TreatmentCategoryRepository
 {
+    private const CRITERIA_TO_ELOQUENT_FIELDS = [
+        'id'         => 'treatment_categories.id',
+        'title'      => 'treatment_category_translations.title',
+        'slug'       => 'treatment_category_translations.slug',
+        'status'     => 'treatment_categories.status',
+        'order'      => 'treatment_categories.order',
+        'created_at' => 'treatment_categories.created_at',
+        'updated_at' => 'treatment_categories.updated_at',
+    ];
+
     public function __construct(EloquentModel $model)
     {
         $this->model = $model;
@@ -20,26 +31,49 @@ final class EloquentTreatmentCategoryRepository extends EloquentRepository imple
 
     public function save(TreatmentCategory $category): void
     {
-        $data = $category->toPrimitives();
+        $primitives = $category->toPrimitives();
 
-        $id = $data['id'] ?? null;
-        unset($data['id'], $data['created_at'], $data['updated_at']);
+        $id = $primitives['id'] ?? null;
+        unset($primitives['id'], $primitives['created_at'], $primitives['updated_at']);
+
+        $mainData = [
+            'status' => $primitives['status'],
+            'order'  => $primitives['order'],
+        ];
 
         $model = ($id !== null && $id > 0) ? $this->model->find($id) : null;
 
         if ($model) {
-            $model->update($data);
-
-            return;
+            $model->update($mainData);
+        } else {
+            $model = $this->model->create($mainData);
         }
 
-        $this->model->create($data);
+        foreach ($primitives['translations'] as $translation) {
+            $model->translations()->updateOrCreate(
+                [
+                    'treatment_category_id' => $model->id,
+                    'language_id'         => $translation['language_id'],
+                ],
+                [
+                    'title'        => $translation['title'],
+                    'description'  => $translation['description'] ?? null,
+                    'slug'         => $translation['slug'],
+                    'seo_metadata' => $translation['seo_metadata'] ?? null,
+                ]
+            );
+        }
     }
 
     public function searchByCriteria(Criteria $criteria): array
     {
-        $eloquentCriteria = EloquentCriteriaConverter::convert($criteria);
-        $query = $this->matching($eloquentCriteria);
+        $eloquentCriteria = EloquentCriteriaConverter::convert($criteria, self::CRITERIA_TO_ELOQUENT_FIELDS);
+        $query = $this->matching($eloquentCriteria)
+            ->leftJoin('treatment_category_translations', 'treatment_categories.id', '=', 'treatment_category_translations.treatment_category_id')
+            ->select('treatment_categories.*')
+            ->distinct()
+            ->with('translations');
+
         $models = $query->get();
 
         return collect($models)->map(fn($m) => $this->toDomain($m))->toArray();
@@ -54,15 +88,17 @@ final class EloquentTreatmentCategoryRepository extends EloquentRepository imple
             null
         );
 
-        $eloquentCriteria = EloquentCriteriaConverter::convert($countCriteria);
-        $query = $this->matching($eloquentCriteria);
+        $eloquentCriteria = EloquentCriteriaConverter::convert($countCriteria, self::CRITERIA_TO_ELOQUENT_FIELDS);
+        $query = $this->matching($eloquentCriteria)
+            ->leftJoin('treatment_category_translations', 'treatment_categories.id', '=', 'treatment_category_translations.treatment_category_id')
+            ->distinct();
 
-        return $query->count();
+        return (int) $query->count('treatment_categories.id');
     }
 
     public function search(int $id): ?TreatmentCategory
     {
-        $model = $this->model->find($id);
+        $model = $this->model->with('translations')->find($id);
 
         return $model ? $this->toDomain($model) : null;
     }
@@ -74,15 +110,14 @@ final class EloquentTreatmentCategoryRepository extends EloquentRepository imple
 
     private function toDomain(EloquentModel $model): TreatmentCategory
     {
-        return new TreatmentCategory(
-            $model->id,
-            $model->name,
-            $model->slug,
-            $model->description,
-            $model->active,
-            (int) $model->sort_order,
-            $model->created_at?->toDateTimeString(),
-            $model->updated_at?->toDateTimeString()
-        );
+        $translations = $model->translations->map(fn(TreatmentCategoryTranslation $t) => [
+            'language_id'  => $t->language_id,
+            'title'        => $t->title,
+            'description'  => $t->description,
+            'slug'         => $t->slug,
+            'seo_metadata' => $t->seo_metadata,
+        ])->values()->toArray();
+
+        return TreatmentCategory::fromPrimitives($model->toArray() + ['translations' => $translations]);
     }
 }

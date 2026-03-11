@@ -7,21 +7,25 @@
         :create-route="route('admin.treatment-categories.create')"
         edit-route-name="admin.treatment-categories.edit"
         :columns="columns"
+        order-by="order"
+        order="asc"
         search-placeholder="Buscar categorías..."
         resource-name="categoría"
         resource-name-plural="categorías"
         create-button-text="Añadir Categoría"
+        :enable-row-reorder="true"
+        :reorder-api-url="reorderApiUrl"
     >
-        <template #cell-name="{ item }">
-            {{ item.name?.es || item.name?.en || 'Sin nombre' }}
+        <template #cell-title="{ item }">
+            {{ getTranslationValue(item, 'title') || 'Sin título' }}
         </template>
 
         <template #cell-slug="{ item }">
-            {{ item.slug?.es || item.slug?.en }}
+            {{ getTranslationValue(item, 'slug') || 'Sin slug' }}
         </template>
 
-        <template #cell-active="{ value }">
-            <StatusBadge :value="value" />
+        <template #cell-status="{ value }">
+            <StatusBadge :value="value === 'active'" />
         </template>
     </ResourceListTable>
 </template>
@@ -33,11 +37,30 @@ import StatusBadge from '@/Components/Admin/StatusBadge.vue';
 
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
+const reorderApiUrl = `${apiUrl}/reorder`;
+
+const preferredLanguageIds = [1,2];
+
+const getTranslationValue = (item, field) => {
+    const translations = Array.isArray(item?.translations) ? item.translations : [];
+
+    if (translations.length === 0) {
+        return null;
+    }
+
+    const preferredTranslation = preferredLanguageIds
+        .map((languageId) => translations.find((translation) => Number(translation.language_id) === languageId))
+        .find(Boolean);
+
+    const selectedTranslation = preferredTranslation || translations[0];
+
+    return selectedTranslation?.[field] ?? null;
+};
 
 const columns = [
-    { key: 'name', label: 'Nombre' },
+    { key: 'title', label: 'Título' },
     { key: 'slug', label: 'Slug' },
-    { key: 'sort_order', label: 'Orden' },
-    { key: 'active', label: 'Estado' },
+    { key: 'order', label: 'Orden' },
+    { key: 'status', label: 'Estado' },
 ];
 </script>

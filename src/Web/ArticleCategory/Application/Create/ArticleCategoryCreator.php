@@ -11,9 +11,9 @@ final class ArticleCategoryCreator
 {
     public function __construct(private readonly ArticleCategoryRepository $repository) {}
 
-    public function __invoke(int $id, array $name, array $slug, ?array $description, bool $active, int $sortOrder): void
+    public function __invoke(string $status, int $order, array $translations): void
     {
-        $category = new ArticleCategory($id, $name, $slug, $description, $active, $sortOrder);
+        $category = new ArticleCategory(0, $status, $order, $translations);
 
         $this->repository->save($category);
     }

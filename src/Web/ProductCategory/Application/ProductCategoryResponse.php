@@ -11,42 +11,34 @@ final class ProductCategoryResponse implements Response
 {
     public function __construct(
         private readonly int $id,
-        private readonly array $name,
-        private readonly array $slug,
-        private readonly ?array $description,
-        private readonly bool $active,
-        private readonly int $sortOrder,
+        private readonly string $status,
+        private readonly int $order,
+        private readonly array $translations,
         private readonly ?string $createdAt,
         private readonly ?string $updatedAt
     ) {}
 
     public static function fromCategory(ProductCategory $category): self
     {
-        $primitives = $category->toPrimitives();
-
         return new self(
-            $primitives['id'],
-            $primitives['name'],
-            $primitives['slug'],
-            $primitives['description'],
-            $primitives['active'],
-            $primitives['sort_order'],
-            $primitives['created_at'],
-            $primitives['updated_at']
+            $category->id(),
+            $category->status(),
+            $category->order(),
+            $category->translations(),
+            $category->createdAt(),
+            $category->updatedAt()
         );
     }
 
     public function toArray(): array
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'description' => $this->description,
-            'active' => $this->active,
-            'sort_order' => $this->sortOrder,
-            'created_at' => $this->createdAt,
-            'updated_at' => $this->updatedAt,
+            'id'           => $this->id,
+            'status'       => $this->status,
+            'order'        => $this->order,
+            'translations' => $this->translations,
+            'created_at'   => $this->createdAt,
+            'updated_at'   => $this->updatedAt,
         ];
     }
 }

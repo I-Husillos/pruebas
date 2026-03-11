@@ -15,9 +15,7 @@ class HomeController extends Controller
         $languages = DB::table('languages')->where('active', true)->get();
 
         $featuredProducts = DB::table('products')
-            ->where('published', true)
-            ->whereRaw('JSON_CONTAINS(available_markets, ?)', [json_encode($market)])
-            ->orderBy('sort_order')
+            ->where('status', true)
             ->limit(6)
             ->get()
 

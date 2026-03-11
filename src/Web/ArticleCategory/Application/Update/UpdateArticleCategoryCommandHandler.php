@@ -14,11 +14,9 @@ final class UpdateArticleCategoryCommandHandler implements CommandHandler
     {
         $this->updater->__invoke(
             $command->id(),
-            $command->name(),
-            $command->slug(),
-            $command->description(),
-            $command->active(),
-            $command->sortOrder(),
+            $command->status(),
+            $command->order(),
+            $command->translations()
         );
     }
 }

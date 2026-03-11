@@ -40,6 +40,7 @@ Route::prefix('v1')->name('v1.')->middleware(['auth:api'])->group(function () {
     Route::delete('/products/{id}', \App\Http\Controllers\API\V1\Product\ProductDeleteController::class)->name('products.destroy');
     Route::get('/product-categories', \App\Http\Controllers\API\V1\ProductCategory\ProductCategoriesGetController::class)->name('product-categories.list');
     Route::post('/product-categories', \App\Http\Controllers\API\V1\ProductCategory\ProductCategoryPostController::class)->name('product-categories.store');
+    Route::put('/product-categories/reorder', \App\Http\Controllers\API\V1\ProductCategory\ProductCategoryReorderController::class)->name('product-categories.reorder');
     Route::put('/product-categories/{id}', \App\Http\Controllers\API\V1\ProductCategory\ProductCategoryPutController::class)->name('product-categories.update');
     Route::delete('/product-categories/{id}', \App\Http\Controllers\API\V1\ProductCategory\ProductCategoryDeleteController::class)->name('product-categories.destroy');
 
@@ -62,7 +63,9 @@ Route::prefix('v1')->name('v1.')->middleware(['auth:api'])->group(function () {
     Route::put('/treatments/{id}', \App\Http\Controllers\API\V1\Treatment\TreatmentPutController::class)->name('treatments.update');
     Route::delete('/treatments/{id}', \App\Http\Controllers\API\V1\Treatment\TreatmentDeleteController::class)->name('treatments.destroy');
     Route::get('/treatment-categories', \App\Http\Controllers\API\V1\TreatmentCategory\TreatmentCategoriesGetController::class)->name('treatment-categories.list');
+    Route::get('/treatment-categories/{id}', \App\Http\Controllers\API\V1\TreatmentCategory\TreatmentCategoryGetController::class)->name('treatment-categories.show');
     Route::post('/treatment-categories', \App\Http\Controllers\API\V1\TreatmentCategory\TreatmentCategoryPostController::class)->name('treatment-categories.store');
+    Route::put('/treatment-categories/reorder', \App\Http\Controllers\API\V1\TreatmentCategory\TreatmentCategoryReorderController::class)->name('treatment-categories.reorder');
     Route::put('/treatment-categories/{id}', \App\Http\Controllers\API\V1\TreatmentCategory\TreatmentCategoryPutController::class)->name('treatment-categories.update');
     Route::delete('/treatment-categories/{id}', \App\Http\Controllers\API\V1\TreatmentCategory\TreatmentCategoryDeleteController::class)->name('treatment-categories.destroy');
     Route::get('/treatments/{id}', \App\Http\Controllers\API\V1\Treatment\TreatmentGetController::class)->name('treatments.show');
@@ -75,7 +78,9 @@ Route::prefix('v1')->name('v1.')->middleware(['auth:api'])->group(function () {
     Route::delete('/articles/{id}', \App\Http\Controllers\API\V1\Article\ArticleDeleteController::class)->name('articles.destroy');
 
     Route::get('/article-categories', \App\Http\Controllers\API\V1\ArticleCategory\ArticleCategoriesGetController::class)->name('article-categories.list');
+    Route::get('/article-categories/{id}', \App\Http\Controllers\API\V1\ArticleCategory\ArticleCategoryGetController::class)->name('article-categories.show');
     Route::post('/article-categories', \App\Http\Controllers\API\V1\ArticleCategory\ArticleCategoryPostController::class)->name('article-categories.store');
+    Route::put('/article-categories/reorder', \App\Http\Controllers\API\V1\ArticleCategory\ArticleCategoryReorderController::class)->name('article-categories.reorder');
     Route::put('/article-categories/{id}', \App\Http\Controllers\API\V1\ArticleCategory\ArticleCategoryPutController::class)->name('article-categories.update');
     Route::delete('/article-categories/{id}', \App\Http\Controllers\API\V1\ArticleCategory\ArticleCategoryDeleteController::class)->name('article-categories.destroy');
     Route::get('/pages', \App\Http\Controllers\API\V1\Page\PagesGetController::class)->name('pages.list');

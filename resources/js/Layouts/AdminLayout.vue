@@ -28,6 +28,16 @@
                                     {{ $page.props.auth?.user?.name || 'Admin' }}
                                 </div>
                             </div>
+                            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                                <Link
+                                    :href="route('logout')"
+                                    method="post"
+                                    as="button"
+                                    class="block rounded-lg bg-indigo-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors"
+                                >
+                                    Cerrar sesión
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>

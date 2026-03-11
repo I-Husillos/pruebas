@@ -9,41 +9,21 @@ use Dba\DddSkeleton\Shared\Domain\Bus\Command\Command;
 final class CreateTreatmentCategoryCommand implements Command
 {
     public function __construct(
-        private readonly int $id,
-        private readonly array $name,
-        private readonly array $slug,
-        private readonly ?array $description,
-        private readonly bool $active,
-        private readonly int $sortOrder,
+        private readonly string $status,
+        private readonly int $order,
+        private readonly ?array $translations,
     ) {}
 
-    public function id(): int
+    public function status(): string
     {
-        return $this->id;
+        return $this->status;
     }
-
-    public function name(): array
+    public function order(): int
     {
-        return $this->name;
+        return $this->order;
     }
-
-    public function slug(): array
+    public function translations(): ?array
     {
-        return $this->slug;
-    }
-
-    public function description(): ?array
-    {
-        return $this->description;
-    }
-
-    public function active(): bool
-    {
-        return $this->active;
-    }
-
-    public function sortOrder(): int
-    {
-        return $this->sortOrder;
+        return $this->translations;
     }
 }

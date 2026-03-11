@@ -15,10 +15,7 @@ interface ArticleCategoryRepository
 
     public function countByCriteria(Criteria $criteria): int;
 
-    public function remove(int $id): void;
-
     public function search(int $id): ?ArticleCategory;
 
-    public function findBySlug(string $slug, string $locale): ?ArticleCategory;
-
+    public function remove(int $id): void;
 }

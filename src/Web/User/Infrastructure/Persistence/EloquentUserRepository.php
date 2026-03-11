@@ -31,8 +31,6 @@ class EloquentUserRepository implements UserRepository
         
         $model->load('roles');
 
-        $model->load('roles');
-
         return $this->toDomain($model);
     }
 

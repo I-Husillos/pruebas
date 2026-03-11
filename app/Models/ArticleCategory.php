@@ -3,26 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ArticleCategory extends Model
 {
     protected $fillable = [
-        'name',
-        'slug',
-        'description',
-        'active',
-        'sort_order',
+        'status',
+        'order',
     ];
 
     protected $casts = [
-        'name' => 'array',
-        'slug' => 'array',
-        'description' => 'array',
-        'active' => 'boolean',
+        'order' => 'integer',
     ];
 
-    public function articles()
+    public function articles(): HasMany
     {
-        return $this->hasMany(ContentArticle::class, 'category_id');
+        return $this->hasMany(ContentArticle::class, 'article_category_id');
+    }
+
+    public function translations(): HasMany
+    {
+        return $this->hasMany(ArticleCategoryTranslation::class, 'article_category_id');
     }
 }

@@ -8,42 +8,25 @@ use Dba\DddSkeleton\Shared\Domain\Bus\Command\Command;
 
 final class CreateArticleCategoryCommand implements Command
 {
+    /**
+     * @param array<int, array{language_id: int, title: string, description: ?string, slug: string, seo_metadata: ?array}> $translations
+     */
     public function __construct(
-        private readonly int $id,
-        private readonly array $name,
-        private readonly array $slug,
-        private readonly ?array $description = null,
-        private readonly bool $active = false,
-        private readonly int $sortOrder = 0
+        private readonly string $status,
+        private readonly int $order,
+        private readonly array $translations
     ) {}
 
-    public function id(): int
+    public function status(): string
     {
-        return $this->id;
+        return $this->status;
     }
-
-    public function name(): array
+    public function order(): int
     {
-        return $this->name;
+        return $this->order;
     }
-
-    public function slug(): array
+    public function translations(): array
     {
-        return $this->slug;
-    }
-
-    public function description(): ?array
-    {
-        return $this->description;
-    }
-
-    public function active(): bool
-    {
-        return $this->active;
-    }
-
-    public function sortOrder(): int
-    {
-        return $this->sortOrder;
+        return $this->translations;
     }
 }

@@ -13,12 +13,9 @@ final class CreateProductCategoryCommandHandler implements CommandHandler
     public function __invoke(CreateProductCategoryCommand $command): void
     {
         $this->creator->__invoke(
-            $command->id(),
-            $command->name(),
-            $command->slug(),
-            $command->description(),
-            $command->active(),
-            $command->sortOrder(),
+            $command->status(),
+            $command->order(),
+            $command->translations()
         );
     }
 }

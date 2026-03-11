@@ -43,7 +43,7 @@ final class ProductPutController extends ApiController
             $validated['technical_specs'] ?? null,
             $validated['images'] ?? null,
             isset($validated['category_id']) ? (int) $validated['category_id'] : null,
-            $validated['category_name'] ?? null,
+            $validated['category'] ?? null,
             $validated['tags'] ?? null,
             isset($validated['published']) ? (bool) $validated['published'] : null,
             $validated['published_at'] ?? null,

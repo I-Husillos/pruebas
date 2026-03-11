@@ -34,12 +34,9 @@ final class TreatmentCategoryPostController extends ApiController
         $validated = $request->validated();
 
         $this->commandBus->dispatch(new CreateTreatmentCategoryCommand(
-            0,
-            $validated['name'],
-            $validated['slug'],
-            $validated['description'] ?? null,
-            (bool) ($validated['active'] ?? false),
-            (int) ($validated['sort_order'] ?? 0),
+            $validated['status'],
+            (int) ($validated['order'] ?? 0),
+            $validated['translations'],
         ));
 
         return $this->sendResponse([], 'Categoría de tratamiento creada exitosamente', 201);

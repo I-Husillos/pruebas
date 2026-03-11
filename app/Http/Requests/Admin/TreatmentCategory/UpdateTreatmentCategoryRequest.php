@@ -14,21 +14,14 @@ class UpdateTreatmentCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|array',
-            'name.es' => 'required|string|max:255',
-            'name.en' => 'nullable|string|max:255',
-            'slug' => 'required|array',
-            'slug.es' => 'required|string|max:255',
-            'slug.en' => 'nullable|string|max:255',
-            'description' => 'nullable|array',
-            'description.es' => 'nullable|string',
-            'description.en' => 'nullable|string',
-            'active' => 'boolean',
-            'sort_order' => 'integer',
-
-            'name.*' => 'nullable|string',
-            'slug.*' => 'nullable|string',
-            'description.*' => 'nullable|string',
+            'status'                       => 'required|string|in:active,inactive',
+            'order'                        => 'integer|min:0',
+            'translations'                 => 'required|array|min:1',
+            'translations.*.language_id'   => 'required|integer|exists:languages,id',
+            'translations.*.title'         => 'required|string|max:255',
+            'translations.*.description'   => 'nullable|string',
+            'translations.*.slug'          => 'required|string|max:255',
+            'translations.*.seo_metadata'  => 'nullable|array',
         ];
     }
 }

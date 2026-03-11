@@ -22,8 +22,8 @@
           <div v-show="activeLang === 'es'" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Nombre (ES)</label>
-              <input v-model="form.name.es" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['name.es'], 'ring-gray-300 focus:ring-indigo-600': !errors['name.es']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" required />
-              <div v-if="errors['name.es']" class="mt-1 text-sm text-red-600">{{ errors['name.es'] }}</div>
+              <input v-model="form.title.es" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['title.es'], 'ring-gray-300 focus:ring-indigo-600': !errors['title.es']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" required />
+              <div v-if="errors['title.es']" class="mt-1 text-sm text-red-600">{{ errors['title.es'] }}</div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Slug (ES)</label>
@@ -39,8 +39,8 @@
           <div v-show="activeLang === 'en'" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">Name (EN)</label>
-              <input v-model="form.name.en" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['name.en'], 'ring-gray-300 focus:ring-indigo-600': !errors['name.en']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" />
-              <div v-if="errors['name.en']" class="mt-1 text-sm text-red-600">{{ errors['name.en'] }}</div>
+              <input v-model="form.title.en" type="text" :class="{'ring-red-300 focus:ring-red-600': errors['title.en'], 'ring-gray-300 focus:ring-indigo-600': !errors['title.en']}" class="mt-1 block w-full rounded-md border-0 shadow-sm ring-1 ring-inset py-1.5 focus:ring-2 focus:ring-inset sm:text-sm" />
+              <div v-if="errors['title.en']" class="mt-1 text-sm text-red-600">{{ errors['title.en'] }}</div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Slug (EN)</label>
@@ -100,7 +100,7 @@ const breadcrumbItems = [
 ];
 
 const form = ref({
-  name: { es: '', en: '' },
+  title: { es: '', en: '' },
   slug: { es: '', en: '' },
   description: { es: '', en: '' },
   active: true,
@@ -115,7 +115,26 @@ const submit = async() => {
   processing.value = true;
   errors.value = {};
   try {
-        await api.post('/api/v1/treatment-categories', form.value);
+        await api.post('/api/v1/treatment-categories', {
+          status: form.value.active ? 'active' : 'inactive',
+          order: Number(form.value.sort_order ?? 0),
+          translations: [
+            ...(form.value.title.es?.trim() && form.value.slug.es?.trim() ? [{
+              language_id: 1,
+              title: form.value.title.es.trim(),
+              slug: form.value.slug.es.trim(),
+              description: form.value.description.es?.trim() || null,
+              seo_metadata: null,
+            }] : []),
+            ...(form.value.title.en?.trim() && form.value.slug.en?.trim() ? [{
+              language_id: 2,
+              title: form.value.title.en.trim(),
+              slug: form.value.slug.en.trim(),
+              description: form.value.description.en?.trim() || null,
+              seo_metadata: null,
+            }] : []),
+          ],
+        });
         router.visit(route('admin.treatment-categories.index'));
     } catch (e) {
       console.log('Error completo:', e.response?.data);

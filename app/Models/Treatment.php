@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Approvable;
 
@@ -13,17 +16,11 @@ use App\Traits\Approvable;
  * Represents a medical treatment service.
  * 
  * @property int $id
- * @property array $name
- * @property array $slug
- * @property array|null $description
- * @property bool $published
- * @property array|null $available_markets
- * @property int|null $sort_order
- * @property int|null $category_id
- * @property array|null $blocks_json
+ * @property int|null $treatment_category_id
+ * @property string $status
  * @property array|null $images
- * @property array|null $meta_title
- * @property array|null $meta_description
+ * @property array|null $related_products
+ * @property int $order
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -34,28 +31,35 @@ class Treatment extends Model
 {
     use HasFactory, SoftDeletes, Approvable;
 
-    protected $guarded = [];
-
-    protected $casts = [
-        'name' => 'array',
-        'slug' => 'array',
-        'description' => 'array',
-        'indications' => 'array',
-        'contraindications' => 'array',
-        'procedure_details' => 'array',
-        'images' => 'array',
-        'related_products' => 'array',
-        'published' => 'boolean',
-        'published_at' => 'datetime',
-        'available_markets' => 'array',
-        'meta_seo' => 'array',
-        'meta_title' => 'array',
-        'meta_description' => 'array',
-        'blocks_json' => 'array',
+    protected $fillable = [
+        'treatment_category_id',
+        'status',
+        'images',
+        'related_products',
+        'order',
     ];
 
-    public function category()
+    protected $casts = [
+        'images' => 'array',
+        'related_products' => 'array',
+        'order' => 'integer',
+    ];
+
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(TreatmentCategory::class);
+        return $this->belongsTo(TreatmentCategory::class, 'treatment_category_id');
+    }
+
+    public function localizations(): HasMany
+    {
+        return $this->hasMany(TreatmentLocalization::class, 'treatment_id');
+    }
+
+    protected function categoryId(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->attributes['treatment_category_id'] ?? null,
+            set: fn ($value) => ['treatment_category_id' => $value]
+        );
     }
 }

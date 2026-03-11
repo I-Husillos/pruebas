@@ -8,6 +8,7 @@ use App\Http\Controllers\ApiController;
 use App\Http\Requests\Admin\ArticleCategory\StoreArticleCategoryRequest;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
+use App\Models\ArticleCategory;
 use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
 use Termosalud\Web\ArticleCategory\Application\Create\CreateArticleCategoryCommand;
 
@@ -32,13 +33,12 @@ final class ArticleCategoryPostController extends ApiController
     {
         $validated = $request->validated();
 
+        $nextOrder = (ArticleCategory::max('order') ?? -1) + 1;
+
         $this->commandBus->dispatch(new CreateArticleCategoryCommand(
-            0, // New categories don't have an ID yet
-            $validated['name'],
-            $validated['slug'],
-            $validated['description'] ?? null,
-            (bool) ($validated['active'] ?? false),
-            $validated['sort_order'] ?? 0,
+            $validated['status'],
+            $nextOrder,
+            $validated['translations'],
         ));
 
         return $this->sendResponse([], 'Categoría de artículo creada exitosamente', 201);

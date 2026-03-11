@@ -71,6 +71,12 @@
                     <table class="min-w-full divide-y divide-gray-300">
                         <thead>
                             <tr>
+                                <th
+                                    v-if="canReorder"
+                                    class="w-12 px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                >
+                                    <span class="sr-only">Mover</span>
+                                </th>
                                 <th 
                                     v-for="column in columns" 
                                     :key="column.key"
@@ -85,7 +91,23 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white">
-                            <tr v-for="item in items" :key="item.id">
+                            <tr
+                                v-for="(item, rowIndex) in items"
+                                :key="item.id"
+                                :draggable="canReorder && !reorderLoading"
+                                :class="canReorder ? 'cursor-move' : ''"
+                                @dragstart="onDragStart(rowIndex, $event)"
+                                @dragover="onDragOver(rowIndex, $event)"
+                                @drop="onDrop(rowIndex, $event)"
+                                @dragend="onDragEnd"
+                            >
+                                <td
+                                    v-if="canReorder"
+                                    class="px-3 py-4 text-sm text-gray-500"
+                                    title="Arrastra para reordenar"
+                                >
+                                    <Bars3Icon class="h-5 w-5 text-gray-400" />
+                                </td>
                                 <td 
                                     v-for="column in columns" 
                                     :key="column.key"
@@ -194,7 +216,7 @@ import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
 import ApiClient from '@/api/client';
-import { PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { PencilSquareIcon, TrashIcon, Bars3Icon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     // Basic Info
@@ -303,6 +325,20 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+
+    // Row reorder
+    enableRowReorder: {
+        type: Boolean,
+        default: false,
+    },
+    reorderApiUrl: {
+        type: String,
+        default: null,
+    },
+    reorderStartAt: {
+        type: Number,
+        default: 0,
+    },
     
     // Additional Query Params
     additionalParams: {
@@ -321,8 +357,11 @@ const loading = ref(false);
 const error = ref(null);
 const dynamicFilters = ref([...props.initialDynamicFilters]);
 const currentPerPage = ref(props.perPage);
+const dragSourceIndex = ref(null);
+const reorderLoading = ref(false);
 
 const showActions = computed(() => props.editRouteName || props.allowDelete);
+const canReorder = computed(() => props.enableRowReorder && !!props.reorderApiUrl);
 const effectiveSearchFields = computed(() => {
     if (props.searchFields.length > 0) {
         return props.searchFields;
@@ -493,6 +532,84 @@ const deleteItem = async (id) => {
         error.value = `Error al eliminar el ${props.resourceName}`;
         console.error(err);
     }
+};
+
+const moveItem = (sourceIndex, targetIndex) => {
+    const updatedItems = [...items.value];
+    const [movedItem] = updatedItems.splice(sourceIndex, 1);
+    updatedItems.splice(targetIndex, 0, movedItem);
+    items.value = updatedItems;
+};
+
+const persistReorder = async () => {
+    if (!canReorder.value || !props.reorderApiUrl) {
+        return;
+    }
+
+    reorderLoading.value = true;
+    error.value = null;
+
+    const payload = {
+        items: items.value.map((item, index) => ({
+            id: item.id,
+            order: index + props.reorderStartAt,
+        })),
+    };
+
+    try {
+        await api.put(props.reorderApiUrl, payload);
+        items.value = items.value.map((item, index) => ({
+            ...item,
+            order: index + props.reorderStartAt,
+        }));
+    } catch (err) {
+        error.value = `Error al reordenar los ${props.resourceNamePlural}`;
+        console.error(err);
+        await fetchData();
+    } finally {
+        reorderLoading.value = false;
+    }
+};
+
+const onDragStart = (index, event) => {
+    if (!canReorder.value || reorderLoading.value) {
+        return;
+    }
+
+    dragSourceIndex.value = index;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(index));
+};
+
+const onDragOver = (index, event) => {
+    if (!canReorder.value || reorderLoading.value || dragSourceIndex.value === null || dragSourceIndex.value === index) {
+        return;
+    }
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+};
+
+const onDrop = async (targetIndex, event) => {
+    if (!canReorder.value || reorderLoading.value) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const sourceIndex = dragSourceIndex.value;
+    dragSourceIndex.value = null;
+
+    if (sourceIndex === null || sourceIndex === targetIndex) {
+        return;
+    }
+
+    moveItem(sourceIndex, targetIndex);
+    await persistReorder();
+};
+
+const onDragEnd = () => {
+    dragSourceIndex.value = null;
 };
 
 const editItem = (item) => {

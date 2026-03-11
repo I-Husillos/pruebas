@@ -13,7 +13,7 @@ use Termosalud\Web\ProductCategory\Application\Create\CreateProductCategoryComma
 
 #[OA\Tag(
     name: "Product Categories",
-    description: "Endpoints para gestionar product categories"
+    description: "Endpoints para gestionar categorías de productos"
 )]
 final class ProductCategoryPostController extends ApiController
 {
@@ -27,19 +27,17 @@ final class ProductCategoryPostController extends ApiController
         operationId: "createProductCategory",
         security: [["bearerAuth" => []]]
     )]
-    #[OA\Response(response: 200, description: "Éxito")]
+    #[OA\Response(response: 201, description: "Creado")]
     #[OA\Response(response: 401, description: "No autenticado")]
+    #[OA\Response(response: 422, description: "Error de validación")]
     public function __invoke(StoreProductCategoryRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
         $this->commandBus->dispatch(new CreateProductCategoryCommand(
-            0,
-            $validated['name'],
-            $validated['slug'],
-            $validated['description'] ?? null,
-            (bool) ($validated['active'] ?? false),
-            (int) ($validated['sort_order'] ?? 0),
+            $validated['status'],
+            (int) ($validated['order'] ?? 0),
+            $validated['translations'],
         ));
 
         return $this->sendResponse([], 'Categoría de producto creada exitosamente', 201);

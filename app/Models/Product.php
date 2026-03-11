@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Approvable;
 
@@ -14,13 +17,11 @@ use App\Traits\Approvable;
  *
  * @property int $id
  * @property string $code
- * @property array $name
- * @property array $slug
- * @property array|null $description
- * @property bool $published
- * @property array|null $available_markets
- * @property int|null $category_id
- * @property array|null $blocks_json
+ * @property int|null $product_category_id
+ * @property string $status
+ * @property array|null $images
+ * @property array|null $related_treatments
+ * @property int $order
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -33,45 +34,34 @@ class Product extends Model
 
     protected $fillable = [
         'code',
-        'name',
-        'slug',
-        'short_description',
-        'description',
-        'technical_specs',
+        'product_category_id',
+        'status',
         'images',
-        'category',
-        'category_id',
-        'tags',
-        'published',
-        'published_at',
-        'available_markets',
-        'meta_seo',
-        'meta_title',
-        'meta_description',
-        'sort_order',
-        'blocks_json',
+        'related_treatments',
+        'order',
     ];
 
-    public function category()
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(ProductCategory::class);
+        return $this->belongsTo(ProductCategory::class, 'product_category_id');
+    }
+
+    public function localizations(): HasMany
+    {
+        return $this->hasMany(ProductLocalization::class, 'product_id');
     }
 
     protected $casts = [
-        'name' => 'array',
-        'slug' => 'array',
-        'short_description' => 'array',
-        'description' => 'array',
-        'technical_specs' => 'array',
         'images' => 'array',
-        'tags' => 'array',
-        'available_markets' => 'array',
-        'meta_seo' => 'array',
-        'meta_title' => 'array',
-        'meta_description' => 'array',
-        'published' => 'boolean',
-        'published_at' => 'datetime',
-        'sort_order' => 'integer',
-        'blocks_json' => 'array',
+        'related_treatments' => 'array',
+        'order' => 'integer',
     ];
+
+    protected function categoryId(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->attributes['product_category_id'] ?? null,
+            set: fn ($value) => ['product_category_id' => $value]
+        );
+    }
 }

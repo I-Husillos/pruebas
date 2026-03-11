@@ -11,15 +11,9 @@ final class ProductCategoryUpdater
 {
     public function __construct(private readonly ProductCategoryRepository $repository) {}
 
-    public function __invoke(
-        int $id,
-        array $name,
-        array $slug,
-        ?array $description,
-        bool $active,
-        int $sortOrder
-    ): void {
-        $category = new ProductCategory($id, $name, $slug, $description, $active, $sortOrder);
+    public function __invoke(int $id, string $status, int $order, array $translations): void
+    {
+        $category = new ProductCategory($id, $status, $order, $translations);
 
         $this->repository->save($category);
     }

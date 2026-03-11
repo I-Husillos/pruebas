@@ -11,6 +11,8 @@
         resource-name="producto"
         resource-name-plural="productos"
         create-button-text="Nuevo Producto"
+        order-by="name"
+        order="asc"
     >
         <!-- Custom Name (Multilingual) -->
         <template #cell-name="{ item }">
@@ -18,8 +20,8 @@
         </template>
 
         <!-- Custom Category Name (Multilingual) -->
-        <template #cell-category_name="{ item }">
-            {{ item.category_name?.es || item.category_name?.en || 'Sin categoría' }}
+        <template #cell-category="{ item }">
+            {{ item.category?.es || item.category?.en || 'Sin categoría' }}
         </template>
 
         <!-- Custom Status Badge -->
@@ -39,7 +41,7 @@ const { apiToken, apiUrl } = props;
 
 const columns = [
     { key: 'name', label: 'Nombre' },
-    { key: 'category_name', label: 'Categoría' },
+    { key: 'category', label: 'Categoría' },
     { key: 'published', label: 'Estado' },
 ];
 </script>

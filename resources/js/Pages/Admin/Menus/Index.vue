@@ -55,9 +55,9 @@
               <Link :href="route('admin.menus.edit', menu.id)" class="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Editar">
                 <PencilSquareIcon class="h-5 w-5" />
               </Link>
-              <Link :href="route('admin.menus.destroy', menu.id)" method="delete" as="button" class="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
+              <!-- <Link :href="route('admin.menus.destroy', menu.id)" method="delete" as="button" class="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
                 <TrashIcon class="h-5 w-5" />
-              </Link>
+              </Link> -->
             </div>
           </div>
         </div>

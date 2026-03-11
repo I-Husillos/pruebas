@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('change_controls', function (Blueprint $table) {
             $table->id();
+            $table->nullableMorphs('changeable');
+            $table->json('payload')->nullable();
+            $table->string('type')->default('update');
             $table->string('title');
             $table->text('description');
             $table->string('status')->default('draft');

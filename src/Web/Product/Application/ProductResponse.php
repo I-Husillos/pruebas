@@ -101,7 +101,7 @@ final class ProductResponse implements Response
             isset($primitives['category_id'])
                 ? (int) $primitives['category_id']
                 : (isset($primitives['category']) ? (int) $primitives['category'] : null),
-            $primitives['category_name'] ?? null,
+            $primitives['category'] ?? null,
             $primitives['tags'] ?? null,
             (bool) $primitives['published'],
             $primitives['published_at'] ?? null,
@@ -125,7 +125,7 @@ final class ProductResponse implements Response
             'technical_specs' => $this->technicalSpecs,
             'images' => $this->images,
             'category_id' => $this->categoryId,
-            'category_name' => $this->categoryName,
+            'category' => $this->categoryName,
             'tags' => $this->tags,
             'published' => $this->published,
             'published_at' => $this->publishedAt,

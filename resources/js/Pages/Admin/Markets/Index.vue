@@ -12,17 +12,18 @@
         resource-name="mercado"
         resource-name-plural="mercados"
         create-button-text="Configurar Mercado"
+        order-by="name"
+        order="asc"
     >
-        <!-- Custom Filters -->
         <template #filters="{ fetchData, setDynamicFilter, clearDynamicFilters }">
-            <div class="flex items-end gap-3">
-                <div>
-                    <label for="market-status-filter" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+            <div class="flex items-end gap-4">
+                <div class="flex flex-col">
+                    <label for="market-status-filter" class="sr-only">Estado</label>
                     <select
                         id="market-status-filter"
                         v-model="activeFilter"
                         @change="applyActiveFilter(setDynamicFilter, fetchData)"
-                        class="block w-40 rounded-md border-gray-300 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="block w-40 h-10 rounded-md border border-gray-300 text-sm shadow-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                     >
                         <option value="">Todos</option>
                         <option value="1">Activos</option>
@@ -30,13 +31,15 @@
                     </select>
                 </div>
 
-                <button @click="resetFilters(fetchData, clearDynamicFilters)" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium pb-2.5">
+                <button
+                    @click="resetFilters(fetchData, clearDynamicFilters)"
+                    class="text-sm text-indigo-600 hover:text-indigo-500 font-medium h-10 flex items-center"
+                >
                     Limpiar filtros
                 </button>
             </div>
         </template>
 
-        <!-- Custom Status Badge -->
         <template #cell-active="{ value }">
             <StatusBadge :value="value" />
         </template>

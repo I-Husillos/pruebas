@@ -8,6 +8,8 @@ use App\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 use App\Models\Language;
+use Dba\DddSkeleton\Shared\Domain\Bus\Query\QueryBus;
+use Termosalud\Web\Language\Application\Find\FindLanguageByCodeQuery;
 
 #[OA\Tag(
     name: "Languages",
@@ -15,6 +17,8 @@ use App\Models\Language;
 )]
 final class LanguageGetController extends ApiController
 {
+        public function __construct(private readonly QueryBus $queryBus) {}
+
     #[OA\Get(
         path: "/api/v1/languages/{id}",
         tags: ["Languages"],
@@ -28,7 +32,16 @@ final class LanguageGetController extends ApiController
     #[OA\Response(response: 401, description: "No autenticado")]
     public function __invoke(int $id): JsonResponse
     {
-        $language = Language::findOrFail($id);
-        return $this->sendResponse($language->toArray(), 'Language retrieved successfully');
+        try {
+            $language = $this->queryBus->ask(new FindLanguageByCodeQuery((string) $id));
+
+            if (!$language) {
+                return $this->sendError('Language not found', [], 404);
+            }
+
+            return $this->sendResponse($language->toArray(), 'Language retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->sendError('Error retrieving language', ['error' => $e->getMessage()], 500);
+        }
     }
 }
