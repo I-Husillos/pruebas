@@ -11,6 +11,8 @@
         resource-name="tratamiento"
         resource-name-plural="tratamientos"
         create-button-text="Crear Tratamiento"
+        :enable-row-reorder="true"
+        :reorder-api-url="reorderApiUrl"
     >
         <!-- Custom Name (Multilingual) -->
         <template #cell-name="{ item }">
@@ -55,6 +57,7 @@ import { EyeIcon, PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/outline'
 
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
+const reorderApiUrl = `${apiUrl}/reorder`;
 
 const columns = [
     { key: 'name', label: 'Nombre' },

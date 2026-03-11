@@ -13,6 +13,8 @@
         create-button-text="Nuevo Producto"
         order-by="name"
         order="asc"
+        :enable-row-reorder="true"
+        :reorder-api-url="reorderApiUrl"
     >
         <!-- Custom Name (Multilingual) -->
         <template #cell-name="{ item }">
@@ -38,10 +40,12 @@ import StatusBadge from '@/Components/Admin/StatusBadge.vue';
 
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
+const reorderApiUrl = `${apiUrl}/reorder`;
 
 const columns = [
     { key: 'name', label: 'Nombre' },
     { key: 'category', label: 'Categoría' },
+    { key: 'order', label: 'Orden' },
     { key: 'published', label: 'Estado' },
 ];
 </script>

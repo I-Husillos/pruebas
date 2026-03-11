@@ -11,6 +11,8 @@
         resource-name="artículo"
         resource-name-plural="artículos"
         create-button-text="Nuevo Artículo"
+        :enable-row-reorder="true"
+        :reorder-api-url="reorderApiUrl"
     >
         <!-- Custom Name (Multilingual) -->
         <template #cell-name="{ item }">
@@ -37,6 +39,7 @@ import { formatDate } from '@/utils/formatters';
 
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
+const reorderApiUrl = `${apiUrl}/reorder`;
 
 const columns = [
     { key: 'name', label: 'Nombre' },
