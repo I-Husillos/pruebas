@@ -1,8 +1,18 @@
 <template>
-    <ResourceListTable title="Artículos" description="Noticias, blog y comunicados." :api-url="apiUrl"
-        :api-token="apiToken" :create-route="route('admin.articles.create')" edit-route-name="admin.articles.edit"
-        :columns="columns" search-placeholder="Buscar artículos..." resource-name="artículo"
-        resource-name-plural="artículos" create-button-text="Nuevo Artículo">
+    <ResourceListTable
+        title="Artículos"
+        description="Noticias, blog y comunicados de prensa. Gestiona la comunicación oficial de Termosalud."
+        :api-url="apiUrl"
+        :api-token="apiToken"
+        :create-route="route('admin.articles.create')"
+        edit-route-name="admin.articles.edit"
+        :columns="columns"
+        search-placeholder="Buscar artículos..."
+        resource-name="artículo"
+        resource-name-plural="artículos"
+        create-button-text="Nuevo Artículo"
+    >
+        <!-- Custom Name (Multilingual) -->
         <template #cell-name="{ item }">
             {{ getTitle(item) }}
         </template>
@@ -27,6 +37,7 @@ import { formatDate } from '@/utils/formatters';
 
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
+const reorderApiUrl = `${apiUrl}/reorder`;
 
 const columns = [
     { key: 'name', label: 'Nombre' },

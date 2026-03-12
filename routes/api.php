@@ -36,6 +36,7 @@ Route::prefix('v1')->name('v1.')->middleware(['auth:api'])->group(function () {
     Route::get('/products', ProductsGetController::class)->name('products.list');
     Route::get('/products/{id}', \App\Http\Controllers\API\V1\Product\ProductGetController::class)->name('products.show');
     Route::post('/products', \App\Http\Controllers\API\V1\Product\ProductPostController::class)->name('products.store');
+    Route::put('/products/reorder', \App\Http\Controllers\API\V1\Product\ProductReorderController::class)->name('products.reorder');
     Route::put('/products/{id}', \App\Http\Controllers\API\V1\Product\ProductPutController::class)->name('products.update');
     Route::delete('/products/{id}', \App\Http\Controllers\API\V1\Product\ProductDeleteController::class)->name('products.destroy');
     Route::get('/product-categories', \App\Http\Controllers\API\V1\ProductCategory\ProductCategoriesGetController::class)->name('product-categories.list');
@@ -60,6 +61,7 @@ Route::prefix('v1')->name('v1.')->middleware(['auth:api'])->group(function () {
     Route::get('/treatments', \App\Http\Controllers\API\V1\Treatment\TreatmentsGetController::class)->name('treatments.list');
     Route::get('/treatments/{id}', \App\Http\Controllers\API\V1\Treatment\TreatmentGetController::class)->name('treatments.show');
     Route::post('/treatments', \App\Http\Controllers\API\V1\Treatment\TreatmentPostController::class)->name('treatments.store');
+    Route::put('/treatments/reorder', \App\Http\Controllers\API\V1\Treatment\TreatmentReorderController::class)->name('treatments.reorder');
     Route::put('/treatments/{id}', \App\Http\Controllers\API\V1\Treatment\TreatmentPutController::class)->name('treatments.update');
     Route::delete('/treatments/{id}', \App\Http\Controllers\API\V1\Treatment\TreatmentDeleteController::class)->name('treatments.destroy');
     Route::get('/treatment-categories', \App\Http\Controllers\API\V1\TreatmentCategory\TreatmentCategoriesGetController::class)->name('treatment-categories.list');
@@ -74,6 +76,7 @@ Route::prefix('v1')->name('v1.')->middleware(['auth:api'])->group(function () {
     Route::get('/articles', \App\Http\Controllers\API\V1\Article\ArticlesGetController::class)->name('articles.list');
     Route::get('/articles/{id}', \App\Http\Controllers\API\V1\Article\ArticleGetController::class)->name('articles.show');
     Route::post('/articles', \App\Http\Controllers\API\V1\Article\ArticlePostController::class)->name('articles.store');
+    Route::put('/articles/reorder', \App\Http\Controllers\API\V1\Article\ArticleReorderController::class)->name('articles.reorder');
     Route::put('/articles/{id}', \App\Http\Controllers\API\V1\Article\ArticlePutController::class)->name('articles.update');
     Route::delete('/articles/{id}', \App\Http\Controllers\API\V1\Article\ArticleDeleteController::class)->name('articles.destroy');
 

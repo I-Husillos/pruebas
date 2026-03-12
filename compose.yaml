@@ -104,6 +104,8 @@ services:
             - '${FORWARD_ADMINER_PORT:-8080}:8080'
         networks:
             - termosalud-web
+        environment:
+            ADMINER_DESIGN: pappu687
         depends_on:
             - termosalud-web-mysql
         command: php -S 0.0.0.0:8080
