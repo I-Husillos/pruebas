@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Termosalud\Web\Article\Infrastructure\Persistence;
 
 use App\Models\ContentArticle as ContentArticleEloquentModel;
+use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
+use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentCriteriaConverter;
+use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentRepository;
+use Illuminate\Support\Facades\DB;
 use Termosalud\Web\Article\Domain\ContentArticle;
 use Termosalud\Web\Article\Domain\ContentArticleRepository;
-use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
-use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentRepository;
-use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentCriteriaConverter;
 
 final class EloquentContentArticleRepository extends EloquentRepository implements ContentArticleRepository
 {
@@ -17,28 +18,48 @@ final class EloquentContentArticleRepository extends EloquentRepository implemen
     {
         $this->model = $model;
     }
-    
+
     public function save(ContentArticle $article): void
     {
         $data = $article->toPrimitives();
 
         $id = $data['id'] ?? null;
-        unset($data['id']);
-        $model = $id ? $this->model->find($id) : null;
+        $localizations = $data['localizations'] ?? [];
 
-        if ($model) {
-            $model->update($data);
+        unset($data['id'], $data['localizations'], $data['created_at'], $data['updated_at'], $data['deleted_at']);
 
-            return;
-        }
+        DB::transaction(function () use ($id, $data, $localizations): void {
+            $model = $id ? $this->model->newQuery()->find($id) : null;
 
-        $this->model->create($data);
+            if ($model) {
+                $model->update($data);
+            } else {
+                $model = $this->model->newQuery()->create($data);
+            }
+
+            foreach ($localizations as $loc) {
+                $model->localizations()->updateOrCreate(
+                    [
+                        'language_id' => (int) $loc['language_id'],
+                        'market_id'   => (int) $loc['market_id'],
+                    ],
+                    [
+                        'slug'         => $loc['slug'] ?? null,
+                        'title'        => $loc['title'] ?? null,
+                        'excerpt'      => $loc['excerpt'] ?? null,
+                        'description'  => $loc['description'] ?? null,
+                        'content'      => $loc['content'] ?? null,
+                        'seo_metadata' => $loc['seo_metadata'] ?? [],
+                    ]
+                );
+            }
+        });
     }
 
     public function searchByCriteria(Criteria $criteria): array
     {
         $eloquentCriteria = EloquentCriteriaConverter::convert($criteria);
-        $query = $this->matching($eloquentCriteria);
+        $query = $this->matching($eloquentCriteria)->with('localizations');
         $models = $query->get();
 
         return collect($models)->map(fn($m) => $this->toDomain($m))->toArray();
@@ -46,14 +67,7 @@ final class EloquentContentArticleRepository extends EloquentRepository implemen
 
     public function countByCriteria(Criteria $criteria): int
     {
-        // Create criteria without pagination for counting
-        $countCriteria = new Criteria(
-            $criteria->filters(),
-            $criteria->order(),
-            null,
-            null
-        );
-        
+        $countCriteria = new Criteria($criteria->filters(), $criteria->order(), null, null);
         $eloquentCriteria = EloquentCriteriaConverter::convert($countCriteria);
         $query = $this->matching($eloquentCriteria);
 
@@ -62,16 +76,21 @@ final class EloquentContentArticleRepository extends EloquentRepository implemen
 
     public function search(int $id): ?ContentArticle
     {
-        $model = $this->model->find($id);
+        $model = $this->model->newQuery()->with('localizations')->find($id);
 
         return $model ? $this->toDomain($model) : null;
     }
 
-    public function findBySlug(string $slug, string $locale): ?ContentArticle
+    public function findBySlug(string $slug, int $languageId, int $marketId): ?ContentArticle
     {
-        // JSON query to find slug in specific locale
-        // "slug" column is JSON: {"es": "slug-es", "en": "slug-en"}
-        $model = $this->model->where("slug->$locale", $slug)->first();
+        $model = $this->model->newQuery()
+            ->whereHas('localizations', function ($q) use ($slug, $languageId, $marketId): void {
+                $q->where('slug', $slug)
+                    ->where('language_id', $languageId)
+                    ->where('market_id', $marketId);
+            })
+            ->with('localizations')
+            ->first();
 
         return $model ? $this->toDomain($model) : null;
     }
@@ -83,7 +102,7 @@ final class EloquentContentArticleRepository extends EloquentRepository implemen
 
     public function remove(int $id): void
     {
-        $model = $this->model->find($id);
+        $model = $this->model->newQuery()->find($id);
         if ($model) {
             $model->forceDelete();
         }

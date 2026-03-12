@@ -12,31 +12,22 @@ final class ContentArticleCreator
     public function __construct(private readonly ContentArticleRepository $repository) {}
 
     public function __invoke(
-        int $id,
-        string $type,
-        array $title,
-        array $slug,
-        ?array $excerpt,
-        ?array $content,
-        ?string $author,
-        bool $published,
-        ?int $categoryId,
-        ?\DateTimeImmutable $publishedAt
-    ): void
-    {
+        int $articleCategoryId,
+        string $status,
+        array $images,
+        array $localizations,
+    ): void {
         $contentArticle = new ContentArticle(
-            $id,
-            $type,
-            $title,
-            $slug,
-            $excerpt,
-            $content,
-            $author,
-            $published,
-            $categoryId,
-            $publishedAt
+            null,
+            $articleCategoryId,
+            $status,
+            $images,
+            $localizations,
+            null,
+            null,
+            null
         );
-        
+
         $this->repository->save($contentArticle);
     }
 }

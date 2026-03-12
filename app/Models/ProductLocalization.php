@@ -26,16 +26,16 @@ class ProductLocalization extends Model
 
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function language(): BelongsTo
     {
-        return $this->belongsTo(Language::class);
+        return $this->belongsTo(Language::class, 'language_id');
     }
 
     public function market(): BelongsTo
     {
-        return $this->belongsTo(Market::class);
+        return $this->belongsTo(Market::class, 'market_id');
     }
 }

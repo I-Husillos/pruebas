@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\API\V1\ProductCategory;
 
 use App\Http\Controllers\ApiController;
+use App\Http\Requests\Reorder\ProductCategory\ReorderProductCategory;
 use App\Models\ProductCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,13 +27,9 @@ final class ProductCategoryReorderController extends ApiController
     )]
     #[OA\Response(response: 200, description: "Éxito")]
     #[OA\Response(response: 401, description: "No autenticado")]
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(ReorderProductCategory $request): JsonResponse
     {
-        $items = $request->validate([
-            'items'          => 'required|array',
-            'items.*.id'     => 'required|exists:product_categories,id',
-            'items.*.order'  => 'required|integer|min:0',
-        ])['items'];
+        $items = $request->validated()['items'];
 
         foreach ($items as $item) {
             ProductCategory::where('id', $item['id'])->update(['order' => $item['order']]);

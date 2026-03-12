@@ -10,66 +10,45 @@ final class ContentArticle extends AggregateRoot
 {
     public function __construct(
         private readonly ?int $id,
-        private string $type, // blog, news, press
-        private array $title, // localized json
-        private array $slug, // localized json
-        private ?array $excerpt, // localized json
-        private ?array $content, // localized json
-        private ?string $author,
-        private bool $published,
-        private ?int $category,
-        private ?\DateTimeImmutable $publishedAt,
+        private int $articleCategoryId,
+        private string $status,
+        private array $images,
+        private array $localizations,
+        private ?string $createdAt,
+        private ?string $updatedAt,
+        private ?string $deletedAt,
         // ... other fields matching partial DB
     ) {}
 
     public static function create(
-        string $type,
-        array $title,
-        array $slug,
-        ?array $excerpt = null,
-        ?array $content = null,
-        ?string $author = null,
-        ?int $categoryId = null,
-        ?\DateTimeImmutable $publishedAt = null
+        int $articleCategoryId,
+        string $status,
+        array $images,
+        array $localizations
     ): self {
         return new self(
             null,
-            $type,
-            $title,
-            $slug,
-            $excerpt,
-            $content,
-            $author,
-            false,
-            $categoryId,
-            $publishedAt
+            $articleCategoryId,
+            $status,
+            $images,
+            $localizations,
+            null,
+            null,
+            null
         );
     }
 
     public static function fromPrimitives(array $data): self
     {
-        $publishedAt = null;
-        $rawPublishedAt = $data['published_at'] ?? null;
-
-        if ($rawPublishedAt instanceof \DateTimeInterface) {
-            $publishedAt = \DateTimeImmutable::createFromInterface($rawPublishedAt);
-        } elseif (is_string($rawPublishedAt) && $rawPublishedAt !== '') {
-            $publishedAt = new \DateTimeImmutable($rawPublishedAt);
-        }
-
         return new self(
-            isset($data['id']) ? (int) $data['id'] : null,
-            (string) $data['type'],
-            $data['title'] ?? [],
-            $data['slug'] ?? [],
-            $data['excerpt'] ?? null,
-            $data['content'] ?? null,
-            $data['author'] ?? null,
-            (bool) ($data['published'] ?? false),
-            isset($data['category_id'])
-                ? (int) $data['category_id']
-                : (isset($data['category']) ? (int) $data['category'] : null),
-            $publishedAt
+            $data['id'] ?? null,
+            $data['article_category_id'],
+            $data['status'],
+            $data['images'] ?? [],
+            $data['localizations'] ?? [],
+            $data['created_at'] ?? null,
+            $data['updated_at'] ?? null,
+            $data['deleted_at'] ?? null
         );
     }
 
@@ -77,66 +56,47 @@ final class ContentArticle extends AggregateRoot
     {
         return [
             'id' => $this->id,
-            'type' => $this->type,
-            'title' => $this->title,
-            'slug' => $this->slug,
-            'excerpt' => $this->excerpt,
-            'content' => $this->content,
-            'author' => $this->author,
-            'published' => $this->published,
-            'category_id' => $this->category,
-            'published_at' => $this->publishedAt?->format('Y-m-d H:i:s'),
+            'article_category_id' => $this->articleCategoryId,
+            'status' => $this->status,
+            'images' => $this->images,
+            'localizations' => $this->localizations,
+            'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
+            'deleted_at' => $this->deletedAt,
         ];
     }
 
-    // Getters...
+    //
     public function id(): ?int
     {
         return $this->id;
     }
-
-    public function type(): string
+    public function articleCategoryId(): int
     {
-        return $this->type;
+        return $this->articleCategoryId;
     }
-
-    public function title(): array
+    public function status(): string
     {
-        return $this->title;
+        return $this->status;
     }
-
-    public function slug(): array
+    public function images(): array
     {
-        return $this->slug;
+        return $this->images;
     }
-
-    public function excerpt(): ?array
+    public function localizations(): array
     {
-        return $this->excerpt;
+        return $this->localizations;
     }
-
-    public function content(): ?array
+    public function createdAt(): ?string
     {
-        return $this->content;
+        return $this->createdAt;
     }
-
-    public function author(): ?string
+    public function updatedAt(): ?string
     {
-        return $this->author;
+        return $this->updatedAt;
     }
-
-    public function published(): bool
+    public function deletedAt(): ?string
     {
-        return $this->published;
-    }
-
-    public function category(): ?int
-    {
-        return $this->category;
-    }
-
-    public function publishedAt(): ?\DateTimeImmutable
-    {
-        return $this->publishedAt;
+        return $this->deletedAt;
     }
 }

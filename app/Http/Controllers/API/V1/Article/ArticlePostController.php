@@ -22,7 +22,6 @@ final class ArticlePostController extends ApiController
         path: "/api/v1/articles",
         tags: ["Articles"],
         summary: "Crear Article",
-        description: "Crear Article",
         operationId: "createArticle",
         security: [["bearerAuth" => []]]
     )]
@@ -31,21 +30,12 @@ final class ArticlePostController extends ApiController
     public function __invoke(StoreArticleRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $publishedAt = isset($validated['published_at'])
-            ? new \DateTimeImmutable((string) $validated['published_at'])
-            : null;
 
         $this->commandBus->dispatch(new CreateArticleContentCommand(
-            0, // New articles don't have an ID yet
-            $validated['type'],
-            $validated['title'],
-            $validated['slug'],
-            $validated['excerpt'] ?? null,
-            $validated['content'] ?? null,
-            $validated['author'] ?? 'admin',
-            (bool) ($validated['published'] ?? false),
-            isset($validated['category_id']) ? (int) $validated['category_id'] : null,
-            $publishedAt
+            (int) $validated['article_category_id'],
+            (string) $validated['status'],
+            (array) ($validated['images'] ?? []),
+            (array) $validated['localizations']
         ));
 
         return $this->sendResponse([], 'Artículo creado exitosamente', 201);

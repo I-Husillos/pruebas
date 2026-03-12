@@ -14,7 +14,7 @@ interface MarketRepository
 
     public function remove(int $id): void;
 
-    public function findByCode(MarketCode $code): ?Market;
+    public function findByCode(string $code): ?Market;
 
     public function findAllActive(): array;
 

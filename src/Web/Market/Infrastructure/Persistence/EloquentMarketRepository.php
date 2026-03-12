@@ -4,60 +4,74 @@ declare(strict_types=1);
 
 namespace Termosalud\Web\Market\Infrastructure\Persistence;
 
-use App\Models\Market as EloquentModel;
+use App\Models\Market as MarketEloquentModel;
 use Termosalud\Web\Market\Domain\Market;
 use Termosalud\Web\Market\Domain\MarketRepository;
 use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
 use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentCriteriaConverter;
-use Termosalud\Web\Market\Domain\MarketCode;
+use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentRepository;
 
-final class EloquentMarketRepository implements MarketRepository
+final class EloquentMarketRepository extends EloquentRepository implements MarketRepository
 {
+    public function __construct(MarketEloquentModel $model) 
+    {
+            $this->model = $model;
+    }
+
     public function save(Market $market): void
     {
         $data = $market->toPrimitives();
-        $model = EloquentModel::where('code', $data['code'])->first();
+        $id = $data['id'] ?? null;
+
+        unset($data['id'], $data['created_at'], $data['updated_at'], $data['deleted_at']);
+
+        $model = $id ? $this->model->newQuery()->find($id) : null;
 
         if (! $model) {
-            $model = new EloquentModel();
-            $model->code = $data['code'];
+            $model = $this->model->newQuery()
+                ->where('code', $data['code'])
+                ->first();
         }
 
-        $model->name = $data['name'];
-        $model->region = $data['region'];
-        $model->default_language = $data['default_language'];
-        $model->enabled_languages = json_encode($data['enabled_languages']);
-        $model->active = $data['active'];
-        $model->priority = $data['priority'];
+        if ($model) {
+            $model->update($data);
 
-        $model->save();
+            return;
+        }
+
+        $this->model->newQuery()->create($data);
     }
 
     public function search(int $id): ?Market
     {
-        $model = EloquentModel::find($id);
+        $model = $this->model->newQuery()->find($id);
 
         return $model ? $this->toDomain($model) : null;
     }
 
     public function remove(int $id): void
     {
-        $model = EloquentModel::find($id);
+        $model = $this->model->newQuery()->find($id);
         if ($model) {
             $model->forceDelete();
         }
     }
 
-    public function findByCode(MarketCode $code): ?Market
+    public function findByCode(string $code): ?Market
     {
-        $model = EloquentModel::where('code', $code->value())->first();
+        $model = $this->model->newQuery()
+            ->where('code', $code)
+            ->first();
 
         return $model ? $this->toDomain($model) : null;
     }
 
     public function findAllActive(): array
     {
-        $models = EloquentModel::where('active', true)->orderBy('priority', 'desc')->get();
+        $models = $this->model->newQuery()
+            ->where('active', true)
+            ->orderBy('priority')
+            ->get();
 
         return collect($models)->map(fn($m) => $this->toDomain($m))->toArray();
     }
@@ -87,21 +101,9 @@ final class EloquentMarketRepository implements MarketRepository
         return $query->count();
     }
 
-    private function toDomain(EloquentModel $model): Market
+    private function toDomain(MarketEloquentModel $model): Market
     {
         return Market::fromPrimitives($model->toArray());
     }
 
-    private function matching($criteria)
-    {
-        $criteria = is_array($criteria) === false ? [$criteria] : $criteria;
-
-        return array_reduce($criteria, static function ($query, $criteria) {
-            $criteria->each(static function ($method) use ($query) {
-                call_user_func_array([$query, $method->name], $method->parameters);
-            });
-
-            return $query;
-        }, EloquentModel::query());
-    }
 }

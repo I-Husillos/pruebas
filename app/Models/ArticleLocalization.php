@@ -31,11 +31,11 @@ class ArticleLocalization extends Model
 
     public function language(): BelongsTo
     {
-        return $this->belongsTo(Language::class);
+        return $this->belongsTo(Language::class, 'language_id');
     }
 
     public function market(): BelongsTo
     {
-        return $this->belongsTo(Market::class);
+        return $this->belongsTo(Market::class, 'market_id');
     }
 }

@@ -35,11 +35,10 @@ final class MarketPutController extends ApiController
             'code' => 'required|string|max:10|unique:markets,code,' . $id,
             'name' => 'required|string|max:255',
             'region' => 'required|string|max:100',
-            'regulation_type' => 'required|string|max:100',
             'default_language' => 'required|string|max:10',
             'enabled_languages' => 'required|array',
-            'currency' => 'required|string|max:10',
             'active' => 'boolean',
+            'priority' => 'nullable|integer',
         ]);
 
         $market->update($validated);

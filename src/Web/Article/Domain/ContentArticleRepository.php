@@ -19,5 +19,5 @@ interface ContentArticleRepository
 
     public function remove(int $id): void;
 
-    public function findBySlug(string $slug, string $locale): ?ContentArticle;
+    public function findBySlug(string $slug, int $language, int $market): ?ContentArticle;
 }

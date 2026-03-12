@@ -10,29 +10,27 @@ use Termosalud\Web\Article\Domain\ContentArticle;
 final class ArticleResponse implements Response
 {
     public function __construct(
-        private readonly int $id,
-        private readonly string $type,
-        private readonly array $title,
-        private readonly array $slug,
-        private readonly ?array $excerpt,
-        private readonly ?array $content,
-        private readonly ?string $author,
-        private readonly bool $published,
-        private readonly ?string $publishedAt
+        private readonly ?int $id,
+        private int $articleCategoryId,
+        private string $status,
+        private array $images,
+        private array $localizations,
+        private ?string $createdAt,
+        private ?string $updatedAt,
+        private ?string $deletedAt,
     ) {}
 
     public static function fromArticle(ContentArticle $article): self
     {
         return new self(
             $article->id(),
-            $article->type(),
-            $article->title(),
-            $article->slug(),
-            $article->excerpt(),
-            $article->content(),
-            $article->author(),
-            $article->published(),
-            $article->publishedAt() ? $article->publishedAt()->format('Y-m-d H:i:s') : null
+            $article->articleCategoryId(),
+            $article->status(),
+            $article->images(),
+            $article->localizations(),
+            $article->createdAt(),
+            $article->updatedAt(),
+            $article->deletedAt()
         );
     }
 
@@ -40,14 +38,13 @@ final class ArticleResponse implements Response
     {
         return [
             'id' => $this->id,
-            'type' => $this->type,
-            'title' => $this->title,
-            'slug' => $this->slug,
-            'excerpt' => $this->excerpt,
-            'content' => $this->content,
-            'author' => $this->author,
-            'published' => $this->published,
-            'published_at' => $this->publishedAt,
+            'article_category_id' => $this->articleCategoryId,
+            'status' => $this->status,
+            'images' => $this->images,
+            'localizations' => $this->localizations,
+            'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
+            'deleted_at' => $this->deletedAt,
         ];
     }
 }

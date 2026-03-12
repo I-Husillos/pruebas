@@ -58,10 +58,6 @@
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold text-gray-900 mb-6">Configuración</h3>
           <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Orden</label>
-              <input v-model.number="form.sort_order" type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-            </div>
             <div class="flex items-center">
               <input v-model="form.active" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600" />
               <label class="ml-3 text-sm font-medium text-gray-900">Categoría Activa</label>

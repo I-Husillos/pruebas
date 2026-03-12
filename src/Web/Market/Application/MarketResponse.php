@@ -24,7 +24,7 @@ final class MarketResponse implements Response
     {
         return new self(
             $market->id(),
-            $market->code()->value(),
+            $market->code(),
             $market->name(),
             $market->region(),
             $market->defaultLanguage(),
@@ -43,7 +43,7 @@ final class MarketResponse implements Response
             'region' => $this->region,
             'default_language' => $this->defaultLanguage,
             'enabled_languages' => $this->enabledLanguages,
-            'is_active' => $this->isActive,
+            'active' => $this->isActive,
             'priority' => $this->priority,
         ];
     }
