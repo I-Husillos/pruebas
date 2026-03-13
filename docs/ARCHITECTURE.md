@@ -92,45 +92,41 @@ Imagina la aplicación como una cebolla. Las capas exteriores son los mecanismos
 
 ---
 
-## 🗂️ Estructura de carpetas detallada y roles
+## 🗂️ Estructura de carpetas real
+
+Todo el código de negocio vive bajo `src/Web/`. Cada módulo es un Bounded Context independiente con sus tres capas:
 
 ```text
 src/
-├── Catalog/                              # Módulo de Catálogo de Productos (Bounded Context)
-│   ├── Domain/                           # ⭐ Capa de Dominio (Sin Laravel)
-│   │   ├── Product.php                   # Entidad Principal (Raíz de Agregado)
-│   │   ├── ProductRepository.php         # Puerto (Interfaz: Contrato que dice qué hay que hacer)
-│   │   ├── ValueObjects/                 # Objetos inmutables que validan sus propios datos
-│   │   │   ├── ProductCode.php           
-│   │   │   └── ProductSlug.php           
-│   │   └── Exceptions/                   # Errores específicos del negocio
-│   │       └── ProductNotFoundException.php
-│   │
-│   ├── Application/                      # ⭐ Capa de Aplicación (Orquestadores)
-│   │   ├── Create/
-│   │   │   └── ProductCreator.php        # Caso de Uso CQRS: Script que "Crea un Producto"
-│   │   ├── Find/
-│   │   │   └── ProductFinder.php         # Caso de Uso CQRS: Script que "Busca un Producto"
-│   │   └── Update/
-│   │       └── ProductUpdater.php
-│   │
-│   └── Infrastructure/                   # ⭐ Capa de Infraestructura (Implementación técnica)
-│       └── Persistence/
-│           └── EloquentProductRepository.php  # Adaptador (Sabe de bases de datos y SQL/Eloquent)
-│
-├── Forms/                                # Módulo de Formularios Inteligentes / CRM
-│   └── (Misma estructura: Domain, Application, Infrastructure)
-│
-└── Shared/                               # Todo el código transversal que usan todos los módulos
-    ├── Domain/
-    │   ├── ValueObject/
-    │   │   ├── StringValueObject.php     # Reutilizable para cualquier texto
-    │   │   └── Uuid.php                  # Reutilizable para crear IDs universales
-    │   └── Criteria/                     # Sistema agnóstico para hacer búsquedas y paginación
-    └── Infrastructure/
-        └── Persistence/
-            └── EloquentRepository.php    # Clases base para Eloquent
+└── Web/
+    ├── Product/                           # Módulo: Productos del catálogo
+    │   ├── Domain/
+    │   │   ├── Product.php                # Entidad principal (Aggregate Root)
+    │   │   ├── ProductRepository.php      # Puerto (Interface/Contrato)
+    │   │   ├── ProductCode.php            # Value Object
+    │   │   └── ProductId.php              # Value Object
+    │   ├── Application/
+    │   │   ├── Create/                    # Caso de Uso: crear producto
+    │   │   ├── Find/                      # Caso de Uso: buscar por ID
+    │   │   ├── Search/                    # Caso de Uso: búsquedas/listados
+    │   │   ├── Update/                    # Caso de Uso: actualizar
+    │   │   └── Delete/                    # Caso de Uso: borrar
+    │   └── Infrastructure/
+    │       └── Persistence/
+    │           └── EloquentProductRepository.php  # Adaptador SQL
+    │
+    ├── Page/                              # Módulo: Páginas / Custom Landings
+    ├── Article/                           # Módulo: Artículos (blog, noticias, prensa)
+    ├── Treatment/                         # Módulo: Tratamientos médicos
+    ├── Form/                              # Módulo: Formularios y leads
+    ├── Market/                            # Módulo: Mercados
+    ├── Language/                          # Módulo: Idiomas
+    ├── ProductCategory/
+    ├── ArticleCategory/
+    └── User/
 ```
+
+Las clases base (AggregateRoot, ValueObjects, CommandBus, etc.) provienen del paquete interno `dba/ddd-skeleton` instalado via Composer, no de una carpeta `Shared/` local.
 
 ---
 
@@ -150,21 +146,19 @@ Luego, en los archivos de configuración de Laravel (`AppServiceProvider.php`), 
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Termosalud\Catalog\Domain\ProductRepository;
-use Termosalud\Catalog\Infrastructure\Persistence\EloquentProductRepository;
+use Termosalud\Web\Product\Domain\ProductRepository;
+use Termosalud\Web\Product\Infrastructure\Persistence\EloquentProductRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Enlazar el Puerto (Interfaz) con el Adaptador (Implementación tecnológica)
         $this->app->bind(
             ProductRepository::class,
             EloquentProductRepository::class
         );
-        
-        // Magia: Si en el futuro cambiamos a base de datos en memoria o MongoDB, 
-        // solo cambiamos esta línea. El resto de la "cebolla" se queda intacta.
+        // Si en el futuro cambiamos a MongoDB o a una base en memoria para tests,
+        // solo cambia esta línea. El resto de capas permanece intacto.
     }
 }
 ```
@@ -204,8 +198,60 @@ Cuando vayas a crear una nueva funcionalidad, comprueba:
 - [ ] ¿He configurado el **ServiceProvider** para enlazar la Interfaz y su Adaptador real?
 - [ ] ¿Mi **Controlador** en `app/` llama al Caso de Uso o ensucia el código tratando él mismo la BBDD?
 
-Si cumples esto, ¡estás desarrollando bajo el estándar oficial del proyecto Termosalud!
+Si cumples esto, estás desarrollando bajo el estándar del proyecto Termosalud.
 
 ---
 
-**Siguiente paso:** Para profundizar un poco más en la organización interna y en conceptos como los Principios SOLID en nuestro código, lee [HEXAGONAL_ARCHITECTURE.md](docs/HEXAGONAL_ARCHITECTURE.md).
+## 🔀 CQRS y el Bus de Mensajes
+
+En la capa de Application (los Casos de Uso) usamos **CQRS** (Command Query Responsibility Segregation): separamos las operaciones que escriben en base de datos de las que solo leen.
+
+- **Commands** (`CreateProductCommand`, `UpdatePageCommand`…): representan una intención de cambiar estado. El controlador no ejecuta la lógica directamente, sino que *despacha* el Command al **CommandBus**. Un `CommandHandler` aislado lo intercepta y ejecuta. Solo puede lanzar una excepción o completarse con éxito.
+- **Queries** (`FindProductByIdQuery`…): representan una pregunta al sistema (solo lectura). El controlador hace `$this->queryBus->ask($query)` y recibe un DTO inmutable. Nunca modifican estado.
+
+```php
+// Controlador: solo valida y despacha
+public function __invoke(StoreProductRequest $request): JsonResponse
+{
+    $this->commandBus->dispatch(new CreateProductCommand(
+        $request->input('code'),
+        $request->input('name'),
+        // ...
+    ));
+    return $this->sendResponse([], 'Producto creado', 201);
+}
+
+// El Handler: ejecuta el caso de uso
+final class CreateProductCommandHandler
+{
+    public function __invoke(CreateProductCommand $command): void
+    {
+        $product = Product::create(
+            new ProductCode($command->code()),
+            $command->name()
+        );
+        $this->repository->save($product);
+    }
+}
+```
+
+### ¿Por qué el Bus en lugar de llamar directo?
+
+Actualmente todo es síncrono. Pero si mañana `PublishPageCommand` necesita notificar a servicios externos y tarda segundos, basta configurar el bus para encolarlo (Redis/Horizon). La lógica de negocio y los controladores no cambian en absoluto.
+
+---
+
+## 🎯 Controladores de Acción Única
+
+Cada endpoint HTTP tiene su propio controlador con un único método `__invoke()`. No hay clases con `index()`, `store()`, `update()` y `destroy()` conviviendo. Cada acción es un archivo separado:
+
+```text
+app/Http/Controllers/API/V1/Product/
+├── ProductsGetController.php     # GET /api/v1/products
+├── ProductGetController.php      # GET /api/v1/products/{id}
+├── ProductPostController.php     # POST /api/v1/products
+├── ProductPutController.php      # PUT /api/v1/products/{id}
+└── ProductDeleteController.php   # DELETE /api/v1/products/{id}
+```
+
+Esto hace trivial encontrar el código responsable de un endpoint: el nombre del fichero es el endpoint.

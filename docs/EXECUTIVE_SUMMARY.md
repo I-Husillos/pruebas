@@ -18,7 +18,7 @@ La web actual de Termosalud, como cualquier CMS base, no está preparada para la
 
 Una plataforma web única, **multi-mercado y multi-idioma** real y centralizada.
 
-- ✅ **Mercados sin Programar:** Marketing puede añadir "Francia" en el Backoffice, y automáticamente existe `/fr/fr/` con sitemaps SEO integrados.
+- ✅ **Mercados sin programar:** Marketing puede añadir "Francia" en el backoffice, y automáticamente existe `/fr/fr/` con sitemaps SEO integrados.
 - ✅ **Regulación Dinámica:** Zionic no se vende bajo las mismas promesas médicas en Europa (EU_MDR) que ante la estricta **FDA** Americana. Con nuestro sistema, según la URL del país visitado, la base de datos muestra las especificaciones legales filtradas. ¡Protegemos legalmente a la empresa mientras ahorramos trabajo!.
 - ✅ **Gestión Central de Leads:** Adiós a perder clientes. El formulario web manda el contacto *Instantáneamente* en 5 segundos al CRM de la empresa para que Ventas asigne un asesor.
 
@@ -30,7 +30,7 @@ Una plataforma web única, **multi-mercado y multi-idioma** real y centralizada.
 >
 > **Tip:** Al equipo de exportación no le importa Vue3 o PHP. Le importa llegar rápido a nuevos territorios.
 
-- **El cambio:** Pasar de tardar *3 meses* en levantar una web alemana a tardar *1 día* dándole a un par de botones en el Admin.
+- **El cambio:** Pasar de tardar *3 meses* en levantar una web alemana a tardar *1 día* dándole a un par de botones en el backoffice.
 
 ### 🎨 Para Marketing
 >
