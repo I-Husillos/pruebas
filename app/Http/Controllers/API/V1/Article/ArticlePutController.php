@@ -33,21 +33,13 @@ final class ArticlePutController extends ApiController
     public function __invoke(UpdateArticleRequest $request, int $id): JsonResponse
     {
         $validated = $request->validated();
-        $publishedAt = isset($validated['published_at'])
-            ? new \DateTimeImmutable((string) $validated['published_at'])
-            : null;
 
         $this->commandBus->dispatch(new UpdateContentArticleCommand(
             $id,
-            $validated['type'] ?? null,
-            $validated['title'] ?? null,
-            $validated['slug'] ?? null,
-            $validated['excerpt'] ?? null,
-            $validated['content'] ?? null,
-            $validated['author'] ?? 'admin',
-            (bool) ($validated['published'] ?? false),
-            isset($validated['category_id']) ? (int) $validated['category_id'] : null,
-            $publishedAt
+            (int) ($validated['article_category_id'] ?? 0),
+            (string) $validated['status'],
+            (array) ($validated['images'] ?? []),
+            (array) $validated['localizations']
         ));
 
         return $this->sendResponse([], 'Artículo actualizado exitosamente');

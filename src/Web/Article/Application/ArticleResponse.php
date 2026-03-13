@@ -11,7 +11,7 @@ final class ArticleResponse implements Response
 {
     public function __construct(
         private readonly ?int $id,
-        private int $articleCategoryId,
+        private ?int $articleCategoryId,
         private string $status,
         private array $images,
         private array $localizations,

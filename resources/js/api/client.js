@@ -73,6 +73,21 @@ class ApiClient {
     async delete(url) {
         return this.client.delete(url);
     }
+
+    async upload(url, formData, onProgress = null) {
+        return this.client.post(url, formData, {
+            headers: {
+                // Al poner undefined, axios elimina el Content-Type por defecto
+                // y el navegador lo establece automáticamente como:
+                // multipart/form-data; boundary=----WebKitFormBoundary...
+                // Sin el boundary correcto, el servidor no puede leer el archivo.
+                'Content-Type': undefined,
+            },
+            onUploadProgress: onProgress ? (e) => {
+                onProgress(Math.round((e.loaded * 100) / e.total));
+            } : undefined,
+        });
+    }
 }
 
 export default ApiClient;

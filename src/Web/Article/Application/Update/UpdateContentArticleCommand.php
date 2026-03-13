@@ -10,7 +10,7 @@ final class UpdateContentArticleCommand implements Command
 {
     public function __construct(
         private int $id,
-        private int $articleCategoryId,
+        private ?int $articleCategoryId,
         private string $status,
         private array $images,
         private array $localizations,
@@ -21,7 +21,7 @@ final class UpdateContentArticleCommand implements Command
         return $this->id;
     }
 
-    public function articleCategoryId(): int
+    public function articleCategoryId(): ?int
     {
         return $this->articleCategoryId;
     }

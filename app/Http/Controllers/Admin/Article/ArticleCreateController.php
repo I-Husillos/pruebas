@@ -33,6 +33,7 @@ final class ArticleCreateController extends BaseController
                         }
 
                         return [
+                            'id' => $language->id,
                             'code' => $language->code,
                             'name' => $language->native_name ?: $language->name,
                             'is_default' => $language->code === $market->default_language,
@@ -54,12 +55,10 @@ final class ArticleCreateController extends BaseController
             ->filter(fn (array $market) => ! empty($market['languages']))
             ->values();
 
-        $content = null;
 
         return Inertia::render('Admin/Articles/Create', [
             'categories' => $categories,
             'markets' => $markets,
-            'content' => $content,
         ]);
     }
 }

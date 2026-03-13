@@ -14,22 +14,23 @@ class StoreArticleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => 'required|in:blog,news,press',
-            'title' => 'required|array',
-            'title.es' => 'required|string|max:255',
-            'slug' => 'required|array',
-            'excerpt' => 'nullable|array',
-            'content' => 'nullable|array',
-            'author' => 'nullable|string|max:255',
-            'published' => 'boolean',
-            'published_at' => 'nullable|date',
-            'category_id' => 'nullable|exists:article_categories,id',
-            'featured_image' => 'nullable|array',
+            // Campos de la tabla maestra `articles`
+            'article_category_id' => 'nullable|integer|exists:article_categories,id',
+            'status'              => 'required|in:draft,published,scheduled,pending_review',
+            'images'              => 'nullable|array',
 
-            'title.*' => 'nullable|string',
-            'slug.*' => 'nullable|string',
-            'excerpt.*' => 'nullable|string',
-            'content.*' => 'nullable|string',
+            // Array de localizaciones — cada elemento es una fila en article_localizations
+            'localizations'                        => 'required|array|min:1',
+            'localizations.*.market_id'            => 'required|integer|exists:markets,id',
+            'localizations.*.language_id'          => 'required|integer|exists:languages,id',
+            'localizations.*.title'                => 'required|string|max:255',
+            'localizations.*.slug'                 => 'required|string|max:255',
+            'localizations.*.excerpt'              => 'nullable|string|max:500',
+            // content es el array JSON del BlockEditor: rows → columns → blocks
+            'localizations.*.content'              => 'nullable|array',
+            'localizations.*.seo_metadata'         => 'nullable|array',
+            'localizations.*.seo_metadata.title'   => 'nullable|string|max:255',
+            'localizations.*.seo_metadata.description' => 'nullable|string|max:500',
         ];
     }
 }

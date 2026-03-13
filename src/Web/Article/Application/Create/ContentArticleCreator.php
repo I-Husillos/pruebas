@@ -12,7 +12,7 @@ final class ContentArticleCreator
     public function __construct(private readonly ContentArticleRepository $repository) {}
 
     public function __invoke(
-        int $articleCategoryId,
+        ?int $articleCategoryId,
         string $status,
         array $images,
         array $localizations,

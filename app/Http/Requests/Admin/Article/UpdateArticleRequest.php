@@ -14,22 +14,22 @@ class UpdateArticleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => 'required|in:blog,news,press',
-            'title' => 'required|array',
-            'title.es' => 'required|string|max:255',
-            'slug' => 'required|array',
-            'excerpt' => 'nullable|array',
-            'content' => 'nullable|array',
-            'author' => 'nullable|string|max:255',
-            'published' => 'boolean',
-            'published_at' => 'nullable|date',
-            'category_id' => 'nullable|exists:article_categories,id',
-            'featured_image' => 'nullable|array',
+            'article_category_id' => 'nullable|exists:article_categories,id',
+            'status' => 'required|in:draft,published,scheduled,pending_review',
+            'images' => 'nullable|array',
+            'localizations' => 'required|array|min:1',
 
-            'title.*' => 'nullable|string',
-            'slug.*' => 'nullable|string',
-            'excerpt.*' => 'nullable|string',
-            'content.*' => 'nullable|string',
+            'localizations.*.market_id' => 'required|integer|exists:markets,id',
+            'localizations.*.language_id' => 'required|integer|exists:languages,id',
+            'localizations.*.title' => 'required|string|max:255',
+            'localizations.*.slug' => 'nullable|string|max:255',
+            'localizations.*.excerpt' => 'nullable|string',
+            'localizations.*.description' => 'nullable|string',
+            // BlockEditor sends nested rows/columns/blocks arrays.
+            'localizations.*.content' => 'nullable|array',
+            'localizations.*.seo_metadata' => 'nullable|array',
+            'localizations.*.seo_metadata.title' => 'nullable|string|max:255',
+            'localizations.*.seo_metadata.description' => 'nullable|string',
         ];
     }
 }

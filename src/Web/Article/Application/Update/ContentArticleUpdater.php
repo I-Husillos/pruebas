@@ -13,7 +13,7 @@ final class ContentArticleUpdater
 
     public function __invoke(
         int $id,
-        int $articleCategoryId,
+        ?int $articleCategoryId,
         string $status,
         array $images,
         array $localizations,

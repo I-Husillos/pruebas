@@ -56,21 +56,22 @@
 
 <script setup>
 import { ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { TrashIcon } from '@heroicons/vue/24/outline';
-import axios from 'axios';
+import ApiClient from '@/api/client';
 
 const props = defineProps({
-    modelValue: Object, // { url: '', type: 'image'|'video', caption: '' }
+    modelValue: Object,
 });
-
 const emit = defineEmits(['update:modelValue']);
 
-// Local data copy
 const data = ref(props.modelValue || { url: '', type: '', caption: '' });
 const fileInput = ref(null);
 const uploading = ref(false);
 const progress = ref(0);
 const error = ref(null);
+
+const api = new ApiClient(usePage().props.apiToken);
 
 const triggerFileInput = () => {
     fileInput.value.click();
@@ -88,20 +89,17 @@ const handleFileUpload = async (event) => {
     formData.append('file', file);
 
     try {
-        const response = await axios.post(route('admin.media.store'), formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-            onUploadProgress: (progressEvent) => {
-                progress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            },
+        // Usamos el método upload que gestiona correctamente
+        // el Content-Type multipart y el progreso
+        const response = await api.upload('/api/v1/media', formData, (pct) => {
+            progress.value = pct;
         });
 
-        // Success
+        // El backend devuelve: { success: true, data: { url, type, mime } }
         data.value = {
-            url: response.data.url,
-            type: response.data.type,
-            caption: '',
+            url:     response.data.data.url,
+            type:    response.data.data.type,
+            caption: data.value.caption || '',
         };
         emit('update:modelValue', data.value);
 
@@ -110,7 +108,6 @@ const handleFileUpload = async (event) => {
         error.value = err.response?.data?.message || 'Error al subir el archivo.';
     } finally {
         uploading.value = false;
-        // Reset input
         event.target.value = '';
     }
 };

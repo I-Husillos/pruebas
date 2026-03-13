@@ -9,13 +9,13 @@ use Dba\DddSkeleton\Shared\Domain\Bus\Command\Command;
 final class CreateArticleContentCommand implements Command
 {
     public function __construct(
-        private int $articleCategoryId,
+        private ?int $articleCategoryId,
         private string $status,
         private array $images,
         private array $localizations,
     ) {}
 
-    public function articleCategoryId(): int
+    public function articleCategoryId(): ?int
     {
         return $this->articleCategoryId;
     }

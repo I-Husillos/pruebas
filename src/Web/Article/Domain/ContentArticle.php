@@ -10,7 +10,7 @@ final class ContentArticle extends AggregateRoot
 {
     public function __construct(
         private readonly ?int $id,
-        private int $articleCategoryId,
+        private ?int $articleCategoryId,
         private string $status,
         private array $images,
         private array $localizations,
@@ -21,7 +21,7 @@ final class ContentArticle extends AggregateRoot
     ) {}
 
     public static function create(
-        int $articleCategoryId,
+        ?int $articleCategoryId,
         string $status,
         array $images,
         array $localizations
@@ -42,7 +42,7 @@ final class ContentArticle extends AggregateRoot
     {
         return new self(
             $data['id'] ?? null,
-            $data['article_category_id'],
+            $data['article_category_id'] ?? null,
             $data['status'],
             $data['images'] ?? [],
             $data['localizations'] ?? [],
@@ -71,7 +71,7 @@ final class ContentArticle extends AggregateRoot
     {
         return $this->id;
     }
-    public function articleCategoryId(): int
+    public function articleCategoryId(): ?int
     {
         return $this->articleCategoryId;
     }
