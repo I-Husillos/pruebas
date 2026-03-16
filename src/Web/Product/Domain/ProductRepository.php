@@ -18,4 +18,5 @@ interface ProductRepository
     public function countByCriteria(Criteria $criteria): int;
 
     public function remove(int $id): void;
+    public function removeLocalization(int $localizationId): void;
 }

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Termosalud\Web\Treatment\Application\Update;
 
-use Termosalud\Web\Treatment\Domain\Treatment;
-use Termosalud\Web\Treatment\Domain\TreatmentCategoryId;
 use Termosalud\Web\Treatment\Domain\TreatmentRepository;
+use Termosalud\Web\Treatment\Domain\Treatment;
 
 final class TreatmentUpdater
 {
@@ -14,36 +13,27 @@ final class TreatmentUpdater
 
     public function __invoke(
         int $id,
-        array $name,
-        array $slug,
-        ?array $description,
-        bool $published,
-        ?array $availableMarkets,
-        int $sortOrder,
-        ?int $categoryId,
-        ?array $blocksJson
+        ?int $treatmentCategoryId,
+        string $status,
+        array $images,
+        array $localizations,
+        ?array $relatedProducts = null,
+        int $order = 0,
     ): void {
-        $treatment = Treatment::create(
+        $treatment = new Treatment(
             $id,
-            $name,
-            $slug,
-            $description,
+            $treatmentCategoryId,
+            $status,
+            $images,
+            $localizations,
+            $relatedProducts,
+            $order,
             null,
             null,
             null,
-            null,
-            null,
-            $published,
-            null,
-            $availableMarkets,
-            null,
-            null,
-            null,
-            $blocksJson,
-            $sortOrder,
-            $categoryId !== null ? new TreatmentCategoryId($categoryId) : null
         );
 
         $this->repository->save($treatment);
     }
 }
+

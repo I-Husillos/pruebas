@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Termosalud\Web\Article\Infrastructure\Persistence;
 
+use App\Models\ArticleLocalization;
 use App\Models\ContentArticle as ContentArticleEloquentModel;
 use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
 use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentCriteriaConverter;
@@ -14,6 +15,17 @@ use Termosalud\Web\Article\Domain\ContentArticleRepository;
 
 final class EloquentContentArticleRepository extends EloquentRepository implements ContentArticleRepository
 {
+
+    private const CRITERIA_TO_ELOQUENT_FIELDS = [
+        'id'                  => 'articles.id',
+        'article_category_id' => 'articles.article_category_id',
+        'status'              => 'articles.status',
+        'title'               => 'article_localizations.title',
+        'slug'                => 'article_localizations.slug',
+        'created_at'          => 'articles.created_at',
+        'updated_at'          => 'articles.updated_at',
+    ];
+
     public function __construct(ContentArticleEloquentModel $model)
     {
         $this->model = $model;
@@ -58,8 +70,13 @@ final class EloquentContentArticleRepository extends EloquentRepository implemen
 
     public function searchByCriteria(Criteria $criteria): array
     {
-        $eloquentCriteria = EloquentCriteriaConverter::convert($criteria);
-        $query = $this->matching($eloquentCriteria)->with('localizations');
+        $eloquentCriteria = EloquentCriteriaConverter::convert($criteria, self::CRITERIA_TO_ELOQUENT_FIELDS);
+        $query = $this->matching($eloquentCriteria)
+            ->leftJoin('article_localizations', 'articles.id', '=', 'article_localizations.article_id')
+            ->select('articles.*')
+            ->distinct()
+            ->with('localizations');
+
         $models = $query->get();
 
         return collect($models)->map(fn($m) => $this->toDomain($m))->toArray();
@@ -68,8 +85,11 @@ final class EloquentContentArticleRepository extends EloquentRepository implemen
     public function countByCriteria(Criteria $criteria): int
     {
         $countCriteria = new Criteria($criteria->filters(), $criteria->order(), null, null);
-        $eloquentCriteria = EloquentCriteriaConverter::convert($countCriteria);
-        $query = $this->matching($eloquentCriteria);
+        $eloquentCriteria = EloquentCriteriaConverter::convert($countCriteria, self::CRITERIA_TO_ELOQUENT_FIELDS);
+        $query = $this->matching($eloquentCriteria)
+            ->leftJoin('article_localizations', 'articles.id', '=', 'article_localizations.article_id')
+            ->select('articles.*')
+            ->distinct();
 
         return $query->count();
     }
@@ -105,6 +125,15 @@ final class EloquentContentArticleRepository extends EloquentRepository implemen
         $model = $this->model->newQuery()->find($id);
         if ($model) {
             $model->forceDelete();
+        }
+    }
+
+    public function removeLocalization(int $localizationId): void
+    {
+        $model = ArticleLocalization::query()->find($localizationId);
+
+        if ($model) {
+            $model->delete();
         }
     }
 }

@@ -6,47 +6,28 @@ namespace Termosalud\Web\Product\Application\Create;
 
 use Termosalud\Web\Product\Domain\ProductRepository;
 use Termosalud\Web\Product\Domain\Product;
-use Termosalud\Web\Product\Domain\ProductCode;
 
 final class ProductCreator
 {
     public function __construct(private readonly ProductRepository $repository) {}
 
     public function __invoke(
-        int $id,
-        ProductCode $code,
-        array $name,
-        array $slug,
-        ?array $shortDescription,
-        ?array $description,
-        ?array $technicalSpecs,
-        ?array $images,
-        ?int $categoryId,
-        ?array $categoryName,
-        ?array $tags,
-        bool $published,
-        ?string $publishedAt,
-        ?array $availableMarkets,
-        ?array $metaSeo,
-        int $sortOrder
+       ?int $productCategoryId,
+       string $code,
+       string $status,
+       array $images,
+       array $localizations,
+       ?array $relatedTreatments = null,
+       int $order = 0,
     ): void {
         $product = Product::create(
-            $id,
-            $code,
-            $name,
-            $slug,
-            $shortDescription,
-            $description,
-            $technicalSpecs,
-            $images,
-            $categoryId,
-            $categoryName,
-            $tags,
-            $published,
-            $publishedAt,
-            $availableMarkets,
-            $metaSeo,
-            $sortOrder
+          $productCategoryId,
+          $code,
+          $status,
+          $images,
+          $localizations,
+          $relatedTreatments,
+          $order,
         );
 
         $this->repository->save($product);

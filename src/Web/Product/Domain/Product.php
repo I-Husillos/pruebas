@@ -8,167 +8,87 @@ use Dba\DddSkeleton\Shared\Domain\Aggregate\AggregateRoot;
 
 final class Product extends AggregateRoot
 {
-    private int $id;
-
-    private ProductCode $code;
-
-    private array $name;
-
-    private array $slug;
-
-    private ?array $shortDescription;
-
-    private ?array $description;
-
-    private ?array $technicalSpecs;
-
-    private ?array $images;
-
-    private ?int $categoryId;
-
-    private ?array $categoryName;
-
-    private ?array $tags;
-
-    private bool $published;
-
-    private ?string $publishedAt;
-
-    private ?array $availableMarkets;
-
-    private ?array $metaSeo;
-
-    private int $sortOrder;
-
-    private ?string $createdAt;
-
-    private ?string $updatedAt;
-
     public function __construct(
-        int $id,
-        ProductCode $code,
-        array $name,
-        array $slug,
-        ?array $shortDescription,
-        ?array $description,
-        ?array $technicalSpecs,
-        ?array $images,
-        ?int $categoryId,
-        ?array $categoryName,
-        ?array $tags,
-        bool $published,
-        ?string $publishedAt,
-        ?array $availableMarkets,
-        ?array $metaSeo,
-        int $sortOrder,
-        ?string $createdAt = null,
-        ?string $updatedAt = null
-    ) {
-        $this->id = $id;
-        $this->code = $code;
-        $this->name = $name;
-        $this->slug = $slug;
-        $this->shortDescription = $shortDescription;
-        $this->description = $description;
-        $this->technicalSpecs = $technicalSpecs;
-        $this->images = $images;
-        $this->categoryId = $categoryId;
-        $this->categoryName = $categoryName;
-        $this->tags = $tags;
-        $this->published = $published;
-        $this->publishedAt = $publishedAt;
-        $this->availableMarkets = $availableMarkets;
-        $this->metaSeo = $metaSeo;
-        $this->sortOrder = $sortOrder;
-        $this->createdAt = $createdAt;
-        $this->updatedAt = $updatedAt;
-    }
+        private readonly ?int $id,
+        private ?int $productCategoryId,
+        private string $code,
+        private string $status,
+        private array $images,
+        private array $localizations,
+        private ?array $relatedTreatments,
+        private int $order,
+        private ?string $createdAt,
+        private ?string $updatedAt,
+        private ?string $deletedAt,
+    ) {}
 
     public static function create(
-        int $id,
-        ProductCode $code,
-        array $name,
-        array $slug,
-        ?array $shortDescription = null,
-        ?array $description = null,
-        ?array $technicalSpecs = null,
-        ?array $images = null,
-        ?int $categoryId = null,
-        ?array $categoryName = null,
-        ?array $tags = null,
-        bool $published = false,
-        ?string $publishedAt = null,
-        ?array $availableMarkets = null,
-        ?array $metaSeo = null,
-        int $sortOrder = 0
+        ?int $productCategoryId,
+        string $code,
+        string $status,
+        array $images,
+        array $localizations,
+        ?array $relatedTreatments = null,
+        int $order = 0,
     ): self {
         return new self(
-            $id,
+            null,
+            $productCategoryId,
             $code,
-            $name,
-            $slug,
-            $shortDescription,
-            $description,
-            $technicalSpecs,
+            $status,
             $images,
-            $categoryId,
-            $categoryName,
-            $tags,
-            $published,
-            $publishedAt,
-            $availableMarkets,
-            $metaSeo,
-            $sortOrder
+            $localizations,
+            $relatedTreatments,
+            $order,
+            null,
+            null,
+            null,
         );
     }
 
     public static function fromPrimitives(array $data): self
     {
         return new self(
-            (int) $data['id'],
-            new ProductCode($data['code']),
-            $data['name'],
-            $data['slug'],
-            $data['short_description'] ?? null,
-            $data['description'] ?? null,
-            $data['technical_specs'] ?? null,
-            $data['images'] ?? null,
-            isset($data['category_id'])
-                ? (int) $data['category_id']
-                : (isset($data['category']) ? (int) $data['category'] : null),
-            $data['category'] ?? null,
-            $data['tags'] ?? null,
-            (bool) ($data['published'] ?? false),
-            $data['published_at'] ?? null,
-            $data['available_markets'] ?? null,
-            $data['meta_seo'] ?? null,
-            (int) ($data['sort_order'] ?? 0),
+            $data['id'] ?? null,
+            $data['product_category_id'] ?? null,
+            $data['code'],
+            $data['status'] ?? 'draft',
+            $data['images'] ?? [],
+            $data['localizations'] ?? [],
+            $data['related_treatments'] ?? null,
+            (int) ($data['order'] ?? 0),
             $data['created_at'] ?? null,
-            $data['updated_at'] ?? null
+            $data['updated_at'] ?? null,
+            $data['deleted_at'] ?? null,
         );
     }
+
+    public function id(): ?int { return $this->id; }
+    public function productCategoryId(): ?int { return $this->productCategoryId; }
+    public function code(): string { return $this->code; }
+    public function status(): string { return $this->status; }
+    public function images(): array { return $this->images; }
+    public function localizations(): array { return $this->localizations; }
+    public function relatedTreatments(): ?array { return $this->relatedTreatments; }
+    public function order(): int { return $this->order; }
+    public function createdAt(): ?string { return $this->createdAt; }
+    public function updatedAt(): ?string { return $this->updatedAt; }
+    public function deletedAt(): ?string { return $this->deletedAt; }
 
     public function toPrimitives(): array
     {
         return [
-            'id' => $this->id,
-            'code' => $this->code->value(),
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'short_description' => $this->shortDescription,
-            'description' => $this->description,
-            'technical_specs' => $this->technicalSpecs,
-            'images' => $this->images,
-            'category_id' => $this->categoryId,
-            'category' => $this->categoryName,
-            'tags' => $this->tags,
-            'published' => $this->published,
-            'published_at' => $this->publishedAt,
-            'available_markets' => $this->availableMarkets,
-            'meta_seo' => $this->metaSeo,
-            'sort_order' => $this->sortOrder,
-            'created_at' => $this->createdAt,
-            'updated_at' => $this->updatedAt,
+            'id'                  => $this->id,
+            'product_category_id' => $this->productCategoryId,
+            'code'                => $this->code,
+            'status'              => $this->status,
+            'images'              => $this->images,
+            'localizations'       => $this->localizations,
+            'related_treatments'  => $this->relatedTreatments,
+            'order'               => $this->order,
+            'created_at'          => $this->createdAt,
+            'updated_at'          => $this->updatedAt,
+            'deleted_at'          => $this->deletedAt,
         ];
     }
 }

@@ -10,58 +10,20 @@ final class UpdateTreatmentCommand implements Command
 {
     public function __construct(
         private readonly int $id,
-        private readonly array $name,
-        private readonly array $slug,
-        private readonly ?array $description = null,
-        private readonly bool $published = false,
-        private readonly ?array $availableMarkets = null,
-        private readonly int $sortOrder = 0,
-        private readonly ?int $categoryId = null,
-        private readonly ?array $blocksJson = null
+        private ?int $treatmentCategoryId,
+        private string $status,
+        private array $images,
+        private array $localizations,
+        private ?array $relatedProducts = null,
+        private int $order = 0,
     ) {}
 
-    public function id(): int
-    {
-        return $this->id;
-    }
-
-    public function name(): array
-    {
-        return $this->name;
-    }
-
-    public function slug(): array
-    {
-        return $this->slug;
-    }
-
-    public function description(): ?array
-    {
-        return $this->description;
-    }
-
-    public function published(): bool
-    {
-        return $this->published;
-    }
-
-    public function availableMarkets(): ?array
-    {
-        return $this->availableMarkets;
-    }
-
-    public function sortOrder(): int
-    {
-        return $this->sortOrder;
-    }
-
-    public function categoryId(): ?int
-    {
-        return $this->categoryId;
-    }
-
-    public function blocksJson(): ?array
-    {
-        return $this->blocksJson;
-    }
+    public function id(): int { return $this->id; }
+    public function treatmentCategoryId(): ?int { return $this->treatmentCategoryId; }
+    public function status(): string { return $this->status; }
+    public function images(): array { return $this->images; }
+    public function localizations(): array { return $this->localizations; }
+    public function relatedProducts(): ?array { return $this->relatedProducts; }
+    public function order(): int { return $this->order; }
 }
+

@@ -42,7 +42,7 @@ final class ContentArticle extends AggregateRoot
     {
         return new self(
             $data['id'] ?? null,
-            $data['article_category_id'] ?? null,
+            $data['article_category_id'],
             $data['status'],
             $data['images'] ?? [],
             $data['localizations'] ?? [],

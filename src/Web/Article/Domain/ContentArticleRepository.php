@@ -20,4 +20,9 @@ interface ContentArticleRepository
     public function remove(int $id): void;
 
     public function findBySlug(string $slug, int $language, int $market): ?ContentArticle;
+
+    // elimina una localización concreta de un artículo.
+    // A diferencia de remove() que borra el artículo entero, este solo borra una fila de article_localizations
+    public function removeLocalization(int $localizationId): void;
+
 }

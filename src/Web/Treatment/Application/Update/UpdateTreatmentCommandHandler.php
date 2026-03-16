@@ -14,14 +14,13 @@ final class UpdateTreatmentCommandHandler implements CommandHandler
     {
         $this->updater->__invoke(
             $command->id(),
-            $command->name(),
-            $command->slug(),
-            $command->description(),
-            $command->published(),
-            $command->availableMarkets(),
-            $command->sortOrder(),
-            $command->categoryId(),
-            $command->blocksJson()
+            $command->treatmentCategoryId(),
+            $command->status(),
+            $command->images(),
+            $command->localizations(),
+            $command->relatedProducts(),
+            $command->order(),
         );
     }
 }
+

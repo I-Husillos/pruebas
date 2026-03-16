@@ -10,21 +10,13 @@ final class UpdateProductCommand implements Command
 {
     public function __construct(
         private readonly int $id,
-        private readonly ?string $code = null,
-        private readonly ?array $name = null,
-        private readonly ?array $slug = null,
-        private readonly ?array $shortDescription = null,
-        private readonly ?array $description = null,
-        private readonly ?array $technicalSpecs = null,
-        private readonly ?array $images = null,
-        private readonly ?int $categoryId = null,
-        private readonly ?array $categoryName = null,
-        private readonly ?array $tags = null,
-        private readonly ?bool $published = null,
-        private readonly ?string $publishedAt = null,
-        private readonly ?array $availableMarkets = null,
-        private readonly ?array $metaSeo = null,
-        private readonly ?int $sortOrder = null
+        private ?int $productCategoryId,
+        private string $code,
+        private string $status,
+        private array $images,
+        private array $localizations,
+        private ?array $relatedTreatments = null,
+        private int $order = 0,
     ) {}
 
     public function id(): int
@@ -32,78 +24,11 @@ final class UpdateProductCommand implements Command
         return $this->id;
     }
 
-    public function code(): ?string
-    {
-        return $this->code;
-    }
-
-    public function name(): ?array
-    {
-        return $this->name;
-    }
-
-    public function slug(): ?array
-    {
-        return $this->slug;
-    }
-
-    public function shortDescription(): ?array
-    {
-        return $this->shortDescription;
-    }
-
-    public function description(): ?array
-    {
-        return $this->description;
-    }
-
-    public function technicalSpecs(): ?array
-    {
-        return $this->technicalSpecs;
-    }
-
-    public function images(): ?array
-    {
-        return $this->images;
-    }
-
-    public function categoryId(): ?int
-    {
-        return $this->categoryId;
-    }
-
-    public function categoryName(): ?array
-    {
-        return $this->categoryName;
-    }
-
-    public function tags(): ?array
-    {
-        return $this->tags;
-    }
-
-    public function published(): ?bool
-    {
-        return $this->published;
-    }
-
-    public function publishedAt(): ?string
-    {
-        return $this->publishedAt;
-    }
-
-    public function availableMarkets(): ?array
-    {
-        return $this->availableMarkets;
-    }
-
-    public function metaSeo(): ?array
-    {
-        return $this->metaSeo;
-    }
-
-    public function sortOrder(): ?int
-    {
-        return $this->sortOrder;
-    }
+    public function productCategoryId(): ?int { return $this->productCategoryId; }
+    public function code(): string { return $this->code; }
+    public function status(): string { return $this->status; }
+    public function images(): array { return $this->images; }
+    public function localizations(): array { return $this->localizations; }
+    public function relatedTreatments(): ?array { return $this->relatedTreatments; }
+    public function order(): int { return $this->order; }
 }
