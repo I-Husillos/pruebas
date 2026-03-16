@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Termosalud\Web\ArticleCategory\Application\Create;
+
+use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandHandler;
+
+final class CreateArticleCategoryCommandHandler implements CommandHandler
+{
+    public function __construct(private readonly ArticleCategoryCreator $creator) {}
+
+    public function __invoke(CreateArticleCategoryCommand $command): void
+    {
+        $this->creator->__invoke(
+            $command->status(),
+            $command->order(),
+            $command->translations()
+        );
+    }
+}

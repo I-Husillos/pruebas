@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\Article;
 
 use App\Http\Controllers\Admin\BaseController;
+use App\Models\ArticleCategory;
 use App\Models\ArticleCategoryTranslation;
 use App\Models\Language;
 use App\Models\Market;
@@ -19,7 +20,6 @@ final class ArticleEditController extends BaseController
 
     public function __invoke(int $id): Response
     {
-        /** @var \Termosalud\Web\Article\Application\ArticleResponse|null $article */
         $article = $this->queryBus->ask(new FindArticleByIdQuery($id));
 
         if (!$article) {
@@ -30,6 +30,15 @@ final class ArticleEditController extends BaseController
         // para construir el array de mercados con sus idiomas.
         $languages = Language::where('active', 1)->get(['id', 'code', 'name', 'native_name'])->keyBy('code');
 
+        $categories = ArticleCategory::query()
+            ->with('translations')
+            ->orderBy('id')
+            ->get()
+            ->map(fn(ArticleCategory $category) => [
+                'id'    => $category->id,
+                'title' => $category->translations->first()?->title
+                        ?? "Categoría #{$category->id}",
+            ]);
         $markets = Market::query()
             ->where('active', true)
             ->orderBy('priority')
@@ -52,23 +61,23 @@ final class ArticleEditController extends BaseController
                     ->all();
 
                 return [
-                    'id'        => $market->id,
-                    'code'      => $market->code,
-                    'name'      => $market->name,
-                    'region'    => $market->region,
+                    'id' => $market->id,
+                    'code' => $market->code,
+                    'name' => $market->name,
+                    'region' => $market->region,
                     'languages' => $enabledLanguages,
                 ];
             })
             ->filter(fn(array $m) => !empty($m['languages']))
             ->values();
 
-        return Inertia::render('Admin/Articles/Edit', [
-            'categories' => ArticleCategoryTranslation::all(),
+
+        return $this->render('Admin/Articles/Edit', [
+            'categories' => $categories->toArray(),
             'article'    => $article->toArray(),
             // markets es necesario para que LocalizationTabs sepa
             // qué pestañas mostrar y a qué IDs corresponden
             'markets'    => $markets,
-            'categories' => \App\Models\ArticleCategory::all(['id', 'status']),
         ]);
     }
 }

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\API\V1\ProductCategory;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Requests\Admin\ProductCategory\StoreProductCategoryRequest;
+use App\Models\ProductCategory;
 use Dba\DddSkeleton\Shared\Domain\Bus\Command\CommandBus;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
@@ -34,9 +35,11 @@ final class ProductCategoryPostController extends ApiController
     {
         $validated = $request->validated();
 
+        $nextOrder = (ProductCategory::max('order') ?? -1) + 1;
+
         $this->commandBus->dispatch(new CreateProductCategoryCommand(
             $validated['status'],
-            (int) ($validated['order'] ?? 0),
+            $nextOrder,
             $validated['translations'],
         ));
 

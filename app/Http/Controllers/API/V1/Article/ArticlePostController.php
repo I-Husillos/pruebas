@@ -31,13 +31,11 @@ final class ArticlePostController extends ApiController
     {
         $validated = $request->validated();
 
-        // El controlador ya está bien estructurado.
-        // Solo asegurarse de que StoreArticleRequest esté corregido.
         $this->commandBus->dispatch(new CreateArticleContentCommand(
-            (int) ($validated['article_category_id'] ?? 0),
-            (string) $validated['status'],
+            isset($validated['article_category_id']) ? (int) $validated['article_category_id'] : null,
+            (string) ($validated['status'] ?? 'draft'),
             (array) ($validated['images'] ?? []),
-            (array) $validated['localizations']  // ← Este array llegará limpio del Request
+            (array) $validated['localizations']
         ));
 
         return $this->sendResponse([], 'Artículo creado exitosamente', 201);

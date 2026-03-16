@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin\Article;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateArticleRequest extends FormRequest
 {
@@ -22,9 +23,14 @@ class UpdateArticleRequest extends FormRequest
             'localizations.*.market_id' => 'required|integer|exists:markets,id',
             'localizations.*.language_id' => 'required|integer|exists:languages,id',
             'localizations.*.title' => 'required|string|max:255',
-            'localizations.*.slug' => 'nullable|string|max:255',
+            'localizations.*.slug' => [
+                'nullable', 'string', 'max:255', 'distinct',
+                Rule::unique('article_localizations', 'slug')
+                    ->where(fn ($q) => $q->whereNot('article_id', (int) $this->route('id'))),
+            ],
             'localizations.*.excerpt' => 'nullable|string',
             'localizations.*.description' => 'nullable|string',
+            
             // BlockEditor sends nested rows/columns/blocks arrays.
             'localizations.*.content' => 'nullable|array',
             'localizations.*.seo_metadata' => 'nullable|array',

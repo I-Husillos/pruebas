@@ -36,14 +36,12 @@ final class TreatmentPutController extends ApiController
 
         $this->commandBus->dispatch(new UpdateTreatmentCommand(
             $id,
-            $validated['name'],
-            $validated['slug'],
-            $validated['description'] ?? null,
-            (bool) ($validated['published'] ?? false),
-            $validated['available_markets'] ?? null,
-            (int) ($validated['sort_order'] ?? 0),
-            isset($validated['category_id']) ? (int) $validated['category_id'] : null,
-            $validated['blocks_json'] ?? null
+            isset($validated['treatment_category_id']) ? (int) $validated['treatment_category_id'] : null,
+            (string) $validated['status'],
+            (array) ($validated['images'] ?? []),
+            (array) $validated['localizations'],
+            $validated['related_products'] ?? null,
+            (int) ($validated['order'] ?? 0),
         ));
 
         return $this->sendResponse([], 'Tratamiento actualizado exitosamente');

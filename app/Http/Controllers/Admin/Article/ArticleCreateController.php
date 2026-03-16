@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\Article;
 
 use App\Http\Controllers\Admin\BaseController;
-use App\Models\ArticleCategoryTranslation;
+use App\Models\ArticleCategory;
 use App\Models\Language;
 use App\Models\Market;
 use Inertia\Inertia;
@@ -15,7 +15,15 @@ final class ArticleCreateController extends BaseController
 {
     public function __invoke(): Response
     {
-        $categories = ArticleCategoryTranslation::all();
+        $categories = ArticleCategory::query()
+            ->with('translations')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (ArticleCategory $category) => [
+                'id'    => $category->id,
+                'title' => $category->translations->first()?->title
+                        ?? "Categoría #{$category->id}",
+            ]);
 
         $languages = Language::where('active', 1)->get(['id', 'code', 'name'])->keyBy('code');
 
@@ -55,8 +63,7 @@ final class ArticleCreateController extends BaseController
             ->filter(fn (array $market) => ! empty($market['languages']))
             ->values();
 
-
-        return Inertia::render('Admin/Articles/Create', [
+        return $this->render('Admin/Articles/Create', [
             'categories' => $categories,
             'markets' => $markets,
         ]);

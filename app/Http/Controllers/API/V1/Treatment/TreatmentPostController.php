@@ -37,14 +37,12 @@ final class TreatmentPostController extends ApiController
         $nextOrder = (Treatment::max('order') ?? -1) + 1;
 
         $this->commandBus->dispatch(new CreateTreatmentCommand(
-            $validated['name'],
-            $validated['slug'],
-            $validated['description'] ?? null,
-            (bool) ($validated['published'] ?? false),
-            $validated['available_markets'] ?? null,
+            isset($validated['treatment_category_id']) ? (int) $validated['treatment_category_id'] : null,
+            (string) ($validated['status'] ?? 'draft'),
+            (array) ($validated['images'] ?? []),
+            (array) $validated['localizations'],
+            $validated['related_products'] ?? null,
             $nextOrder,
-            isset($validated['category_id']) ? (int) $validated['category_id'] : null,
-            $validated['blocks_json'] ?? null
         ));
 
         return $this->sendResponse([], 'Tratamiento creado exitosamente', 201);

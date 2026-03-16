@@ -15,6 +15,7 @@
         create-button-text="Añadir Categoría"
         :enable-row-reorder="true"
         :reorder-api-url="reorderApiUrl"
+        :search-fields="searchFields"
     >
         <!-- Custom Title (Translations) -->
         <template #cell-title="{ item }">
@@ -42,22 +43,12 @@ const { props } = usePage();
 const { apiToken, apiUrl } = props;
 const reorderApiUrl = `${apiUrl}/reorder`;
 
-const preferredLanguageIds = [1, 2];
+const searchFields = ['title', 'slug'];
 
 const getTranslationValue = (item, field) => {
     const translations = Array.isArray(item?.translations) ? item.translations : [];
-
-    if (translations.length === 0) {
-        return null;
-    }
-
-    const preferredTranslation = preferredLanguageIds
-        .map((languageId) => translations.find((translation) => Number(translation.language_id) === languageId))
-        .find(Boolean);
-
-    const selectedTranslation = preferredTranslation || translations[0];
-
-    return selectedTranslation?.[field] ?? null;
+    if (translations.length === 0) return null;
+    return translations.find(t => t[field]?.trim())?.[field] ?? null;
 };
 
 const columns = [

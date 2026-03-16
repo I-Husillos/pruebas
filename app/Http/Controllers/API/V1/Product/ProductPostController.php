@@ -33,22 +33,13 @@ final class ProductPostController extends ApiController
         $validated = $request->validated();
 
         $this->commandBus->dispatch(new CreateProductCommand(
-            0, // New products don't have an ID yet
-            $validated['code'],
-            $validated['name'],
-            $validated['slug'],
-            $validated['short_description'] ?? null,
-            $validated['description'] ?? null,
-            $validated['technical_specs'] ?? null,
-            $validated['images'] ?? null,
-            isset($validated['category_id']) ? (int) $validated['category_id'] : null,
-            $validated['category'] ?? null,
-            $validated['tags'] ?? null,
-            (bool) ($validated['published'] ?? false),
-            $validated['published_at'] ?? null,
-            $validated['available_markets'] ?? null,
-            $validated['meta_seo'] ?? null,
-            $validated['sort_order'] ?? 0
+                isset($validated['product_category_id']) ? (int) $validated['product_category_id'] : null,
+                (string) $validated['code'],
+                (string) ($validated['status'] ?? 'draft'),
+                (array) ($validated['images'] ?? []),
+                (array) $validated['localizations'],
+                $validated['related_treatments'] ?? null,
+                (int) ($validated['order'] ?? 0),
         ));
 
         return $this->sendResponse([], 'Producto creado exitosamente', 201);

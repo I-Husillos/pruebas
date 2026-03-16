@@ -1,7 +1,3 @@
-<!-- resources/js/Components/Admin/LocalizationTabs.vue
-     
-     PROPÓSITO: Componente reutilizable de pestañas de localización.
-     Se usa en los formularios de artículos, productos y tratamientos.-->
 <template>
   <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
 
@@ -22,14 +18,13 @@
         ? 'bg-indigo-600 text-white shadow-sm'
         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
         class="px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
-        <!-- Bandera del país generada a partir del código ISO -->
-        <span>{{ getFlagEmoji(market.code) }}</span>
+
         <span>{{ market.name }}</span>
         <!-- Badge con la región regulatoria: EU_MDR, FDA, LATAM_GENERIC... -->
         <span class="hidden sm:inline text-xs font-normal opacity-70">{{ market.region }}</span>
         <!-- Punto verde si algún idioma de este mercado tiene contenido -->
-        <!-- <span v-if="marketHasContent(market.code)" class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0"
-          title="Tiene contenido" /> -->
+        <span v-if="marketHasContent(market.code)" class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0"
+          title="Tiene contenido" />
       </button>
     </div>
 
@@ -51,6 +46,21 @@
           <!-- Punto verde si esta combinación específica tiene título relleno -->
           <!-- <span v-if="hasContent(activeMarket, lang.code)"
             class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" /> -->
+
+          <!-- ✕ solo visible si:
+              - estamos en edición (la prop existe)
+              - esta localización YA está en BD (tiene id)-->
+          <span
+              v-if="onDeleteLocalization
+                    && localizations[buildLocalizationKey(activeMarket, lang.code)]?.id"
+              @click.stop="onDeleteLocalization(
+                  localizations[buildLocalizationKey(activeMarket, lang.code)].id
+              )"
+              class="ml-2 text-red-400 hover:text-red-600 text-xs font-bold leading-none"
+              title="Eliminar esta localización"
+          >
+              ✕
+          </span>
         </button>
       </div>
 
@@ -108,17 +118,58 @@
             </p>
           </div>
 
-          <!-- EXTRACTO  -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700">
-              Extracto
-              <span class="font-normal text-gray-400 text-xs ml-1">(también usado como meta description de
-                Google)</span>
-            </label>
-            <textarea :value="localizations[activeKey].excerpt"
-              @input="localizations[activeKey].excerpt = $event.target.value" rows="2"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              :placeholder="`Resumen breve en ${currentLanguage?.name}`" />
+          <!--
+            Estos campos se guardan en la columna seo_metadata (JSON) de la tabla
+            de localizaciones. Son específicos por mercado+idioma porque el contenido
+            SEO puede variar regulatoriamente entre mercados (ej: España EU_MDR vs USA FDA).
+          -->
+          <div class="border-t border-gray-200 pt-6 space-y-4">
+            <div>
+              <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                SEO
+                <span class="font-normal text-gray-400 text-xs">
+                  (específico para {{ currentMarket?.name }} · {{ currentLanguage?.name }})
+                </span>
+              </h4>
+            </div>
+
+            <!-- SEO Title -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">
+                Meta Title
+                <span class="font-normal text-gray-400 text-xs ml-1">
+                  (aparece en Google y en la pestaña del navegador)
+                </span>
+              </label>
+              <input :value="localizations[activeKey].seo_metadata?.title" @input="localizations[activeKey].seo_metadata = {
+                ...localizations[activeKey].seo_metadata,
+                title: $event.target.value
+              }" type="text" maxlength="60"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                :placeholder="`Título SEO en ${currentLanguage?.name} (máx. 60 caracteres)`" />
+              <p class="mt-1 text-xs text-gray-400">
+                {{ (localizations[activeKey].seo_metadata?.title || '').length }}/60 caracteres
+              </p>
+            </div>
+
+            <!-- SEO Description -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">
+                Meta Description
+                <span class="font-normal text-gray-400 text-xs ml-1">
+                  (resumen que muestra Google en los resultados de búsqueda)
+                </span>
+              </label>
+              <textarea :value="localizations[activeKey].seo_metadata?.description" @input="localizations[activeKey].seo_metadata = {
+                ...localizations[activeKey].seo_metadata,
+                description: $event.target.value
+              }" rows="2" maxlength="160"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                :placeholder="`Descripción SEO en ${currentLanguage?.name} (máx. 160 caracteres)`" />
+              <p class="mt-1 text-xs text-gray-400">
+                {{ (localizations[activeKey].seo_metadata?.description || '').length }}/160 caracteres
+              </p>
+            </div>
           </div>
 
           <!-- CONTENIDO WYSIWYG (Page Builder) -->
@@ -129,11 +180,7 @@
                 (bloques específicos para {{ currentMarket.name }} · {{ currentLanguage?.name }})
               </span>
             </label>
-            <BlockEditor
-              :key="activeKey"
-              v-model="localizations[activeKey].content"
-              :forms="forms"
-            />
+            <BlockEditor :key="activeKey" v-model="localizations[activeKey].content" :forms="forms" />
           </div>
         </div>
       </div>
@@ -154,7 +201,9 @@
 <script setup>
 import { computed } from 'vue';
 import { useLocalizations } from '@/Composables/useLocalizations';
+import { buildLocalizationKey } from '@/utils/localizations';
 import BlockEditor from '@/Components/Admin/BlockEditor.vue';
+
 
 // Props 
 const props = defineProps({
@@ -175,7 +224,10 @@ const props = defineProps({
   },
   forms: {
     type: Array, default: () => ({}),
-  }
+  },
+  onDeleteLocalization: { 
+    type: Function, default: null 
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -193,9 +245,7 @@ const {
   localizations,
   selectMarket,
   onTitleInput,
-  hasContent,
   marketHasContent,
-  getFlagEmoji,
 } = useLocalizations(marketsRef);
 
 // Sincronizamos el modelValue del padre con el estado interno.

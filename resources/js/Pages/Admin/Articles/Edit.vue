@@ -15,9 +15,10 @@
       <!-- Columna principal: el componente reutilizable gestiona todo el contenido -->
       <div class="lg:col-span-2 space-y-8">
         <LocalizationTabs
-          :markets="markets"
-          v-model="form.localizations"
-          :errors="errors"
+            :markets="markets"
+            v-model="form.localizations"
+            :errors="errors"
+            :on-delete-localization="deleteLocalization"
         />
       </div>
 
@@ -84,10 +85,12 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue';
 import LocalizationTabs from '@/Components/Admin/LocalizationTabs.vue';
 import ApiClient from '@/api/client';
+import { buildInitialArticleLocalizations } from '@/Composables/Admin/useArticleLocalizations';
+import { useArticleForm } from '@/Composables/Admin/useArticleForm';
 
 const props = defineProps({
-  article:    { type: Object, required: true },
-  markets:    { type: Array,  required: true },
+  article: { type: Object, required: true },
+  markets: { type: Array,  required: true },
   categories: { type: Array,  default: () => [] },
 });
 
@@ -98,70 +101,38 @@ const breadcrumbItems = [
 
 const api = new ApiClient(usePage().props.apiToken);
 
-// Convertimos el array de localizaciones que viene del backend
-// al formato de objeto que LocalizationTabs espera via v-model.
-//
-// El backend devuelve (desde ArticleResponse.toArray()):
-//   localizations: [
-//     { market_id: 1, language_id: 1, title: "Mi artículo", content: [...], ... },
-//     { market_id: 1, language_id: 2, title: "My article",  content: [...], ... },
-//   ]
-//
-// LocalizationTabs espera recibir por v-model un objeto:
-//   { "es_es": { market_id: 1, language_id: 1, title: "Mi artículo", ... },
-//     "es_en": { market_id: 1, language_id: 2, title: "My article",  ... } }
-//
-// Esta función hace esa transformación buscando los códigos
-// de mercado e idioma a partir de los IDs.
-function buildInitialLocalizations(locs, markets) {
-  const result = {};
-  for (const loc of locs ?? []) {
-    const market = markets.find(m => m.id === loc.market_id);
-    const lang   = market?.languages.find(l => l.id === loc.language_id);
-    if (market && lang) {
-      result[`${market.code}_${lang.code}`] = { ...loc };
-    }
-  }
-  return result;
-}
-
 const form = ref({
   article_category_id: props.article.article_category_id,
-  status:              props.article.status,
-  images:              props.article.images ?? [],
-  // Aquí pre-cargamos las localizaciones existentes.
-  // LocalizationTabs las recibirá en su modelValue y las cargará
-  // con Object.assign en su estado interno al montarse.
-  localizations: buildInitialLocalizations(props.article.localizations, props.markets),
+  status: props.article.status,
+  images: props.article.images ?? [],
+  // Pre-cargamos las localizaciones existentes.
+  // buildInitialArticleLocalizations transforma el array del backend
+  // al objeto { "es_es": {...}, "ar_es": {...} } que usa LocalizationTabs.
+  localizations: buildInitialArticleLocalizations(
+    props.article.localizations ?? [],
+    props.markets
+  ),
 });
 
-const errors     = ref({});
-const processing = ref(false);
+const { errors, processing, submitUpdate, removeLocalization } = useArticleForm({
+  api,
+  onSuccess: () => router.visit(route('admin.articles.index')),
+});
 
-async function submit() {
-  // Filtramos localizaciones vacías, igual que en Create.vue
-  const filledLocalizations = Object.values(form.value.localizations)
-    .filter(loc => (loc?.title || '').trim() !== '');
+// Pasamos form.value (el objeto plano), no form (el ref)
+const submit = () => submitUpdate(props.article.id, form.value);
 
-  const payload = {
-    article_category_id: form.value.article_category_id,
-    status:              form.value.status,
-    images:              form.value.images,
-    localizations:       filledLocalizations,
-  };
-
-  processing.value = true;
-  errors.value     = {};
-
-  try {
-    await api.put(`/api/v1/articles/${props.article.id}`, payload);
-    router.visit(route('admin.articles.index'));
-  } catch (e) {
-    errors.value = e.response?.status === 422
-      ? (e.response.data.errors ?? {})
-      : { general: 'Error al actualizar el artículo.' };
-  } finally {
-    processing.value = false;
+async function deleteLocalization(localizationId) {
+  if (!confirm('¿Eliminar esta localización? Se perderá todo su contenido.')) {
+    return;
   }
+
+  const result = await removeLocalization(localizationId);
+  if (!result.ok) {
+    alert(result.message);
+    return;
+  }
+
+  router.visit(route('admin.articles.edit', props.article.id));
 }
 </script>

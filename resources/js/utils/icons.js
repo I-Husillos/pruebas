@@ -8,7 +8,6 @@
  * Cómo funciona:
  * - Los emojis de bandera se codifican como dos caracteres especiales Unicode
  * - Cada carácter uppercase ASCII se convierte a "Regional Indicator"
- * - "es" (España) → 🇪🇸, "us" (Estados Unidos) → 🇺🇸, "mx" (México) → 🇲🇽
  * 
  * @param {string} countryCode - Código ISO de dos letras (ej: "es", "us", "mx")
  * @returns {string} Emoji de bandera o globo si el código es inválido

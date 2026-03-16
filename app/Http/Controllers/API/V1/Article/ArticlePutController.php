@@ -36,7 +36,7 @@ final class ArticlePutController extends ApiController
 
         $this->commandBus->dispatch(new UpdateContentArticleCommand(
             $id,
-            (int) ($validated['article_category_id'] ?? 0),
+            isset($validated['article_category_id']) ? (int) $validated['article_category_id'] : null,
             (string) $validated['status'],
             (array) ($validated['images'] ?? []),
             (array) $validated['localizations']

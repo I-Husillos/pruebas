@@ -29,23 +29,17 @@ final class TreatmentGetController extends ApiController
         name: "id",
         description: "ID del tratamiento",
         required: true,
-        schema: new OA\Schema(type: "string")
+        schema: new OA\Schema(type: "integer")
     )]
-    #[OA\Response(
-        response: 200,
-        description: "Tratamiento encontrado"
-    )]
-    #[OA\Response(
-        response: 404,
-        description: "Tratamiento no encontrado"
-    )]
-    public function __invoke(string $id): JsonResponse
+    #[OA\Response(response: 200, description: "Tratamiento encontrado")]
+    #[OA\Response(response: 404, description: "Tratamiento no encontrado")]
+    public function __invoke(int $id): JsonResponse
     {
         try {
-            /** @var \Termosalud\Treatments\Application\TreatmentResponse|null $treatment */
+            /** @var \Termosalud\Web\Treatment\Application\TreatmentResponse|null $treatment */
             $treatment = $this->queryBus->ask(new FindTreatmentQuery($id));
 
-            if (!$treatment) {
+            if (! $treatment) {
                 return $this->sendError('Treatment not found', [], 404);
             }
 

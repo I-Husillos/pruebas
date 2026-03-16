@@ -1,32 +1,35 @@
 <template>
     <ResourceListTable
         title="Productos"
-        description="Listado completo del catálogo de Termosalud, incluyendo equipos faciales, corporales y médico-estéticos."
+        description="Listado completo del catálogo de Termosalud."
         :api-url="apiUrl"
         :api-token="apiToken"
         :create-route="route('admin.products.create')"
         edit-route-name="admin.products.edit"
         :columns="columns"
-        search-placeholder="Buscar por nombre..."
+        :search-fields="searchFields"
+        search-placeholder="Buscar productos..."
         resource-name="producto"
         resource-name-plural="productos"
         create-button-text="Nuevo Producto"
-        order-by="name"
-        order="asc"
+        order-by="id"
+        order="desc"
     >
-        <!-- Custom Name (Multilingual) -->
         <template #cell-name="{ item }">
-            {{ item.name?.es || item.name?.en || 'Sin nombre' }}
+            {{ getTitle(item) }}
         </template>
 
-        <!-- Custom Category Name (Multilingual) -->
-        <template #cell-category="{ item }">
-            {{ item.category?.es || item.category?.en || 'Sin categoría' }}
+        <template #cell-status="{ value }">
+            <span
+                class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
+                :class="value === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'"
+            >
+                {{ value || 'draft' }}
+            </span>
         </template>
 
-        <!-- Custom Status Badge -->
-        <template #cell-published="{ value }">
-            <StatusBadge :value="value" />
+        <template #cell-created_at="{ value }">
+            {{ formatDate(value) }}
         </template>
     </ResourceListTable>
 </template>
@@ -34,14 +37,21 @@
 <script setup>
 import { usePage } from '@inertiajs/vue3';
 import ResourceListTable from '@/Components/Admin/ResourceListTable.vue';
-import StatusBadge from '@/Components/Admin/StatusBadge.vue';
+import { formatDate } from '@/utils/formatters';
 
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
 
+const searchFields = ['title', 'slug', 'code'];
+
 const columns = [
     { key: 'name', label: 'Nombre' },
-    { key: 'category', label: 'Categoría' },
-    { key: 'published', label: 'Estado' },
+    { key: 'status', label: 'Estado' },
+    { key: 'created_at', label: 'Fecha' },
 ];
+
+const getTitle = (item) => {
+    const locs = item?.localizations || [];
+    return locs.find((l) => l.title?.trim())?.title || item?.code || 'Sin nombre';
+};
 </script>

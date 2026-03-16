@@ -2,7 +2,7 @@
     <ResourceListTable title="Artículos" description="Noticias, blog y comunicados." :api-url="apiUrl"
         :api-token="apiToken" :create-route="route('admin.articles.create')" edit-route-name="admin.articles.edit"
         :columns="columns" search-placeholder="Buscar artículos..." resource-name="artículo"
-        resource-name-plural="artículos" create-button-text="Nuevo Artículo">
+        resource-name-plural="artículos" create-button-text="Nuevo Artículo" :search-fields="searchFields">
         <template #cell-name="{ item }">
             {{ getTitle(item) }}
         </template>
@@ -28,6 +28,8 @@ import { formatDate } from '@/utils/formatters';
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
 
+const searchFields = ['title', 'slug'];
+
 const columns = [
     { key: 'name', label: 'Nombre' },
     { key: 'status', label: 'Estado' },
@@ -36,8 +38,6 @@ const columns = [
 
 const getTitle = (item) => {
     const locs = item?.localizations || [];
-    const es = locs.find((l) => l.language_id === 1)?.title;
-    const en = locs.find((l) => l.language_id === 2)?.title;
-    return es || en || 'Sin nombre';
+    return locs.find(l => l.title?.trim())?.title || 'Sin nombre';
 };
 </script>

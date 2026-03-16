@@ -14,22 +14,25 @@ class UpdateTreatmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|array',
-            'name.es' => 'required|string|max:255',
-            'name.en' => 'required|string|max:255',
-            'slug' => 'required|array',
-            'slug.es' => 'required|string|max:255',
-            'slug.en' => 'required|string|max:255',
-            'description' => 'nullable|array',
-            'published' => 'boolean',
-            'available_markets' => 'nullable|array',
-            'sort_order' => 'integer',
-            'category_id' => 'nullable|exists:treatment_categories,id',
-            'blocks_json' => 'nullable|array',
+            'treatment_category_id'             => 'nullable|exists:treatment_categories,id',
+            'status'                            => 'required|in:draft,published,scheduled,pending_review',
+            'images'                            => 'nullable|array',
+            'related_products'                  => 'nullable|array',
+            'order'                             => 'nullable|integer',
 
-            // Allow generic language keys
-            'name.*' => 'nullable|string',
-            'slug.*' => 'nullable|string',
+            'localizations'                     => 'required|array|min:1',
+            'localizations.*.market_id'         => 'required|integer|exists:markets,id',
+            'localizations.*.language_id'       => 'required|integer|exists:languages,id',
+            'localizations.*.title'             => 'required|string|max:255',
+            'localizations.*.slug'              => 'required|string|max:255',
+            'localizations.*.excerpt'           => 'nullable|string|max:500',
+            'localizations.*.description'       => 'nullable|string',
+            'localizations.*.content'           => 'nullable|array',
+            'localizations.*.indications'       => 'nullable|array',
+            'localizations.*.contraindications' => 'nullable|array',
+            'localizations.*.seo_metadata'      => 'nullable|array',
+            'localizations.*.seo_metadata.title'       => 'nullable|string|max:255',
+            'localizations.*.seo_metadata.description' => 'nullable|string|max:500',
         ];
     }
 }

@@ -9,8 +9,6 @@ use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
-
 #[OA\Tag(
     name: "Media",
     description: "Endpoints para gestionar media"

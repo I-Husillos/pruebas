@@ -1,48 +1,35 @@
 <template>
     <ResourceListTable
         title="Tratamientos"
-        description="Listado de tratamientos y protocolos"
+        description="Listado completo del catálogo de tratamientos."
         :api-url="apiUrl"
         :api-token="apiToken"
         :create-route="route('admin.treatments.create')"
         edit-route-name="admin.treatments.edit"
         :columns="columns"
+        :search-fields="searchFields"
         search-placeholder="Buscar tratamientos..."
         resource-name="tratamiento"
         resource-name-plural="tratamientos"
-        create-button-text="Crear Tratamiento"
+        create-button-text="Nuevo Tratamiento"
+        order-by="id"
+        order="desc"
     >
-        <!-- Custom Name (Multilingual) -->
         <template #cell-name="{ item }">
-            {{ item.name?.es || item.name?.en || 'Sin nombre' }}
+            {{ getTitle(item) }}
         </template>
 
-        <!-- Custom Status Badge -->
-        <template #cell-published="{ value }">
-            <StatusBadge :value="value" true-text="Publicado" false-text="Borrador" />
+        <template #cell-status="{ value }">
+            <span
+                class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
+                :class="value === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'"
+            >
+                {{ value || 'draft' }}
+            </span>
         </template>
 
-        <!-- Custom Actions with View Link -->
-        <template #actions="{ item, edit, remove }">
-            <div class="flex justify-end gap-2">
-                <!-- View -->
-                <a :href="`/es/es/treatments/${item.slug?.es || item.slug?.en || 'unknown'}`" 
-                   target="_blank"
-                   class="text-gray-400 hover:text-indigo-600 transition-colors"
-                   title="Ver en web">
-                    <EyeIcon class="h-5 w-5" />
-                </a>
-
-                <!-- Edit -->
-                <button @click="edit" class="text-gray-400 hover:text-blue-600 transition-colors" title="Editar">
-                    <PencilSquareIcon class="h-5 w-5" />
-                </button>
-
-                <!-- Delete -->
-                <button @click="remove" class="text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
-                    <TrashIcon class="h-5 w-5" />
-                </button>
-            </div>
+        <template #cell-created_at="{ value }">
+            {{ formatDate(value) }}
         </template>
     </ResourceListTable>
 </template>
@@ -50,15 +37,21 @@
 <script setup>
 import { usePage } from '@inertiajs/vue3';
 import ResourceListTable from '@/Components/Admin/ResourceListTable.vue';
-import StatusBadge from '@/Components/Admin/StatusBadge.vue';
-import { EyeIcon, PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { formatDate } from '@/utils/formatters';
 
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
 
+const searchFields = ['title', 'slug'];
+
 const columns = [
-    { key: 'name', label: 'Nombre' },
-    { key: 'sort_order', label: 'Orden' },
-    { key: 'published', label: 'Estado' },
+    { key: 'name',       label: 'Nombre' },
+    { key: 'status',     label: 'Estado' },
+    { key: 'created_at', label: 'Fecha' },
 ];
+
+const getTitle = (item) => {
+    const locs = item?.localizations || [];
+    return locs.find((l) => l.title?.trim())?.title || 'Sin nombre';
+};
 </script>

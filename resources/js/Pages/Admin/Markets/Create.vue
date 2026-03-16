@@ -12,8 +12,6 @@
 
     <form @submit.prevent="submit" class="space-y-8 divide-y divide-gray-200">
       <div class="space-y-6 sm:space-y-5">
-
-        <!-- Información Geográfica -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold text-gray-900 mb-6">Información Geográfica</h3>
           <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">

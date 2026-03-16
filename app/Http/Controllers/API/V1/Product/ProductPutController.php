@@ -35,21 +35,13 @@ final class ProductPutController extends ApiController
 
         $this->commandBus->dispatch(new UpdateProductCommand(
             $id,
-            $validated['code'] ?? null,
-            $validated['name'] ?? null,
-            $validated['slug'] ?? null,
-            $validated['short_description'] ?? null,
-            $validated['description'] ?? null,
-            $validated['technical_specs'] ?? null,
-            $validated['images'] ?? null,
-            isset($validated['category_id']) ? (int) $validated['category_id'] : null,
-            $validated['category'] ?? null,
-            $validated['tags'] ?? null,
-            isset($validated['published']) ? (bool) $validated['published'] : null,
-            $validated['published_at'] ?? null,
-            $validated['available_markets'] ?? null,
-            $validated['meta_seo'] ?? null,
-            $validated['sort_order'] ?? null
+                isset($validated['product_category_id']) ? (int) $validated['product_category_id'] : null,
+                (string) $validated['code'],
+                (string) $validated['status'],
+                (array) ($validated['images'] ?? []),
+                (array) $validated['localizations'],
+                $validated['related_treatments'] ?? null,
+                (int) ($validated['order'] ?? 0),
         ));
 
         return $this->sendResponse([], 'Producto actualizado exitosamente');
