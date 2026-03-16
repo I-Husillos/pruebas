@@ -51,7 +51,7 @@ return new class extends Migration
 
         Schema::create('product_localizations', function (Blueprint $table) {
             $table->id();
-            $table->string('slug')->unique();
+            $table->string('slug');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('language_id')->constrained()->onDelete('cascade');
             $table->foreignId('market_id')->constrained()->onDelete('cascade');
@@ -63,6 +63,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['product_id', 'language_id', 'market_id'], 'product_lang_mkt_unique');
+            $table->unique(['slug', 'language_id', 'market_id'], 'product_localizations_slug_language_market_unique');
             $table->index(['slug', 'language_id', 'market_id'], 'product_slug_search_index');
         });
     }

@@ -23,9 +23,9 @@ export function buildTreatmentPayload(form) {
     return {
         treatment_category_id: form.treatment_category_id,
         status:                form.status,
-        images:                form.images,
-        related_products:      form.related_products,
-        order:                 form.order,
+        images:                form.images ?? [],
+        related_products:      form.related_products ?? [],
+        order:                 form.order ?? 0,
         localizations:         getFilledTreatmentLocalizations(form.localizations),
     };
 }

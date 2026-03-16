@@ -102,9 +102,7 @@ const api = new ApiClient(usePage().props.apiToken);
 const form = ref({
   treatment_category_id: null,
   status:                'draft',
-  images:                [],
-  related_products:      [],
-  order:                 0,
+
   localizations:         {},
 });
 

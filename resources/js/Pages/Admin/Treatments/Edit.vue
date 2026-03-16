@@ -103,9 +103,6 @@ const api = new ApiClient(usePage().props.apiToken);
 const form = ref({
   treatment_category_id: props.treatment.treatment_category_id ?? null,
   status:                props.treatment.status ?? 'draft',
-  images:                props.treatment.images ?? [],
-  related_products:      props.treatment.related_products ?? [],
-  order:                 props.treatment.order ?? 0,
   localizations:         buildInitialTreatmentLocalizations(props.treatment.localizations ?? [], props.markets),
 });
 
