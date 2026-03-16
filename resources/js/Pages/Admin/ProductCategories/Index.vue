@@ -38,18 +38,13 @@
 import { usePage } from '@inertiajs/vue3';
 import ResourceListTable from '@/Components/Admin/ResourceListTable.vue';
 import StatusBadge from '@/Components/Admin/StatusBadge.vue';
+import { getTranslationValue } from '@/utils/translationUtils';
 
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
 const reorderApiUrl = `${apiUrl}/reorder`;
 
 const searchFields = ['title', 'slug'];
-
-const getTranslationValue = (item, field) => {
-    const translations = Array.isArray(item?.translations) ? item.translations : [];
-    if (translations.length === 0) return null;
-    return translations.find(t => t[field]?.trim())?.[field] ?? null;
-};
 
 const columns = [
     { key: 'title', label: 'Título' },

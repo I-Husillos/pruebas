@@ -34,28 +34,11 @@
 import { usePage } from '@inertiajs/vue3';
 import ResourceListTable from '@/Components/Admin/ResourceListTable.vue';
 import StatusBadge from '@/Components/Admin/StatusBadge.vue';
+import { getTranslationValue } from '@/utils/translationUtils';
 
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
 const reorderApiUrl = `${apiUrl}/reorder`;
-
-const preferredLanguageIds = [1,2];
-
-const getTranslationValue = (item, field) => {
-    const translations = Array.isArray(item?.translations) ? item.translations : [];
-
-    if (translations.length === 0) {
-        return null;
-    }
-
-    const preferredTranslation = preferredLanguageIds
-        .map((languageId) => translations.find((translation) => Number(translation.language_id) === languageId))
-        .find(Boolean);
-
-    const selectedTranslation = preferredTranslation || translations[0];
-
-    return selectedTranslation?.[field] ?? null;
-};
 
 const columns = [
     { key: 'title', label: 'Título' },

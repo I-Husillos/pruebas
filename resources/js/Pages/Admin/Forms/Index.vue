@@ -12,9 +12,11 @@
         resource-name-plural="formularios"
         create-button-text="Nuevo Formulario"
     >
-        <!-- Custom Submission Count with Link -->
         <template #cell-submission_count="{ item, value }">
-            <Link :href="route('forms.submissions.index', item.id)" class="text-indigo-600 hover:text-indigo-900">
+            <Link
+                :href="route('admin.forms.submissions.index', item.id)"
+                class="text-indigo-600 hover:text-indigo-900"
+            >
                 {{ value }} envíos
             </Link>
         </template>

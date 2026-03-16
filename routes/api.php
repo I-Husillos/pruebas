@@ -96,10 +96,16 @@ Route::prefix('v1')->name('v1.')->middleware(['auth:api'])->group(function () {
 
     // Forms
     Route::get('/forms', \App\Http\Controllers\API\V1\Form\FormsGetController::class)->name('forms.list');
-    Route::get('/forms/{id}', \App\Http\Controllers\API\V1\Form\FormGetController::class)->name('forms.show');
     Route::post('/forms', \App\Http\Controllers\API\V1\Form\FormPostController::class)->name('forms.store');
+
+    // ← PRIMERO la ruta específica con sufijo fijo
+    Route::get('/forms/{id}/submissions', \App\Http\Controllers\API\V1\Form\FormSubmissionsGetController::class)->name('form-submissions.list');
+
+    // ← DESPUÉS la ruta genérica con solo {id}
+    Route::get('/forms/{id}', \App\Http\Controllers\API\V1\Form\FormGetController::class)->name('forms.show');
     Route::put('/forms/{id}', \App\Http\Controllers\API\V1\Form\FormPutController::class)->name('forms.update');
     Route::delete('/forms/{id}', \App\Http\Controllers\API\V1\Form\FormDeleteController::class)->name('forms.destroy');
+
 
     // Users
     Route::get('/users', \App\Http\Controllers\API\V1\User\UsersGetController::class)->name('users.list');

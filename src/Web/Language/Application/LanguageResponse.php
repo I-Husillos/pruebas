@@ -40,7 +40,7 @@ final class LanguageResponse implements Response
             'name' => $this->name,
             'native_name' => $this->nativeName,
             'direction' => $this->direction,
-            'is_active' => $this->isActive,
+            'active' => $this->isActive,
             'fallback_language' => $this->fallbackLanguage,
         ];
     }
