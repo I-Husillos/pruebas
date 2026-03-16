@@ -87,7 +87,7 @@ import LocalizationTabs from '@/Components/Admin/LocalizationTabs.vue';
 import ApiClient from '@/api/client';
 import { useTreatmentForm } from '@/Composables/Admin/useTreatmentForm';
 
-defineProps({
+const props = defineProps({
   markets:    { type: Array, required: true },
   categories: { type: Array, default: () => [] },
 });
@@ -115,18 +115,3 @@ const { errors, processing, submitCreate } = useTreatmentForm({
 
 const submit = () => submitCreate(form.value);
 </script>
-        router.visit(route('admin.treatments.index'));
-    } catch (e) {
-      console.log('Error completo:', e.response?.data);
-        errors.value = e.response?.status === 422
-            ? e.response.data.errors
-            : { general: 'Error inesperado.' };
-    } finally {
-        processing.value = false;
-    }
-};
-</script>
-
-const submit = () => submitCreate(form.value);
-</script>
-
