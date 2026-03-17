@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Admin\Form;
 use App\Http\Controllers\Admin\BaseController;
 use Inertia\Response;
 
-final class FormCreateController extends BaseController  
+final class FormCreateController extends BaseController
 {
     public function __invoke(): Response
     {

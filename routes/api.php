@@ -29,7 +29,7 @@ Route::get('/health-check', function () {
 // Form submission is public
 Route::post('/v1/forms/{key}/submit', FormSubmitController::class)->name('forms.submit');
 
-// API V1 - Protected by Passport
+// API V1 - Protected by Passport bearer token
 Route::prefix('v1')->name('v1.')->middleware(['auth:api'])->group(function () {
 
     // Catalog
@@ -93,6 +93,7 @@ Route::prefix('v1')->name('v1.')->middleware(['auth:api'])->group(function () {
     Route::post('/pages', \App\Http\Controllers\API\V1\Page\PagePostController::class)->name('pages.store');
     Route::put('/pages/{id}', \App\Http\Controllers\API\V1\Page\PagePutController::class)->name('pages.update');
     Route::delete('/pages/{id}', \App\Http\Controllers\API\V1\Page\PageDeleteController::class)->name('pages.destroy');
+    Route::delete('/pages/localizations/{localizationId}', \App\Http\Controllers\API\V1\Page\PageLocalizationDeleteController::class)->name('pages.localizations.destroy');
 
     // Forms
     Route::get('/forms', \App\Http\Controllers\API\V1\Form\FormsGetController::class)->name('forms.list');
@@ -130,6 +131,7 @@ Route::prefix('v1')->name('v1.')->middleware(['auth:api'])->group(function () {
 
     // Media
     Route::post('/media', \App\Http\Controllers\API\V1\Media\MediaPostController::class)->name('media.store');
+    Route::delete('/media', \App\Http\Controllers\API\V1\Media\MediaDeleteController::class)->name('media.destroy');
 
     // Change Control
     Route::post('/change-controls', \App\Http\Controllers\API\V1\ChangeControl\ChangeControlPostController::class)->name('change-controls.store');

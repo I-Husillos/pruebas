@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin\Page;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePageRequest extends FormRequest
 {
@@ -14,13 +15,23 @@ class UpdatePageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'market_code' => 'required|string|max:2',
-            'language_code' => 'required|string|max:2',
-            'slug' => 'required|string|max:255',
-            'is_active' => 'boolean',
-            'seo_title' => 'nullable|string|max:255',
-            'seo_description' => 'nullable|string',
-            'blocks_json' => 'nullable|array',
+            'status'       => 'required|in:draft,published,scheduled,pending_review',
+
+            'localizations'                       => 'required|array|min:1',
+            'localizations.*.language_id'         => 'required|integer|exists:languages,id',
+            'localizations.*.market_id'           => 'required|integer|exists:markets,id',
+            'localizations.*.slug'                => [
+                'nullable', 'string', 'max:255', 'distinct',
+                Rule::unique('page_localizations', 'slug')
+                    ->where(fn ($q) => $q->whereNot('page_id', (int) $this->route('id'))),
+            ],
+            'localizations.*.title'               => 'nullable|string|max:255',
+            'localizations.*.excerpt'             => 'nullable|string',
+            'localizations.*.description'         => 'nullable|string',
+            'localizations.*.content'             => 'nullable|array',
+            'localizations.*.seo_metadata'        => 'nullable|array',
+            'localizations.*.seo_metadata.title'  => 'nullable|string|max:255',
+            'localizations.*.seo_metadata.description' => 'nullable|string',
         ];
     }
 }

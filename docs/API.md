@@ -1,19 +1,20 @@
 # Documentación de la API REST
 
-> [!IMPORTANT]
-> La fuente canónica de contratos es Swagger/OpenAPI en `/api/documentation`.
-> Este archivo resume autenticación, convenciones y endpoints principales activos.
+> [!NOTE]
+> **Para qué sirve esta API**
+> En Arquitectura Hexagonal, la web construida con Vue/Inertia es solo *una forma más* de consumir nuestro "Core" central de negocio.
+> Si mañana Termosalud decide hacer una App Nativa en iOS/Android o si un hospital aliado necesita integrarse con nuestro catálogo para su sistema de inventario, usarán esta API REST de consulta pura, que obvia completamente a Vue o Inertia.
 
-## Base y autenticación
+## 🔐 Autenticación (API privada)
 
-- Base URL API versionada: `/api/v1`
-- Health check público: `GET /api/health-check`
-- Auth protegida: middleware `auth:api` (Laravel Passport)
-- Endpoint público sin token: `POST /api/v1/forms/{key}/submit`
+### Laravel Passport OAuth2
 
-### Flujo de token (OAuth2 / Passport)
+Nuestra API no debe ser consultada por cualquiera para espiar nuestra estructura. Se requiere autenticación usando tokens temporales estándar del mercado: **OAuth2**.
+
+#### Obtener Token de acceso (ejemplo con cURL)
 
 ```bash
+# Otorgamos contraseña a cambio de Token (Password Grant)
 curl -X POST http://localhost/oauth/token \
   -H "Content-Type: application/json" \
   -d '{
@@ -26,7 +27,22 @@ curl -X POST http://localhost/oauth/token \
   }'
 ```
 
-Usar token:
+**Respuesta Exitosa:**
+
+```json
+{
+  "token_type": "Bearer",
+  "expires_in": 31536000,
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "refresh_token": "def50200..."
+}
+```
+
+*Ese `access_token` es ahora la "llave" que autorizará peticiones futuras.*
+
+#### Usar Token en peticiones posteriores
+
+Simplemente incluimos el token en la cabecera (header) `Authorization`:
 
 ```bash
 curl -X GET http://localhost/api/v1/products \
@@ -34,84 +50,187 @@ curl -X GET http://localhost/api/v1/products \
   -H "Accept: application/json"
 ```
 
-## Convenciones de respuesta
+---
 
-Los controladores API usan `sendResponse(...)` y `sendError(...)` del `ApiController` base.
+## 📦 API de productos
 
-Ejemplo exitoso:
+*Nota: Estilamos nuestras URL indicando `/vX/` (versionado). Si el catálogo cambia de manera que rompa las Apps móviles antiguas, crearíamos `/api/v2/products` manteniendo ambas vivas temporalmente.*
+
+### GET /api/v1/products
+
+Obtiene la lista global paginada de productos.
+
+**Cabeceras (Headers):**
+
+- `Authorization: Bearer {token}`
+- `Accept: application/json`
+
+**Parámetros URL Opcionales para Filtrado:**
+
+- `market`: Código del mercado (ej. `es`, `mx`, `us`). Retorna productos normativizados para esa región.
+- `language`: Código del idioma (`es`, `en`, `fr`). Formatea los JSON y metadatos hacia ese idioma en concreto.
+
+**Respuesta 200 (OK):**
 
 ```json
 {
   "success": true,
-  "message": "Products retrieved successfully",
-  "data": {}
+  "message": "Productos recuperados exitosamente",
+  "data": [
+    {
+      "id": "01jf2x3y4z5a6b7c8d9e0f1g",
+      "name": {
+        "es": "Zionic Pro Max",
+        "en": "Zionic Pro Max"
+      },
+      "slug": {
+        "es": "zionic-pro-max",
+        "en": "zionic-pro-max"
+      },
+      "sku": "ZIONIC-PRO-MAX",
+      "categories": ["radiofrequency", "body"],
+      "featured_image": "/images/products/zionic-pro-max.jpg",
+      "is_featured": true,
+      "status": true,
+      "created_at": "2025-12-09T10:00:00.000000Z"
+    }
+  ]
 }
 ```
 
-Ejemplo con error:
+---
+
+### GET /api/v1/products/{id}
+
+Obtener un único producto al detalle.
+
+**Parámetros URL:**
+
+- `id` (requerido): El ID único universal (ULID) o SKU interno.
+
+**Respuesta 200 (OK):**
+
+```json
+{
+  "success": true,
+  "message": "Producto recuperado exitosamente",
+  "data": {
+    "id": "01jf2x3y4z5a6b7c8d9e0f1g",
+    "name": {
+      "es": "Zionic Pro Max",
+      "en": "Zionic Pro Max"
+    },
+    "description": {
+      "es": "<p>Descripción completa...</p>",
+      "en": "<p>Full description...</p>"
+    },
+    "sku": "ZIONIC-PRO-MAX",
+    "technical_specs": {
+      "es": [
+        {"label": "Potencia", "value": "300W"},
+        {"label": "Frecuencia", "value": "1MHz"}
+      ]
+    },
+    "certifications": ["CE", "FDA"],
+    "market_availability": ["es", "mx", "us"]
+  }
+}
+```
+
+---
+
+### POST /api/v1/products
+
+Permite a sistemas externos registrar remotamente un producto en Termosalud corporativo.
+
+**Respuesta 201 (Creado):**
+
+```json
+{
+  "success": true,
+  "message": "Producto creado exitosamente",
+  "data": {
+    "id": "01jf2x3y4z5a6b7c8d9e0f1h"
+  }
+}
+```
+
+**Respuesta 422 (Error de Validación):**
 
 ```json
 {
   "success": false,
-  "message": "Product not found",
-  "data": []
+  "message": "Error de validación",
+  "errors": {
+    "sku": ["El código (SKU) introducido ya está siendo utilizado por otro producto del catálogo."]
+  }
 }
 ```
 
-## Endpoints activos (resumen)
+---
 
-### Público
+## ⛔ Operaciones mutables posteriores
 
-- `GET /api/health-check`
-- `POST /api/v1/forms/{key}/submit`
-- `GET /api/menus/{menu}/items`
-- `GET /api/widgets/zone/{zoneKey}`
-- `GET /api/forms/{id}`
+Estas peticiones funcionan análogamente mandando un payload de actualización en JSON.
 
-### Protegidos (`auth:api`)
+### PUT /api/v1/products/{id}
 
-- `GET|POST|PUT|DELETE /api/v1/products[/{id}]`
-- `GET|POST|PUT|DELETE /api/v1/product-categories[/{id}]`
-- `GET|POST|PUT|DELETE /api/v1/treatments[/{id}]`
-- `GET|POST|PUT|DELETE /api/v1/treatment-categories[/{id}]`
-- `GET|POST|PUT|DELETE /api/v1/articles[/{id}]`
-- `GET|POST|PUT|DELETE /api/v1/article-categories[/{id}]`
-- `GET|POST|PUT|DELETE /api/v1/pages[/{id}]`
-- `GET|POST|PUT|DELETE /api/v1/forms[/{id}]`
-- `GET|POST|PUT|DELETE /api/v1/markets[/{id}]`
-- `GET|POST|PUT|DELETE /api/v1/languages[/{id}]`
-- `GET|POST|PUT|DELETE /api/v1/users[/{id}]`
-- `POST|PUT|DELETE /api/v1/menus[/{id}]`
-- `POST /api/v1/menus/{menu}/items`
-- `PUT|DELETE /api/v1/menus/items/{id}`
-- `POST /api/v1/menus/items/reorder`
-- `POST|PUT|DELETE /api/v1/widgets[/{id}]`
-- `POST /api/v1/widgets/reorder`
-- `POST /api/v1/media`
-- `POST|PUT|DELETE /api/v1/change-controls[/{id}]`
-- `POST /api/v1/change-controls/{id}/approve`
-- `POST /api/v1/change-controls/{id}/reject`
-- `GET /api/user`
+Actualiza (parcial o completamente) la ficha de un producto.
+*Retorna 200.*
 
-## Paginación y filtros
+### DELETE /api/v1/products/{id}
 
-El soporte exacto de filtros/orden/paginación depende de cada endpoint. Por ejemplo, `GET /api/v1/products` acepta parámetros como `search`, `order_by`, `order`, `limit`, `offset`.
+Elimina permanentemente un producto del maestro base.
+*Retorna 200. Si el producto ya no existe, devuelve el error 404 Estándar.*
 
-Consultar siempre el esquema OpenAPI para cada recurso en `/api/documentation`.
+---
 
-## Contenido localizado y BlockEditor
+## 📊 Formato global de respuesta (el estándar)
 
-Los ejemplos de payload no se fijan aquí para evitar desalineación. El contenido multi-idioma/multi-mercado y el JSON de bloques (`content`) están documentados en:
+Notarás que todos nuestros Controladores envuelven los datos con un patrón que hace que los móviles (Flutter/React Native) lo procesen siempre fácil, pase lo que pase. Nunca devolvemos arrays sueltos.
 
-- `docs/CONTENT_SYSTEM.md`
+### Respuesta exitosa
 
-## Códigos HTTP esperables
+```json
+{
+  "success": true,
+  "message": "Operación completada, mensaje genérico",
+  "data": { /* El payload principal va aquí dentro */ }
+}
+```
 
-- `200 OK`
-- `201 Created`
-- `400 Bad Request`
-- `401 Unauthorized`
-- `403 Forbidden`
-- `404 Not Found`
-- `422 Unprocessable Entity`
-- `500 Internal Server Error`
+### Respuesta fallida (errores controlados u orquestados)
+
+```json
+{
+  "success": false,
+  "message": "El producto no se pudo eliminar porque existen facturas conectadas a él.",
+  "data": {
+    "error_code": "FOREIGN_KEY_RESTRICTION_102"
+  }
+}
+```
+
+---
+
+## 🔍 Códigos de estado (HTTP Status Codes)
+
+Cuando programes o conectes con el API, siempre verifica la cabecera (Header HTTP), no solo el texto JSON.
+
+- `200 OK`: La petición funcionó perfectamente.
+- `201 Created`: El registro se introdujo en la base de datos de forma correcta.
+- `401 Unauthorized`: Intentaste consultar sin proveer Token Bearer, o este ha caducado.
+- `404 Not Found`: Recurso no encontrado (Ej. Pides la ID de un producto eliminado).
+- `422 Unprocessable Entity`: La petición es perfecta a nivel técnico, pero enviaste información no lógica o incorrecta y falló la validación.
+- `500 Internal Server Error`: Fallo interno no controlado (Un "pantallazo" del servidor - Típicamente bugs en nuestro código de producción).
+
+---
+
+## 🔐 Limitación de tráfico (Rate Limiting)
+
+Para proteger nuestro catálogo contra "Robots" extractores agresivos (Scraping):
+
+- **Público**: 60 consultas de búsqueda máxima / minuto por IP pública.
+- **Tokens Internos**: 100 consultas / minuto.
+
+La API mandará en sus headers `X-RateLimit-Limit` avisándote de cuántos te quedan para llegar al ban temporal.

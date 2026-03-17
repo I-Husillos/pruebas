@@ -9,47 +9,10 @@ use Dba\DddSkeleton\Shared\Domain\Bus\Command\Command;
 final class CreatePageCommand implements Command
 {
     public function __construct(
-        private readonly string $marketCode,
-        private readonly string $languageCode,
-        private readonly string $slug,
-        private readonly bool $isActive,
-        private readonly ?string $seoTitle,
-        private readonly ?string $seoDescription,
-        private readonly array $blocks
+        private readonly string $status,
+        private readonly array  $localizations,
     ) {}
 
-    public function marketCode(): string
-    {
-        return $this->marketCode;
-    }
-
-    public function languageCode(): string
-    {
-        return $this->languageCode;
-    }
-
-    public function slug(): string
-    {
-        return $this->slug;
-    }
-
-    public function isActive(): bool
-    {
-        return $this->isActive;
-    }
-
-    public function seoTitle(): ?string
-    {
-        return $this->seoTitle;
-    }
-
-    public function seoDescription(): ?string
-    {
-        return $this->seoDescription;
-    }
-
-    public function blocks(): array
-    {
-        return $this->blocks;
-    }
+    public function status(): string       { return $this->status; }
+    public function localizations(): array { return $this->localizations; }
 }

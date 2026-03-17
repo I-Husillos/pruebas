@@ -18,6 +18,7 @@
           :markets="markets"
           v-model="form.localizations"
           :errors="errors"
+          :forms="forms"
         />
       </div>
 
@@ -106,6 +107,7 @@ import { useArticleForm } from '@/Composables/Admin/useArticleForm';
 const props = defineProps({
   markets:    { type: Array, required: true },
   categories: { type: Array, default: () => [] },
+  forms:      { type: Array, default: () => [] },
 });
 
 const breadcrumbItems = [
@@ -116,7 +118,7 @@ const breadcrumbItems = [
 const api = new ApiClient(usePage().props.apiToken);
 
 // El form vive aquí porque LocalizationTabs lo necesita vía v-model.
-// El composable no gestiona su propio form — solo las llamadas a la API.
+// El composable no gestiona su propio form - solo las llamadas a la API.
 const form = ref({
   article_category_id: null,
   status:              'draft',

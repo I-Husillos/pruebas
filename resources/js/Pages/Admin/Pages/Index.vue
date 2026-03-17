@@ -12,38 +12,34 @@
         resource-name-plural="páginas"
         create-button-text="Crear Página"
     >
-        <!-- Custom Market Code (uppercase) -->
-        <template #cell-marketCode="{ value }">
-            <span class="uppercase">{{ value }}</span>
+        <template #cell-title="{ item }">
+            <span>{{ firstLocalization(item)?.title || '—' }}</span>
         </template>
 
-        <!-- Custom Language Code (uppercase) -->
-        <template #cell-languageCode="{ value }">
-            <span class="uppercase">{{ value }}</span>
+        <template #cell-slug="{ item }">
+            <span>{{ firstLocalization(item)?.slug || '—' }}</span>
         </template>
 
-        <!-- Custom Status Badge -->
-        <template #cell-isActive="{ value }">
-            <StatusBadge :value="value" />
+        <template #cell-status="{ value }">
+            <StatusBadge :value="value === 'published'" :label="statusLabel(value)" />
         </template>
 
-        <!-- Custom Actions with View Link -->
         <template #actions="{ item, edit, remove }">
             <div class="flex justify-end gap-2">
-                <!-- View -->
-                <a :href="`/es/es/pages/${item.slug}`" 
-                   target="_blank"
-                   class="text-gray-400 hover:text-indigo-600 transition-colors"
-                   title="Ver en web">
+                <a
+                    v-if="firstLocalization(item)?.slug"
+                    :href="`/pages/${firstLocalization(item).slug}`"
+                    target="_blank"
+                    class="text-gray-400 hover:text-indigo-600 transition-colors"
+                    title="Ver en web"
+                >
                     <EyeIcon class="h-5 w-5" />
                 </a>
 
-                <!-- Edit -->
                 <button @click="edit" class="text-gray-400 hover:text-blue-600 transition-colors" title="Editar">
                     <PencilSquareIcon class="h-5 w-5" />
                 </button>
 
-                <!-- Delete -->
                 <button @click="remove" class="text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
                     <TrashIcon class="h-5 w-5" />
                 </button>
@@ -62,9 +58,21 @@ const { props } = usePage();
 const { apiToken, apiUrl } = props;
 
 const columns = [
+    { key: 'title', label: 'Título' },
     { key: 'slug', label: 'Slug' },
-    { key: 'market_code', label: 'Mercado' },
-    { key: 'language_code', label: 'Idioma' },
-    { key: 'isActive', label: 'Estado' },
+    { key: 'status', label: 'Estado' },
 ];
+
+function firstLocalization(item) {
+    return item?.localizations?.[0] ?? null;
+}
+
+function statusLabel(status) {
+    return {
+        draft: 'Borrador',
+        published: 'Publicado',
+        scheduled: 'Programado',
+        pending_review: 'Pendiente de revisión',
+    }[status] || status;
+}
 </script>

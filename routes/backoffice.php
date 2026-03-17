@@ -48,6 +48,7 @@ Route::get('forms/{id}/submissions', \App\Http\Controllers\Admin\Form\FormSubmis
 // Media Management
 Route::get('media', \App\Http\Controllers\Admin\Media\MediaIndexController::class)->name('media.index');
 Route::post('media/upload', \App\Http\Controllers\API\V1\Media\MediaPostController::class)->name('media.store');
+Route::delete('media', \App\Http\Controllers\API\V1\Media\MediaDeleteController::class)->name('media.destroy');
 
 // Article Category Management
 Route::get('article-categories', \App\Http\Controllers\Admin\ArticleCategory\ArticleCategoriesIndexController::class)->name('article-categories.index');

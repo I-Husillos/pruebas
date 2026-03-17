@@ -11,25 +11,8 @@ final class PageCreator
 {
     public function __construct(private readonly PageRepository $repository) {}
 
-    public function __invoke(
-        string $marketCode,
-        string $languageCode,
-        string $slug,
-        bool $isActive,
-        ?string $seoTitle,
-        ?string $seoDescription,
-        ?array $blocks
-    ): void {
-        $page = Page::create(
-            $marketCode,
-            $languageCode,
-            $slug,
-            $isActive,
-            $seoTitle,
-            $seoDescription,
-            $blocks
-        );
-
-        $this->repository->save($page);
+    public function __invoke(string $status, array $localizations): void
+    {
+        $this->repository->save(Page::create($status, $localizations));
     }
 }

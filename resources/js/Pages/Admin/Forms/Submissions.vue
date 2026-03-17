@@ -1,12 +1,6 @@
 <template>
     <AdminLayout>
-        <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-                <Link :href="route('admin.forms.index')" class="text-sm text-gray-500 hover:text-gray-700 mb-2 inline-block">← Volver</Link>
-                <h1 class="text-2xl font-semibold leading-6 text-gray-900">Mensajes recibidos: {{ form.name }}</h1>
-            </div>
-        </div>
-
+        <Breadcrumbs :items="breadcrumbItems" />
         <div class="mt-8 flow-root">
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -47,6 +41,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Pagination from '@/Components/Admin/Pagination.vue';
+import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue';
 import { Link } from '@inertiajs/vue3';
 
 defineProps({

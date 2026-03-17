@@ -69,22 +69,3 @@ Cuando el usuario da al botón y pasa las reglas locales anti-spam, le decimos *
 4. El CRM dice "Recibido", le asigna un comercial humano, y nosotros anotamos la ID exitosa generada bajo nuestro `form_submissions.status = sent_to_crm`.
 
 *(Si el CRM estuviera caído temporalmente por reinicios, la lógica `Retries = 3 / Backoff = 60s` re-intentará pasados unos minutos sin perder jamás la ficha del cliente).*
-
----
-
-## 🔁 Qué viene de TermoCRM y qué es nuevo
-
-Este sistema hereda el patrón de formularios dinámicos del CRM interno (TermoCRM), pero con adaptaciones críticas para un entorno público. La regla es: **reutilizamos la estructura de datos, rehacemos la seguridad**.
-
-| Concepto | TermoCRM (interno) | Termosalud Web (público) |
-|---|---|---|
-| **Audiencia** | ~100 empleados autenticados | Miles de visitantes anónimos |
-| **Protección bot** | Ninguna (entorno seguro) | 6 filtros anti-spam |
-| **Destino del envío** | Misma BD local | API externa vía OAuth2 |
-| **Polimorfismo** | Formulario ligado a Eventos, Cursos… | Formularios independientes (sin `submittable_type`) |
-| **Trazabilidad** | Básica | IP, user-agent, `market_code`, referrer registrados en cada envío |
-| **Notificaciones** | Popups en dashboard | Jobs de cola con reintentos automáticos |
-
-Lo que se reutilizó: el modelo flexible EAV (plantilla JSON + respuestas por filas), las clases `Creator` y `Finder` del dominio, y la lógica de `FormSubmission`.
-
-Lo que se construyó desde cero: el servicio `SpamProtection`, el job `SendToCrmJob` con autenticación OAuth2, y el rastreo geopolítico del envío.

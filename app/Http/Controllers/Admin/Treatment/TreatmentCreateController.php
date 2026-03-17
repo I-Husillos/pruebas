@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Admin\Treatment;
 use App\Http\Controllers\Admin\BaseController;
 use Inertia\Response;
 use App\Models\TreatmentCategory;
-use App\Models\TreatmentCategoryTranslation;
 use App\Models\Market;
 use App\Models\Language;
 

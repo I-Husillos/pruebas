@@ -9,23 +9,12 @@ use Dba\DddSkeleton\Shared\Domain\Bus\Query\Query;
 final class FindPageBySlugQuery implements Query
 {
     public function __construct(
-        private readonly string $market,
-        private readonly string $lang,
-        private readonly string $slug
+        private readonly string $slug,
+        private readonly int    $languageId,
+        private readonly int    $marketId,
     ) {}
 
-    public function market(): string
-    {
-        return $this->market;
-    }
-
-    public function lang(): string
-    {
-        return $this->lang;
-    }
-
-    public function slug(): string
-    {
-        return $this->slug;
-    }
+    public function slug(): string      { return $this->slug; }
+    public function languageId(): int   { return $this->languageId; }
+    public function marketId(): int     { return $this->marketId; }
 }

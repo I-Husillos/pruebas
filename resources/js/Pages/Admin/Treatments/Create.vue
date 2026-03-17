@@ -87,7 +87,7 @@ import LocalizationTabs from '@/Components/Admin/LocalizationTabs.vue';
 import ApiClient from '@/api/client';
 import { useTreatmentForm } from '@/Composables/Admin/useTreatmentForm';
 
-const props = defineProps({
+defineProps({
   markets:    { type: Array, required: true },
   categories: { type: Array, default: () => [] },
 });
@@ -102,7 +102,9 @@ const api = new ApiClient(usePage().props.apiToken);
 const form = ref({
   treatment_category_id: null,
   status:                'draft',
-
+  images:                [],
+  related_products:      [],
+  order:                 0,
   localizations:         {},
 });
 

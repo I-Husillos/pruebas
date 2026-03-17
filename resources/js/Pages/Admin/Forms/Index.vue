@@ -12,13 +12,15 @@
         resource-name-plural="formularios"
         create-button-text="Nuevo Formulario"
     >
-        <template #cell-submission_count="{ item, value }">
-            <Link
-                :href="route('admin.forms.submissions.index', item.id)"
-                class="text-indigo-600 hover:text-indigo-900"
-            >
+        <!-- Custom Submission Count with Link -->
+        <template #cell-submissions_count="{ item, value }">
+            <Link :href="route('admin.forms.submissions.index', item.id)" class="text-indigo-600 hover:text-indigo-900">
                 {{ value }} envíos
             </Link>
+        </template>
+
+        <template #cell-is_active="{ value }">
+            <StatusBadge :value="value" />
         </template>
     </ResourceListTable>
 </template>
@@ -26,6 +28,7 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
 import ResourceListTable from '@/Components/Admin/ResourceListTable.vue';
+import StatusBadge from '@/Components/Admin/StatusBadge.vue';
 
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
@@ -34,6 +37,7 @@ const columns = [
     { key: 'name', label: 'Nombre' },
     { key: 'key', label: 'Code (Key)' },
     { key: 'recipient_email', label: 'Destinatario' },
-    { key: 'submission_count', label: 'Envíos' },
+    { key: 'submissions_count', label: 'Envíos' },
+    { key: 'is_active', label: 'Estado' }
 ];
 </script>

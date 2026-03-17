@@ -141,5 +141,14 @@ import { HomeIcon, ChevronDownIcon, ClipboardDocumentCheckIcon, DocumentTextIcon
 const isBlogOpen = ref(route().current('admin.articles.*') || route().current('admin.article-categories.*'));
 const isProductsOpen = ref(route().current('admin.products.*') || route().current('admin.product-categories.*'));
 const isTreatmentsOpen = ref(route().current('admin.treatments.*') || route().current('admin.treatment-categories.*'));
-const isManagementOpen = ref(false);
+const isManagementOpen = ref(
+    route().current('admin.markets.*') || 
+    route().current('admin.languages.*') || 
+    route().current('admin.pages.*') || 
+    route().current('admin.users.*') || 
+    route().current('admin.forms.*') || 
+    route().current('admin.media.*') || 
+    route().current('admin.menus.*') || 
+    route().current('admin.widgets.*')
+);
 </script>

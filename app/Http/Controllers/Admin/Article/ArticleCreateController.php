@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin\Article;
 
 use App\Http\Controllers\Admin\BaseController;
 use App\Models\ArticleCategory;
+use App\Models\Form;
 use App\Models\Language;
 use App\Models\Market;
 use Inertia\Inertia;
@@ -63,9 +64,15 @@ final class ArticleCreateController extends BaseController
             ->filter(fn (array $market) => ! empty($market['languages']))
             ->values();
 
+        $forms = Form::query()
+            ->where('active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'key']);
+
         return $this->render('Admin/Articles/Create', [
             'categories' => $categories,
             'markets' => $markets,
+            'forms' => $forms,
         ]);
     }
 }

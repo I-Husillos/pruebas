@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin\Article;
 use App\Http\Controllers\Admin\BaseController;
 use App\Models\ArticleCategory;
 use App\Models\ArticleCategoryTranslation;
+use App\Models\Form;
 use App\Models\Language;
 use App\Models\Market;
 use Dba\DddSkeleton\Shared\Domain\Bus\Query\QueryBus;
@@ -20,6 +21,7 @@ final class ArticleEditController extends BaseController
 
     public function __invoke(int $id): Response
     {
+        /** @var \Termosalud\Web\Article\Application\ArticleResponse|null $article */
         $article = $this->queryBus->ask(new FindArticleByIdQuery($id));
 
         if (!$article) {
@@ -71,6 +73,11 @@ final class ArticleEditController extends BaseController
             ->filter(fn(array $m) => !empty($m['languages']))
             ->values();
 
+        $forms = Form::query()
+            ->where('active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'key']);
+
 
         return $this->render('Admin/Articles/Edit', [
             'categories' => $categories->toArray(),
@@ -78,6 +85,7 @@ final class ArticleEditController extends BaseController
             // markets es necesario para que LocalizationTabs sepa
             // qué pestañas mostrar y a qué IDs corresponden
             'markets'    => $markets,
+            'forms'      => $forms,
         ]);
     }
 }

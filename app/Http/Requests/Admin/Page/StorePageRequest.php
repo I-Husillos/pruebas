@@ -14,14 +14,19 @@ class StorePageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'market_code' => 'required|string|max:2',
-            'language_code' => 'required|string|max:2',
-            'slug' => 'required|string|max:255',
-            'is_active' => 'boolean',
-            'seo_title' => 'nullable|string|max:255',
-            'seo_description' => 'nullable|string',
-            'meta_keywords' => 'nullable|string',
-            'blocks_json' => 'nullable|array',
+            'status'       => 'required|in:draft,published,scheduled,pending_review',
+
+            'localizations'                       => 'required|array|min:1',
+            'localizations.*.language_id'         => 'required|integer|exists:languages,id',
+            'localizations.*.market_id'           => 'required|integer|exists:markets,id',
+            'localizations.*.slug'                => 'required|string|max:255|distinct',
+            'localizations.*.title'               => 'nullable|string|max:255',
+            'localizations.*.excerpt'             => 'nullable|string|max:500',
+            'localizations.*.description'         => 'nullable|string',
+            'localizations.*.content'             => 'nullable|array',
+            'localizations.*.seo_metadata'        => 'nullable|array',
+            'localizations.*.seo_metadata.title'  => 'nullable|string|max:255',
+            'localizations.*.seo_metadata.description' => 'nullable|string|max:500',
         ];
     }
 }

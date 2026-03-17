@@ -1,150 +1,131 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Termosalud\Web\Page\Infrastructure\Persistence;
 
-use App\Models\Page as EloquentModel;
+use App\Models\Page as PageEloquentModel;
+use App\Models\PageLocalization;
+use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
+use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentCriteriaConverter;
+use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentRepository;
+use Illuminate\Support\Facades\DB;
 use Termosalud\Web\Page\Domain\Page;
 use Termosalud\Web\Page\Domain\PageRepository;
-use Dba\DddSkeleton\Shared\Domain\Criteria\Criteria;
-use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentRepository;
-use Dba\DddSkeleton\Shared\Infrastructure\Persistence\Eloquent\EloquentCriteriaConverter;
 
-class EloquentPageRepository implements PageRepository
+final class EloquentPageRepository extends EloquentRepository implements PageRepository
 {
-    private EloquentModel $model;
+    private const CRITERIA_TO_ELOQUENT_FIELDS = [
+        'id'         => 'pages.id',
+        'status'     => 'pages.status',
+        'slug'       => 'page_localizations.slug',
+        'title'      => 'page_localizations.title',
+        'created_at' => 'pages.created_at',
+        'updated_at' => 'pages.updated_at',
+    ];
 
-    public function __construct(EloquentModel $model)
+    public function __construct(PageEloquentModel $model)
     {
         $this->model = $model;
     }
-    public function save(Page $page): Page
+
+    public function save(Page $page): void
     {
-        // Initialize blocks_json with current language key
-        $blocks = [$page->languageCode => $page->blocks];
+        $data          = $page->toPrimitives();
+        $id            = $data['id'] ?? null;
+        $localizations = $data['localizations'] ?? [];
 
-        $data = [
-            'market_code' => $page->marketCode,
-            'language_code' => $page->languageCode,
-            'slug' => $page->slug,
-            'is_active' => $page->isActive,
-            'seo_title' => $page->seoTitle,
-            'seo_description' => $page->seoDescription,
-            'blocks_json' => $blocks,
-        ];
+        DB::transaction(function () use ($id, $data, $localizations): void {
+            $model = $id ? $this->model->newQuery()->find($id) : null;
 
-        $model = EloquentModel::create($data);
+            if ($model) {
+                $model->update(['status' => $data['status']]);
+            } else {
+                $model = $this->model->newQuery()->create(['status' => $data['status']]);
+            }
 
-        return $this->toDomain($model);
+            foreach ($localizations as $loc) {
+                $model->localizations()->updateOrCreate(
+                    [
+                        'language_id' => (int) $loc['language_id'],
+                        'market_id'   => (int) $loc['market_id'],
+                    ],
+                    [
+                        'slug'         => $loc['slug']         ?? null,
+                        'title'        => $loc['title']        ?? null,
+                        'excerpt'      => $loc['excerpt']      ?? null,
+                        'description'  => $loc['description']  ?? null,
+                        'content'      => $loc['content']      ?? null,
+                        'seo_metadata' => $loc['seo_metadata'] ?? [],
+                    ]
+                );
+            }
+        });
     }
 
-    public function findBySlug(string $market, string $lang, string $slug): ?Page
+    public function search(int $id): ?Page
     {
-        $model = EloquentModel::where('market_code', $market)
-            ->where('language_code', $lang)
-            ->where('slug', $slug)
+        $model = $this->model->newQuery()->with('localizations')->find($id);
+
+        return $model ? $this->toDomain($model) : null;
+    }
+
+    public function findBySlug(string $slug, int $languageId, int $marketId): ?Page
+    {
+        $model = $this->model->newQuery()
+            ->whereHas('localizations', function ($q) use ($slug, $languageId, $marketId): void {
+                $q->where('slug', $slug)
+                  ->where('language_id', $languageId)
+                  ->where('market_id', $marketId);
+            })
+            ->with('localizations')
             ->first();
 
         return $model ? $this->toDomain($model) : null;
     }
 
-    public function search(int $id): ?Page
+    public function remove(int $id): void
     {
-        $model = EloquentModel::find($id);
-
-        return $model ? $this->toDomain($model) : null;
-    }
-
-    public function update(Page $page): void
-    {
-        $model = EloquentModel::find($page->id);
+        $model = $this->model->newQuery()->find($id);
         if ($model) {
-            $currentBlocks = $model->blocks_json ?? [];
-            // If it's a flat array (from old format or error), convert to localized
-            if (is_array($currentBlocks) && !isset($currentBlocks[$page->languageCode]) && !empty($currentBlocks) && array_is_list($currentBlocks)) {
-                $currentBlocks = [$model->language_code => $currentBlocks];
-            }
-
-            // Set/Update current language blocks
-            $currentBlocks[$page->languageCode] = $page->blocks;
-
-            $model->update([
-                'market_code' => $page->marketCode,
-                'language_code' => $page->languageCode,
-                'slug' => $page->slug,
-                'is_active' => $page->isActive,
-                'seo_title' => $page->seoTitle,
-                'seo_description' => $page->seoDescription,
-                'blocks_json' => $currentBlocks,
-            ]);
+            $model->forceDelete();
         }
     }
 
-    public function remove(int $id): void
+    public function removeLocalization(int $localizationId): void
     {
-        EloquentModel::destroy($id);
-    }
-
-    public function delete(int $id): void
-    {
-        $this->remove($id);
+        $loc = PageLocalization::query()->find($localizationId);
+        if ($loc) {
+            $loc->delete();
+        }
     }
 
     public function searchByCriteria(Criteria $criteria): array
     {
-        $eloquentCriteria = EloquentCriteriaConverter::convert($criteria);
-        $query = $this->matching($eloquentCriteria);
-        $models = $query->get();
+        $eq = EloquentCriteriaConverter::convert($criteria, self::CRITERIA_TO_ELOQUENT_FIELDS);
+        $query = $this->matching($eq)
+            ->leftJoin('page_localizations', 'pages.id', '=', 'page_localizations.page_id')
+            ->select('pages.*')
+            ->distinct()
+            ->with('localizations');
 
-        return collect($models)->map(fn($m) => $this->toDomain($m))->toArray();
+        return collect($query->get())->map(fn ($m) => $this->toDomain($m))->toArray();
     }
 
     public function countByCriteria(Criteria $criteria): int
     {
-        // Create criteria without pagination for counting
-        $countCriteria = new Criteria(
-            $criteria->filters(),
-            $criteria->order(),
-            null,
-            null
-        );
-        
-        $eloquentCriteria = EloquentCriteriaConverter::convert($countCriteria);
-        $query = $this->matching($eloquentCriteria);
+        $countCriteria = new Criteria($criteria->filters(), $criteria->order(), null, null);
+        $eq = EloquentCriteriaConverter::convert($countCriteria, self::CRITERIA_TO_ELOQUENT_FIELDS);
+        $query = $this->matching($eq)
+            ->leftJoin('page_localizations', 'pages.id', '=', 'page_localizations.page_id')
+            ->select('pages.*')
+            ->distinct();
 
         return $query->count();
     }
 
-    private function toDomain(EloquentModel $model): Page
+    private function toDomain(PageEloquentModel $model): Page
     {
-        $blocks = $model->blocks_json ?? [];
-
-        // Extract localized blocks if exist
-        if (isset($blocks[$model->language_code])) {
-            $blocks = $blocks[$model->language_code];
-        }
-
-        return new Page(
-            $model->id,
-            $model->market_code,
-            $model->language_code,
-            $model->slug,
-            (bool) $model->is_active,
-            $model->seo_title,
-            $model->seo_description,
-            $blocks
-        );
-    }
-
-    private function matching($criteria)
-    {
-        $criteria = is_array($criteria) === false ? [$criteria] : $criteria;
-
-        return array_reduce($criteria, static function ($query, $criteria) {
-            $criteria->each(static function ($method) use ($query) {
-                call_user_func_array([$query, $method->name], $method->parameters);
-            });
-
-            return $query;
-        }, EloquentModel::query());
+        return Page::fromPrimitives($model->toArray());
     }
 }

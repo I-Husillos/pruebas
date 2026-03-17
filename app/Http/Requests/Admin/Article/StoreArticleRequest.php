@@ -19,7 +19,7 @@ class StoreArticleRequest extends FormRequest
             'status' => 'required|in:draft,published,scheduled,pending_review',
             'images' => 'nullable|array',
 
-            // Array de localizaciones — cada elemento es una fila en article_localizations
+            // Array de localizaciones - cada elemento es una fila en article_localizations
             'localizations' => 'required|array|min:1',
             'localizations.*.market_id' => 'required|integer|exists:markets,id',
             'localizations.*.language_id' => 'required|integer|exists:languages,id',

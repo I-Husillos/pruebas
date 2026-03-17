@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin\Media;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\BaseController;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
 use Inertia\Response;
 
-final class MediaIndexController extends Controller
+final class MediaIndexController extends BaseController
 {
     public function __invoke(): Response
     {
@@ -44,7 +43,7 @@ final class MediaIndexController extends Controller
             ->values()
             ->all();
 
-        return Inertia::render('Admin/Media/Index', [
+        return $this->render('Admin/Media/Index', [
             'media' => $media,
         ]);
     }

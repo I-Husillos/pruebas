@@ -29,6 +29,7 @@
               <label class="block text-sm font-medium text-gray-700">Categoría</label>
               <select
                 v-model="form.treatment_category_id"
+                :class="{ 'border-red-300': errors.treatment_category_id }"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               >
                 <option :value="null">Sin categoría</option>
@@ -55,19 +56,17 @@
           </div>
         </div>
 
-        <p v-if="errors.general" class="text-sm text-red-600">{{ errors.general }}</p>
-
         <div class="flex justify-end gap-3 pt-4">
           <Link
             :href="route('admin.treatments.index')"
-            class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Cancelar
           </Link>
           <button
             type="submit"
             :disabled="processing"
-            class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-6 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-6 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
           >
             {{ processing ? 'Guardando...' : 'Actualizar Tratamiento' }}
           </button>
@@ -88,7 +87,7 @@ import { buildInitialTreatmentLocalizations } from '@/Composables/Admin/useTreat
 import { useTreatmentForm } from '@/Composables/Admin/useTreatmentForm';
 
 const props = defineProps({
-  treatment: { type: Object, required: true },
+  treatment:  { type: Object, required: true },
   markets:    { type: Array, required: true },
   categories: { type: Array, default: () => [] },
 });
@@ -103,6 +102,9 @@ const api = new ApiClient(usePage().props.apiToken);
 const form = ref({
   treatment_category_id: props.treatment.treatment_category_id ?? null,
   status:                props.treatment.status ?? 'draft',
+  images:                props.treatment.images ?? [],
+  related_products:      props.treatment.related_products ?? [],
+  order:                 props.treatment.order ?? 0,
   localizations:         buildInitialTreatmentLocalizations(props.treatment.localizations ?? [], props.markets),
 });
 
@@ -113,17 +115,11 @@ const { errors, processing, submitUpdate, removeLocalization } = useTreatmentFor
 
 const submit = () => submitUpdate(props.treatment.id, form.value);
 
-async function deleteLocalization(localizationId) {
-  if (!confirm('¿Eliminar esta localización? Se perderá su contenido.')) {
-    return;
-  }
-
+const deleteLocalization = async (localizationId) => {
+  if (!localizationId) return;
   const result = await removeLocalization(localizationId);
   if (!result.ok) {
-    alert(result.message);
-    return;
+    errors.value = { ...errors.value, general: result.message };
   }
-
-  router.visit(route('admin.treatments.edit', props.treatment.id));
-}
+};
 </script>

@@ -25,6 +25,10 @@
           </button>
         </div>
 
+        <div v-if="error" class="mb-4 rounded-md bg-red-50 p-4">
+          <p class="text-sm font-medium text-red-800">{{ error }}</p>
+        </div>
+
         <!-- Filter Tabs -->
         <div class="mb-6 border-b border-gray-200">
           <nav class="-mb-px flex space-x-8">
@@ -112,6 +116,15 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 </a>
+
+                <!-- Delete -->
+                <button
+                  @click="deleteMedia(item)"
+                  class="rounded-full bg-white p-2 text-gray-700 hover:bg-gray-100 transition"
+                  title="Eliminar archivo"
+                >
+                  ✕
+                </button>
               </div>
             </div>
 
@@ -138,12 +151,12 @@
 
     <!-- Upload Modal -->
     <div v-if="showUploadModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+      <div class="flex min-h-screen items-center justify-center px-4 py-6 text-center">
         <!-- Background overlay -->
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showUploadModal = false"></div>
 
         <!-- Modal panel -->
-        <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+        <div class="relative z-10 w-full max-w-lg rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl sm:p-6">
           <div>
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100">
               <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +185,7 @@
                 isDragging ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300',
                 'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-indigo-400 transition'
               ]"
-              @click="$refs.fileInput.click()"
+              @click="fileInput?.click()"
             >
               <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -220,6 +233,10 @@
             </div>
           </div>
 
+          <div v-if="error" class="mt-4 rounded-md bg-red-50 p-3">
+            <p class="text-sm font-medium text-red-800">{{ error }}</p>
+          </div>
+
           <!-- Actions -->
           <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
             <button
@@ -249,11 +266,15 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Breadcrumbs from '@/Components/Admin/Breadcrumbs.vue';
 import { ref, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
+import ApiClient from '@/api/client';
 
 const props = defineProps({
   media: Array,
 });
+
+const api = new ApiClient(usePage().props.apiToken);
+
 
 const breadcrumbItems = [
   { label: 'Galería de Medios' }
@@ -266,6 +287,7 @@ const uploading = ref(false);
 const uploadProgress = ref(0);
 const isDragging = ref(false);
 const fileInput = ref(null);
+const error = ref(null);
 
 const images = computed(() => props.media.filter(m => m.type === 'image'));
 const videos = computed(() => props.media.filter(m => m.type === 'video'));
@@ -292,6 +314,21 @@ const copyUrl = async (url) => {
   }
 };
 
+const deleteMedia = async (item) => {
+  const confirmMessage = `¿Estás seguro de que deseas eliminar "${item.name}"?`;
+  if (!confirm(confirmMessage)) return;
+
+  try {
+    error.value = null;
+    await api.delete(`/api/v1/media?url=${encodeURIComponent(item.url)}`);
+
+    router.reload({ only: ['media'] });
+  } catch (err) {
+    console.error(err);
+    error.value = err.response?.data?.message || 'Error al eliminar el archivo.';
+  }
+};
+
 const handleFileSelect = (event) => {
   const files = Array.from(event.target.files);
   selectedFiles.value = [...selectedFiles.value, ...files];
@@ -312,6 +349,7 @@ const uploadFiles = async () => {
 
   uploading.value = true;
   uploadProgress.value = 0;
+  error.value = null;
 
   try {
     const totalFiles = selectedFiles.value.length;
@@ -321,25 +359,22 @@ const uploadFiles = async () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      await fetch(route('admin.media.store'), {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-        },
+      await api.upload('/api/v1/media', formData, (fileProgress) => {
+        uploadProgress.value = Math.round(
+          ((uploadedCount + (fileProgress / 100)) / totalFiles) * 100
+        );
       });
 
-      uploadedCount++;
-      uploadProgress.value = Math.round((uploadedCount / totalFiles) * 100);
+      uploadedCount += 1;
     }
 
     // Reload the page to show new files
     router.reload({ only: ['media'] });
     
     closeModal();
-  } catch (error) {
-    console.error('Error uploading files:', error);
-    alert('Error al subir archivos. Por favor, intenta de nuevo.');
+  } catch (err) {
+    console.error('Error uploading files:', err);
+    error.value = err.response?.data?.message || 'Error al subir archivos. Por favor, intenta de nuevo.';
   } finally {
     uploading.value = false;
     uploadProgress.value = 0;
@@ -351,6 +386,9 @@ const closeModal = () => {
     showUploadModal.value = false;
     selectedFiles.value = [];
     isDragging.value = false;
+    if (fileInput.value) {
+      fileInput.value.value = '';
+    }
   }
 };
 </script>

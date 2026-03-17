@@ -1,6 +1,6 @@
-# 📚 Índice de documentación para desarrolladores - Termosalud Corporate
+# 📚 Índice de documentación para desarrolladores - Termosalud Corporate (Pre-Alfa)
 
-Bienvenido al proyecto **Termosalud Corporate**. Esta documentación está organizada de mayor a menor prioridad para acelerar el onboarding y el trabajo diario.
+¡Hola! Bienvenido al proyecto **Termosalud Corporate (Pre-Alfa)**. Esta documentación está escrita pensando en ti. Sabemos que entrar a un proyecto empresarial grande puede abrumar, así que hemos organizado todo de mayor a menor importancia para tu día a día.
 
 ---
 
@@ -48,17 +48,11 @@ Una guía práctica (tipo receta de cocina) sobre cómo crear un módulo complet
 
 Si te toca programar algo relacionado con formularios, lee esto. Explica nuestra obsesión con la seguridad (6 capas anti-spam) y cómo mandamos los datos que nos entran por la web hacia nuestro CRM de Ventas en background sin que el usuario tenga que esperar cargando.
 
-### 🗂️ [CONTENT_SYSTEM.md](./CONTENT_SYSTEM.md)
+### 🔬 [FORMS_PATTERN_ANALYSIS.md](./FORMS_PATTERN_ANALYSIS.md)
 
-**El sistema de contenidos multi-mercado y multi-idioma (Nivel: Crítico).**
+**Por qué programamos los formularios así.**
 
-Si tocas páginas, productos, artículos o tratamientos, **lee esto antes de escribir una sola línea**. Explica en detalle el patrón de Tablas de Localización (la forma canónica de almacenar contenido diferenciado por mercado **e** idioma), el formato JSON que genera el BlockEditor para el campo `content`, y el estado de implementación de cada módulo. Incluye el esquema exacto de base de datos, ejemplos de payload de API y la estructura completa de todos los tipos de bloque disponibles.
-
-### 🔌 [API.md](./API.md)
-
-**Guía rápida de autenticación y endpoints activos.**
-
-Resumen práctico de OAuth2/Passport, convención de respuestas y rutas disponibles. Para contratos exactos por endpoint, apunta a Swagger en `/api/documentation`.
+Un análisis arquitectónico de por qué reutilizamos el código antiguo del CRM, y qué le tuvimos que adaptar para que sobreviviera en la salvaje Internet pública (Defensas Anti-Spam).
 
 ---
 
@@ -66,7 +60,7 @@ Resumen práctico de OAuth2/Passport, convención de respuestas y rutas disponib
 
 Como desarrollador Senior en potencia, no solo debes escribir código, debes entender **para qué** sirve a la empresa.
 
-### 💼 [EXECUTIVE_SUMMARY.md](./EXECUTIVE_SUMMARY.md)
+### 💼 [EXECUTIVE_SUMMARY.md](./EXECUTIVE_SUMMARY.md) & [EXECUTIVE_OVERVIEW.md](./EXECUTIVE_OVERVIEW.md)
 
 **Lo que le importa a los jefes.**
 

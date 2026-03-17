@@ -57,10 +57,7 @@
                   localizations[buildLocalizationKey(activeMarket, lang.code)].id
               )"
               class="ml-2 text-red-400 hover:text-red-600 text-xs font-bold leading-none"
-              title="Eliminar esta localización"
-          >
-              ✕
-          </span>
+              title="Eliminar esta localización"> ✕ </span>
         </button>
       </div>
 
@@ -223,7 +220,7 @@ const props = defineProps({
     default: () => ({}),
   },
   forms: {
-    type: Array, default: () => ({}),
+    type: Array, default: () => ([]),
   },
   onDeleteLocalization: { 
     type: Function, default: null 
@@ -267,7 +264,7 @@ function handleTitleInput(value) {
   onTitleInput(activeKey.value);
 }
 
-//  Helpers de errores ─
+//  Helpers de errores
 function hasError(field) {
   return !!props.errors[field];
 }

@@ -120,7 +120,7 @@ const props = defineProps({
     <!-- URL Oficia Canónica -->
     <link rel="canonical" :href="seo.canonical">
     
-    <!-- La joya del SEO: Etiquetados internacionales automáticos multi-idioma -->
+    <!-- La joya del SEO: Etiquetados Internacionales Automáticos multiidioma  -->
     <link 
       v-for="(url, hreflang) in seo.hreflang" 
       :key="hreflang"

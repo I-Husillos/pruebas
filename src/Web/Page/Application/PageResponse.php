@@ -9,60 +9,36 @@ use Termosalud\Web\Page\Domain\Page;
 
 final class PageResponse implements Response
 {
-    private int $id;
-    private string $marketCode;
-    private string $languageCode;
-    private string $slug;
-    private bool $isActive;
-    private ?string $seoTitle;
-    private ?string $seoDescription;
-    private array $blocks;
-
     public function __construct(
-        int $id,
-        string $marketCode,
-        string $languageCode,
-        string $slug,
-        bool $isActive,
-        ?string $seoTitle,
-        ?string $seoDescription,
-        array $blocks
-    ) {
-        $this->id = $id;
-        $this->marketCode = $marketCode;
-        $this->languageCode = $languageCode;
-        $this->slug = $slug;
-        $this->isActive = $isActive;
-        $this->seoTitle = $seoTitle;
-        $this->seoDescription = $seoDescription;
-        $this->blocks = $blocks;
-    }
+        private readonly ?int   $id,
+        private readonly string $status,
+        private readonly array  $localizations,
+        private readonly ?string $createdAt,
+        private readonly ?string $updatedAt,
+        private readonly ?string $deletedAt,
+    ) {}
 
     public static function fromPage(Page $page): self
     {
         return new self(
-            $page->id,
-            $page->marketCode,
-            $page->languageCode,
-            $page->slug,
-            $page->isActive,
-            $page->seoTitle,
-            $page->seoDescription,
-            $page->blocks
+            $page->id(),
+            $page->status(),
+            $page->localizations(),
+            $page->createdAt(),
+            $page->updatedAt(),
+            $page->deletedAt(),
         );
     }
 
     public function toArray(): array
     {
         return [
-            'id' => $this->id,
-            'market_code' => $this->marketCode,
-            'language_code' => $this->languageCode,
-            'slug' => $this->slug,
-            'is_active' => $this->isActive,
-            'seo_title' => $this->seoTitle,
-            'seo_description' => $this->seoDescription,
-            'blocks' => $this->blocks,
+            'id'            => $this->id,
+            'status'        => $this->status,
+            'localizations' => $this->localizations,
+            'created_at'    => $this->createdAt,
+            'updated_at'    => $this->updatedAt,
+            'deleted_at'    => $this->deletedAt,
         ];
     }
 }

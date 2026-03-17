@@ -38,7 +38,6 @@
 import { usePage } from '@inertiajs/vue3';
 import ResourceListTable from '@/Components/Admin/ResourceListTable.vue';
 import { formatDate } from '@/utils/formatters';
-import { getTitleFromLocalizations } from '@/utils/translationUtils';
 
 const { props } = usePage();
 const { apiToken, apiUrl } = props;
@@ -52,7 +51,7 @@ const columns = [
 ];
 
 const getTitle = (item) => {
-    const title = getTitleFromLocalizations(item);
-    return title === 'Sin nombre' ? item?.code || 'Sin nombre' : title;
+    const locs = item?.localizations || [];
+    return locs.find((l) => l.title?.trim())?.title || item?.code || 'Sin nombre';
 };
 </script>

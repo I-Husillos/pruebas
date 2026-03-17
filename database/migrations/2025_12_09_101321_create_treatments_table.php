@@ -50,7 +50,7 @@ return new class extends Migration
 
         Schema::create('treatment_localizations', function (Blueprint $table) {
             $table->id();
-            $table->string('slug');
+            $table->string('slug')->unique();
             $table->foreignId('treatment_id')->constrained()->onDelete('cascade');
             $table->foreignId('language_id')->constrained()->onDelete('cascade');
             $table->foreignId('market_id')->constrained()->onDelete('cascade');
@@ -64,7 +64,6 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['treatment_id', 'language_id', 'market_id'], 'treatment_lang_mkt_unique');
-            $table->unique(['slug', 'language_id', 'market_id'], 'treatment_localizations_slug_language_market_unique');
             $table->index(['slug', 'language_id', 'market_id'], 'treatment_slug_search_index');
         });
     }

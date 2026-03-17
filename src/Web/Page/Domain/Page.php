@@ -1,102 +1,55 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Termosalud\Web\Page\Domain;
 
-class Page
+use Dba\DddSkeleton\Shared\Domain\Aggregate\AggregateRoot;
+
+final class Page extends AggregateRoot
 {
-    public $id;
-
-    public $marketCode;
-
-    public $languageCode;
-
-    public $slug;
-
-    public $isActive;
-
-    public $seoTitle;
-
-    public $seoDescription;
-
-    public $blocks;
-
     public function __construct(
-        ?int $id,
-        string $marketCode,
-        string $languageCode,
-        string $slug,
-        bool $isActive,
-        ?string $seoTitle,
-        ?string $seoDescription,
-        array $blocks
-    ) {
-        $this->id = $id;
-        $this->marketCode = $marketCode;
-        $this->languageCode = $languageCode;
-        $this->slug = $slug;
-        $this->isActive = $isActive;
-        $this->seoTitle = $seoTitle;
-        $this->seoDescription = $seoDescription;
-        $this->blocks = $blocks;
+        private readonly ?int $id,
+        private string        $status,
+        private array         $localizations,
+        private ?string       $createdAt,
+        private ?string       $updatedAt,
+        private ?string       $deletedAt,
+    ) {}
+
+    public static function create(string $status, array $localizations): self
+    {
+        return new self(null, $status, $localizations, null, null, null);
     }
 
-    public static function create(
-        string $marketCode,
-        string $languageCode,
-        string $slug,
-        bool $isActive,
-        ?string $seoTitle,
-        ?string $seoDescription,
-        array $blocks
-    ): self {
+    public static function fromPrimitives(array $data): self
+    {
         return new self(
-            null,
-            $marketCode,
-            $languageCode,
-            $slug,
-            $isActive,
-            $seoTitle,
-            $seoDescription,
-            $blocks
+            $data['id']            ?? null,
+            $data['status']        ?? 'draft',
+            $data['localizations'] ?? [],
+            $data['created_at']    ?? null,
+            $data['updated_at']    ?? null,
+            $data['deleted_at']    ?? null,
         );
     }
 
-    public static function fromPrimitives(
-        ?int $id,
-        string $marketCode,
-        string $languageCode,
-        string $slug,
-        bool $isActive,
-        ?string $seoTitle,
-        ?string $seoDescription,
-        array $blocks
-    ): self {
-        return new self(
-            $id,
-            $marketCode,
-            $languageCode,
-            $slug,
-            $isActive,
-            $seoTitle,
-            $seoDescription,
-            $blocks
-        );
-    }
-
+    public function id(): ?int             { return $this->id; }
+    public function status(): string       { return $this->status; }
+    public function localizations(): array { return $this->localizations; }
+    public function createdAt(): ?string   { return $this->createdAt; }
+    public function updatedAt(): ?string   { return $this->updatedAt; }
+    public function deletedAt(): ?string   { return $this->deletedAt; }
 
     public function toPrimitives(): array
     {
         return [
-            'id' => $this->id,
-            'market_code' => $this->marketCode,
-            'language_code' => $this->languageCode,
-            'slug' => $this->slug,
-            'is_active' => $this->isActive,
-            'seo_title' => $this->seoTitle,
-            'seo_description' => $this->seoDescription,
-            'blocks' => $this->blocks,
+            'id'            => $this->id,
+            'status'        => $this->status,
+            'localizations' => $this->localizations,
+            'created_at'    => $this->createdAt,
+            'updated_at'    => $this->updatedAt,
+            'deleted_at'    => $this->deletedAt,
         ];
     }
-
-
 }
