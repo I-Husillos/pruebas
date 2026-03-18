@@ -10,6 +10,7 @@
           :languages="languages"
           v-model="form.translations"
           :errors="errors"
+          :submittedOrder="getSubmittedTranslationsOrder()"
         />
 
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -47,6 +48,7 @@ import { useProductCategoryForm } from '@/Composables/Admin/useProductCategoryFo
 
 const props = defineProps({
   languages: { type: Array, required: true },
+  translations: { type: Array, default: () => [] },
 });
 
 const api = new ApiClient(usePage().props.apiToken);
@@ -56,7 +58,7 @@ const breadcrumbItems = [
   { label: 'Crear' },
 ];
 
-const { form, errors, processing, submitCreate } = useProductCategoryForm({
+const { form, errors, processing, submitCreate, getSubmittedTranslationsOrder } = useProductCategoryForm({
   api,
   languages: props.languages,
   onSuccess: () => router.visit(route('admin.product-categories.index')),

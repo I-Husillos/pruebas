@@ -30,9 +30,20 @@ class StoreTreatmentRequest extends FormRequest
             'localizations.*.content'           => 'nullable|array',
             'localizations.*.indications'       => 'nullable|array',
             'localizations.*.contraindications' => 'nullable|array',
-            'localizations.*.seo_metadata'      => 'nullable|array',
-            'localizations.*.seo_metadata.title'       => 'nullable|string|max:255',
-            'localizations.*.seo_metadata.description' => 'nullable|string|max:500',
+            'localizations.*.seo_metadata'      => 'required|array',
+            'localizations.*.seo_metadata.title'       => 'required|string|max:255',
+            'localizations.*.seo_metadata.description' => 'required|string|max:500',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'code.required' => 'El código es obligatorio.',
+            'localizations.*.title.required' => 'Este campo es obligatorio.',
+            'localizations.*.seo_metadata.required' => 'Este campo es obligatorio.',
+            'localizations.*.seo_metadata.title.required' => 'Este campo es obligatorio.',
+            'localizations.*.seo_metadata.description.required' => 'Este campo es obligatorio.',
         ];
     }
 }

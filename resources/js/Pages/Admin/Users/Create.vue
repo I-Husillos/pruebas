@@ -12,38 +12,40 @@
                 <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Nombre</label>
                 <div class="mt-2">
                     <input v-model="form.name" type="text" name="name" id="name" autocomplete="name"
-                        :class="{'ring-red-300 focus:ring-red-600': errors.name, 'ring-gray-300 focus:ring-indigo-600': !errors.name}"
+                        :class="hasError('name') ? 'ring-red-300 focus:ring-red-600' : 'ring-gray-300 focus:ring-indigo-600'"
                         class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
                 </div>
-                <div v-if="errors.name" class="mt-2 text-sm text-red-600">{{ errors.name[0] }}</div>
+                <div v-if="hasError('name')" class="mt-2 text-sm text-red-600">{{ getFieldError('name') }}</div>
             </div>
 
             <div>
                 <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email</label>
                 <div class="mt-2">
                     <input v-model="form.email" type="email" name="email" id="email" autocomplete="email"
-                        :class="{'ring-red-300 focus:ring-red-600': errors.email, 'ring-gray-300 focus:ring-indigo-600': !errors.email}"
+                        :class="hasError('email') ? 'ring-red-300 focus:ring-red-600' : 'ring-gray-300 focus:ring-indigo-600'"
                         class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
                 </div>
-                <div v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email[0] }}</div>
+                <div v-if="hasError('email')" class="mt-2 text-sm text-red-600">{{ getFieldError('email') }}</div>
             </div>
 
             <div>
                 <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
                 <div class="mt-2">
                     <input v-model="form.password" type="password" name="password" id="password"
-                        :class="{'ring-red-300 focus:ring-red-600': errors.password, 'ring-gray-300 focus:ring-indigo-600': !errors.password}"
+                        :class="hasError('password') ? 'ring-red-300 focus:ring-red-600' : 'ring-gray-300 focus:ring-indigo-600'"
                         class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
                 </div>
-                <div v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password[0] }}</div>
+                <div v-if="hasError('password')" class="mt-2 text-sm text-red-600">{{ getFieldError('password') }}</div>
             </div>
 
             <div>
                 <label for="password_confirmation" class="block text-sm font-medium leading-6 text-gray-900">Confirmar Contraseña</label>
                 <div class="mt-2">
                     <input v-model="form.password_confirmation" type="password" name="password_confirmation" id="password_confirmation"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                        :class="hasError('password_confirmation') ? 'ring-red-300 focus:ring-red-600' : 'ring-gray-300 focus:ring-indigo-600'"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
                 </div>
+                <div v-if="hasError('password_confirmation')" class="mt-2 text-sm text-red-600">{{ getFieldError('password_confirmation') }}</div>
             </div>
 
             <fieldset>
@@ -59,11 +61,11 @@
                         </div>
                     </div>
                 </div>
-                <div v-if="errors.roles" class="mt-2 text-sm text-red-600">{{ errors.roles[0] }}</div>
+                <div v-if="hasError('roles')" class="mt-2 text-sm text-red-600">{{ getFieldError('roles') }}</div>
             </fieldset>
 
-            <div v-if="errors.general" class="rounded-md bg-red-50 p-4">
-                <p class="text-sm text-red-700">{{ errors.general }}</p>
+            <div v-if="hasError('general')" class="rounded-md bg-red-50 p-4">
+                <p class="text-sm text-red-700">{{ getFieldError('general') }}</p>
             </div>
 
             <div class="flex items-center justify-end gap-x-6">
@@ -82,6 +84,8 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import ApiClient from '@/api/client';
+import { useUserForm } from '@/Composables/Admin/useUserForm';
+import { getErrorMessage, hasError as hasValidationError } from '@/utils/errors';
 
 defineProps({
     roles: Array,
@@ -97,21 +101,15 @@ const form = ref({
     roles: [],
 });
 
-const errors = ref({});
-const processing = ref(false);
+const { errors, processing, submitCreate } = useUserForm({
+    api,
+    onSuccess: () => router.visit(route('admin.users.index')),
+});
+
+const hasError = (field) => hasValidationError(errors.value, field);
+const getFieldError = (field) => getErrorMessage(errors.value, field);
 
 const submit = async () => {
-    processing.value = true;
-    errors.value = {};
-    try {
-        await api.post('/api/v1/users', form.value);
-        router.visit(route('admin.users.index'));
-    } catch (e) {
-        errors.value = e.response?.status === 422
-            ? e.response.data.errors
-            : { general: 'Error inesperado.' };
-    } finally {
-        processing.value = false;
-    }
+    await submitCreate(form.value);
 };
 </script>

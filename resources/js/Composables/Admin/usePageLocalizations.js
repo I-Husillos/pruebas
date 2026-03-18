@@ -24,7 +24,7 @@ export function buildInitialPageLocalizations(localizations = [], markets = []) 
  */
 export function getFilledPageLocalizations(localizations = {}) {
     return Object.values(localizations).filter(
-        (loc) => (loc?.slug || '').trim() !== ''
+        (loc) => (loc?.title || '').trim() !== ''
     )
 }
 

@@ -21,9 +21,21 @@ final class ArticleCategoryCreateController extends BaseController
                 'name' => $l->native_name ?: $l->name,
             ])
             ->values();
+        
+        $translations = $languages->map(fn($language) => [
+            'language_id' => $language['id'],
+            'title' => '',
+            'slug' => '',
+            'description' => '',
+            'seo_metadata' => [
+                'title' => '',
+                'description' => '',
+            ],
+        ]);
 
         return $this->render('Admin/ArticleCategories/Create', [
             'languages' => $languages,
+            'translations' => $translations,
         ]);
     }
 }

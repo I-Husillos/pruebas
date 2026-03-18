@@ -13,7 +13,7 @@ export function usePageForm({ api, onSuccess = null }) {
         const payload = buildPagePayload(formValue)
 
         if (payload.localizations.length === 0) {
-            errors.value = { general: 'Debes rellenar al menos una localización con slug.' }
+            errors.value = { general: 'Debes rellenar los campos Título, Meta Title y Meta Description' }
             return false
         }
 

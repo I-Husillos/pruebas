@@ -6,60 +6,32 @@ namespace App\Http\Controllers\API\V1\Media;
 
 use App\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
-use OpenApi\Attributes as OA;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-#[OA\Tag(
-    name: "Media",
-    description: "Endpoints para gestionar media"
-)]
 final class MediaDeleteController extends ApiController
 {
-    #[OA\Delete(
-        path: "/api/v1/media",
-        tags: ["Media"],
-        summary: "Borrar Media",
-        description: "Eliminar Media",
-        operationId: "deleteMedia",
-        security: [["bearerAuth" => []]]
-    )]
-    #[OA\QueryParameter(
-        name: "url",
-        description: "URL del archivo a eliminar",
-        required: true,
-        schema: new OA\Schema(type: "string")
-    )]
-    #[OA\Response(response: 200, description: "Éxito")]
-    #[OA\Response(response: 401, description: "No autenticado")]
     public function __invoke(Request $request): JsonResponse
     {
         $url = $request->query('url');
-        if (! $url) {
-            return $this->sendError('URL es requerida', [], 422);
-        }
+        if (!$url) return $this->sendError('URL es requerida', [], 422);
 
+        // 1. Extraer la ruta relativa del storage
         $rawPath = parse_url((string) $url, PHP_URL_PATH);
-        if (! is_string($rawPath) || ! str_starts_with($rawPath, '/storage/')) {
+        if (!is_string($rawPath) || !str_contains($rawPath, '/storage/')) {
             return $this->sendError('URL inválida.', [], 422);
         }
 
-        $path = ltrim(substr($rawPath, strlen('/storage/')), '/');
-        if ($path === '' || str_contains($path, '..')) {
-            return $this->sendError('Ruta inválida.', [], 422);
-        }
+        // Convertimos /storage/uploads/es-es/images/hash.jpg -> uploads/es-es/images/hash.jpg
+        $path = ltrim(explode('/storage/', $rawPath)[1], '/');
 
+        // 2. Validación de Seguridad (Whitelist de carpeta raíz)
         $config = config('multimedia');
-        $imagePrefix = trim((string) ($config['image_path'] ?? 'uploads/images'), '/');
-        $videoPrefix = trim((string) ($config['video_path'] ?? 'uploads/videos'), '/');
-
-        $isAllowedPath = str_starts_with($path, $imagePrefix . '/')
-            || str_starts_with($path, $videoPrefix . '/');
-
-        if (! $isAllowedPath) {
-            return $this->sendError('No autorizado para eliminar este archivo.', [], 403);
+        if (!str_starts_with($path, $config['root_path'] . '/')) {
+            return $this->sendError('No autorizado para eliminar fuera de la carpeta media.', [], 403);
         }
 
+        // 3. Ejecutar eliminación
         if (Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
             return $this->sendResponse([], 'Archivo eliminado exitosamente');

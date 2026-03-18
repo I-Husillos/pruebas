@@ -74,6 +74,7 @@ import { usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     modelValue: Object,
+    market: String,
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -94,12 +95,16 @@ const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
+    console.log("Subiendo archivo al mercado:", props.market);
+
     error.value = null;
     uploading.value = true;
     progress.value = 0;
 
     const formData = new FormData();
     formData.append('file', file);
+
+    formData.append('market', props.market || 'global'); // Enviar el mercado al backend
 
     try {
         const response = await api.upload('/api/v1/media', formData, (pct) => {

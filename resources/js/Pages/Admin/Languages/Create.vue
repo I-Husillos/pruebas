@@ -23,7 +23,7 @@
             </div>
 
             <div class="sm:col-span-3">
-              <label for="native_name" class="block text-sm font-medium text-gray-700">Nombre Nativo</label>
+              <label for="native_name" class="block text-sm font-medium text-gray-700">Nombre Nativo (En inglés si es otro alfabeto)</label>
               <input v-model="form.native_name" type="text" id="native_name" :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.native_name}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="English, Français..." required />
               <p v-if="errors.native_name" class="mt-1 text-sm text-red-600">{{ errors.native_name }}</p>
             </div>
@@ -109,7 +109,6 @@ const processing = ref(false);
 
 
 const submit = async() => {
-  console.log('Datos que se envían:', JSON.stringify(form.value));
   processing.value = true;
   errors.value = {};
   try {

@@ -6,39 +6,38 @@ namespace App\Http\Controllers\Admin\Media;
 
 use App\Http\Controllers\Admin\BaseController;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Response;
+use Inertia\Response;use Illuminate\Http\Request;
 
 final class MediaIndexController extends BaseController
 {
-    public function __invoke(): Response
+public function __invoke(Request $request): Response
     {
         $config = config('multimedia');
+        $root = $config['root_path']; // 'uploads'
+        
+        // Obtenemos todos los archivos dentro de 'uploads' recursivamente
+        $allFiles = Storage::disk('public')->allFiles($root);
 
-        $images = collect(Storage::disk('public')->files($config['image_path']))
-            ->map(function ($path) {
+        $media = collect($allFiles)
+            ->map(function ($path) use ($config) {
+                // Determinamos el tipo basándonos en la carpeta (images o videos)
+                $isImage = str_contains($path, '/' . $config['folder_names']['images'] . '/');
+                $isVideo = str_contains($path, '/' . $config['folder_names']['videos'] . '/');
+
+                if (!$isImage && !$isVideo) return null;
+
                 return [
                     'path' => $path,
                     'url' => Storage::url($path),
                     'name' => basename($path),
                     'size' => Storage::disk('public')->size($path),
                     'modified' => Storage::disk('public')->lastModified($path),
-                    'type' => 'image',
+                    'type' => $isImage ? 'image' : 'video',
+                    // Extraemos el mercado de la ruta: uploads/{market}/...
+                    'market' => explode('/', $path)[1] ?? 'unknown',
                 ];
-            });
-
-        $videos = collect(Storage::disk('public')->files($config['video_path']))
-            ->map(function ($path) {
-                return [
-                    'path' => $path,
-                    'url' => Storage::url($path),
-                    'name' => basename($path),
-                    'size' => Storage::disk('public')->size($path),
-                    'modified' => Storage::disk('public')->lastModified($path),
-                    'type' => 'video',
-                ];
-            });
-
-        $media = $images->merge($videos)
+            })
+            ->filter() // Eliminamos nulos
             ->sortByDesc('modified')
             ->values()
             ->all();

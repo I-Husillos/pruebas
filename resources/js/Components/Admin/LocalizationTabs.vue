@@ -8,61 +8,57 @@
       </p>
     </div>
 
-    <!--  NIVEL 1: Pestañas de MERCADO  -->
-    <!--
-      Iteramos sobre props.markets. Si el backend añade un mercado nuevo,
-      aparece aquí automáticamente sin tocar este componente.
-    -->
-    <div class="flex flex-wrap gap-2 pb-4 mb-4 border-b border-gray-200">
-      <button v-for="market in markets" :key="market.code" type="button" @click="selectMarket(market.code)" :class="activeMarket === market.code
-        ? 'bg-indigo-600 text-white shadow-sm'
-        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-        class="px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
-
-        <span>{{ market.name }}</span>
-        <!-- Badge con la región regulatoria: EU_MDR, FDA, LATAM_GENERIC... -->
-        <span class="hidden sm:inline text-xs font-normal opacity-70">{{ market.region }}</span>
-        <!-- Punto verde si algún idioma de este mercado tiene contenido -->
-        <span v-if="marketHasContent(market.code)" class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0"
-          title="Tiene contenido" />
-      </button>
-    </div>
-
-    <!--  NIVEL 2: Pestañas de IDIOMA  -->
-    <!--
-      Solo los idiomas del mercado activo. El orden respeta is_default:
-      el idioma principal del mercado aparece primero.
-    -->
+    <!-- Selector compacto de mercado/idioma -->
     <div v-if="currentMarket">
-      <div class="flex flex-wrap gap-2 mb-6">
-        <button v-for="lang in currentMarket.languages" :key="lang.code" type="button"
-          @click="activeLanguage = lang.code" :class="activeLanguage === lang.code
-            ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-400'
-            : 'bg-gray-50 text-gray-500 hover:bg-gray-100 ring-1 ring-gray-200'"
-          class="px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5">
-          <span class="uppercase font-mono">{{ lang.code }}</span>
-          <span class="font-normal normal-case">{{ lang.name }}</span>
-          <span v-if="lang.is_default" class="text-indigo-400 font-normal">·default</span>
-          <!-- Punto verde si esta combinación específica tiene título relleno -->
-          <!-- <span v-if="hasContent(activeMarket, lang.code)"
-            class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" /> -->
+      <div class="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Mercado</label>
+          <select
+            :value="activeMarket"
+            @change="selectMarket($event.target.value)"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          >
+            <option v-for="market in markets" :key="market.code" :value="market.code">
+              {{ marketHasContent(market.code) ? '✓ ' : '' }}{{ market.name }} · {{ market.region }}
+            </option>
+          </select>
+          <p class="mt-1 text-xs text-gray-400">
+            {{ completedMarketsCount }} de {{ markets.length }} mercados con contenido
+          </p>
+        </div>
 
-          <!-- ✕ solo visible si:
-              - estamos en edición (la prop existe)
-              - esta localización YA está en BD (tiene id)-->
-          <span
-              v-if="onDeleteLocalization
-                    && localizations[buildLocalizationKey(activeMarket, lang.code)]?.id"
-              @click.stop="onDeleteLocalization(
-                  localizations[buildLocalizationKey(activeMarket, lang.code)].id
-              )"
-              class="ml-2 text-red-400 hover:text-red-600 text-xs font-bold leading-none"
-              title="Eliminar esta localización"> ✕ </span>
-        </button>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Idioma</label>
+          <select
+            v-model="activeLanguage"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          >
+            <option v-for="lang in currentMarket.languages" :key="lang.code" :value="lang.code">
+              {{ hasContent(activeMarket, lang.code) ? '✓ ' : '' }}{{ lang.name }}{{ lang.is_default ? ' · default' : '' }}
+            </option>
+          </select>
+          <p class="mt-1 text-xs text-gray-400">
+            {{ completedLanguagesCount }} de {{ currentMarket.languages.length }} idiomas con contenido en {{ currentMarket.name }}
+          </p>
+        </div>
       </div>
 
       <!--  ÁREA DE CONTENIDO: campos para la combinación activa  -->
       <div v-if="activeKey && localizations[activeKey]">
+
+        <div
+          v-if="activeLocalizationId"
+          class="mb-4 flex justify-end"
+        >
+          <button
+            v-if="onDeleteLocalization"
+            type="button"
+            @click="onDeleteLocalization(activeLocalizationId)"
+            class="inline-flex items-center rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100"
+          >
+            Eliminar localización actual
+          </button>
+        </div>
 
         <!-- Banner informativo: recuerda al admin para qué normativa está escribiendo -->
         <div
@@ -133,7 +129,7 @@
             <!-- SEO Title -->
             <div>
               <label class="block text-sm font-medium text-gray-700">
-                Meta Title
+                Meta Title <span class="text-red-500">*</span>
                 <span class="font-normal text-gray-400 text-xs ml-1">
                   (aparece en Google y en la pestaña del navegador)
                 </span>
@@ -142,17 +138,23 @@
                 ...localizations[activeKey].seo_metadata,
                 title: $event.target.value
               }" type="text" maxlength="60"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                :class="hasError(`localizations.${activeKey}.seo_metadata.title`)
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'"
+                class="mt-1 block w-full rounded-md shadow-sm sm:text-sm"
                 :placeholder="`Título SEO en ${currentLanguage?.name} (máx. 60 caracteres)`" />
               <p class="mt-1 text-xs text-gray-400">
                 {{ (localizations[activeKey].seo_metadata?.title || '').length }}/60 caracteres
+              </p>
+              <p v-if="hasError(`localizations.${activeKey}.seo_metadata.title`)" class="mt-1 text-sm text-red-600">
+                {{ getError(`localizations.${activeKey}.seo_metadata.title`) }}
               </p>
             </div>
 
             <!-- SEO Description -->
             <div>
               <label class="block text-sm font-medium text-gray-700">
-                Meta Description
+                Meta Description <span class="text-red-500">*</span>
                 <span class="font-normal text-gray-400 text-xs ml-1">
                   (resumen que muestra Google en los resultados de búsqueda)
                 </span>
@@ -161,10 +163,16 @@
                 ...localizations[activeKey].seo_metadata,
                 description: $event.target.value
               }" rows="2" maxlength="160"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                :placeholder="`Descripción SEO en ${currentLanguage?.name} (máx. 160 caracteres)`" />
+                :class="hasError(`localizations.${activeKey}.seo_metadata.description`)
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'"
+                class="mt-1 block w-full rounded-md shadow-sm sm:text-sm"
+                :placeholder="`Descripción SEO en ${currentLanguage?.name} (máx. 1000 caracteres)`" />
               <p class="mt-1 text-xs text-gray-400">
-                {{ (localizations[activeKey].seo_metadata?.description || '').length }}/160 caracteres
+                {{ (localizations[activeKey].seo_metadata?.description || '').length }}/1000 caracteres
+              </p>
+              <p v-if="hasError(`localizations.${activeKey}.seo_metadata.description`)" class="mt-1 text-sm text-red-600">
+                {{ getError(`localizations.${activeKey}.seo_metadata.description`) }}
               </p>
             </div>
           </div>
@@ -177,7 +185,7 @@
                 (bloques específicos para {{ currentMarket.name }} · {{ currentLanguage?.name }})
               </span>
             </label>
-            <BlockEditor :key="activeKey" v-model="localizations[activeKey].content" :forms="forms" />
+            <BlockEditor :key="activeKey" v-model="localizations[activeKey].content" :forms="forms" :market="activeMarket"/>
           </div>
         </div>
       </div>
@@ -196,10 +204,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useLocalizations } from '@/Composables/useLocalizations';
 import { buildLocalizationKey } from '@/utils/localizations';
 import BlockEditor from '@/Components/Admin/BlockEditor.vue';
+import { normalizeErrorMessage } from '@/utils/errors';
 
 
 // Props 
@@ -242,8 +251,21 @@ const {
   localizations,
   selectMarket,
   onTitleInput,
+  hasContent,
   marketHasContent,
 } = useLocalizations(marketsRef);
+
+const completedMarketsCount = computed(() =>
+  props.markets.filter((market) => marketHasContent(market.code)).length
+);
+
+const completedLanguagesCount = computed(() =>
+  (currentMarket.value?.languages ?? []).filter((lang) => hasContent(activeMarket.value, lang.code)).length
+);
+
+const activeLocalizationId = computed(() =>
+  activeKey.value ? localizations.value[activeKey.value]?.id ?? null : null
+);
 
 // Sincronizamos el modelValue del padre con el estado interno.
 // Cuando el padre pasa localizaciones existentes (edición), las cargamos.
@@ -253,7 +275,6 @@ Object.assign(localizations.value, props.modelValue);
 // Cada vez que el estado interno cambia, notificamos al padre (patrón v-model).
 // Esto permite que el formulario padre siempre tenga los datos actualizados
 // sin necesidad de acceder directamente al estado interno del componente.
-import { watch } from 'vue';
 watch(localizations, (newVal) => {
   emit('update:modelValue', newVal);
 }, { deep: true, immediate: true });
@@ -266,9 +287,43 @@ function handleTitleInput(value) {
 
 //  Helpers de errores
 function hasError(field) {
-  return !!props.errors[field];
+  return !!getError(field);
 }
 function getError(field) {
-  return props.errors[field] ?? '';
+  const directError = props.errors[field];
+
+  if (directError) {
+    return normalizeErrorMessage(directError);
+  }
+
+  const active = activeKey.value;
+  const prefix = `localizations.${active}.`;
+
+  if (!active || !field.startsWith(prefix)) {
+    return '';
+  }
+
+  const activeLocalization = localizations.value[active];
+
+  if (!activeLocalization) {
+    return '';
+  }
+
+  const subField = field.slice(prefix.length);
+  const submittedLocalizations = Object.values(localizations.value).filter(
+    (localization) => (localization?.title || '').trim() !== ''
+  );
+
+  const index = submittedLocalizations.findIndex((localization) => (
+    String(localization?.market_id) === String(activeLocalization?.market_id)
+    && String(localization?.language_id) === String(activeLocalization?.language_id)
+  ));
+
+  if (index === -1) {
+    return '';
+  }
+
+  const wildcardError = props.errors[`localizations.${index}.${subField}`];
+  return normalizeErrorMessage(wildcardError);
 }
 </script>

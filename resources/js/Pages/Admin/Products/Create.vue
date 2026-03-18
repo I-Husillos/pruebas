@@ -25,7 +25,7 @@
 
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700">Código</label>
+              <label class="block text-sm font-medium text-gray-700">Código <span class="text-red-500">*</span></label>
               <input
                 v-model="form.code"
                 type="text"

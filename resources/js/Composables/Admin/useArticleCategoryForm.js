@@ -1,16 +1,18 @@
 import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 
-export function useArticleCategoryForm({ api, category = null, languages = [], onSuccess = null }) {
+export function useArticleCategoryForm({ api, category = null, languages = [], onSuccess = null, translations = [] }) {
 
     // Construye el objeto inicial de traducciones para edición.
     // En creación devuelve {} — TranslationTabs lo inicializa desde cero.
     function buildInitialTranslations() {
-        if (!category || !languages.length) return {}
+        if (!languages.length) return {}
 
         const result = {}
         for (const lang of languages) {
-            const existing = category.translations?.find(
+            const existing = category?.translations?.find(
+                t => Number(t.language_id) === lang.id
+            ) || translations.find(
                 t => Number(t.language_id) === lang.id
             )
             result[lang.code] = {
@@ -18,6 +20,7 @@ export function useArticleCategoryForm({ api, category = null, languages = [], o
                 title:        existing?.title       ?? '',
                 slug:         existing?.slug        ?? '',
                 description:  existing?.description ?? '',
+                seo_metadata: existing?.seo_metadata ?? { title: '', description: '' },
             }
         }
         return result
@@ -40,21 +43,39 @@ export function useArticleCategoryForm({ api, category = null, languages = [], o
                 title:        t.title.trim(),
                 slug:         t.slug.trim(),
                 description:  t.description?.trim() || null,
-                seo_metadata: null,
+                seo_metadata: {
+                    title: t.seo_metadata?.title?.trim() || null,
+                    description: t.seo_metadata?.description?.trim() || null,
+                },
             }))
+    }
+
+    function getPayloadTranslations() {
+        return Object.values(form.value.translations)
+        .filter(t => t.title?.trim())   // <-- solo los que tienen título
+        .map(t => ({
+            language_id:  t.language_id,
+            title:        t.title.trim(),
+            slug:         t.slug.trim(),
+            description:  t.description?.trim() || '',
+            seo_metadata: {
+                title:       t.seo_metadata?.title?.trim() || '',
+                description: t.seo_metadata?.description?.trim() || '',
+            },
+        }))
     }
 
     function buildPayload() {
         return {
             status:       form.value.active ? 'active' : 'inactive',
             order:        Number(form.value.order ?? 0),
-            translations: getValidTranslations(),
+            translations: getPayloadTranslations(),
         }
     }
 
     async function submitCreate() {
         if (getValidTranslations().length === 0) {
-            errors.value = { general: 'Debes rellenar al menos un idioma.' }
+            errors.value = buildMissingTranslationErrors()
             return false
         }
         return await _submit(() => api.post('/api/v1/article-categories', buildPayload()))
@@ -85,5 +106,36 @@ export function useArticleCategoryForm({ api, category = null, languages = [], o
         }
     }
 
-    return { form, errors, processing, submitCreate, submitUpdate }
+    function buildMissingTranslationErrors() {
+        const translations = Object.keys(form.value.translations || {})
+
+        if (translations.length === 0) {
+            return { general: 'Debes rellenar los campos obligatorios.' }
+        }
+
+        const message = 'Este campo es obligatorio.'
+        const fieldErrors = {}
+
+        for (const key of translations) {
+            fieldErrors[`translations.${key}.title`] = message
+            fieldErrors[`translations.${key}.slug`] = message
+            fieldErrors[`translations.${key}.description`] = message
+            fieldErrors[`translations.${key}.seo_metadata.title`] = message
+            fieldErrors[`translations.${key}.seo_metadata.description`] = message
+        }
+
+        return fieldErrors
+    }
+
+    // Dentro de useArticleCategoryForm — añade esta función y exponla en el return
+    function getSubmittedTranslationsOrder() {
+        // Devuelve los language_id en el mismo orden que getPayloadTranslations()
+        // Esto permite que TranslationTabs calcule el índice correcto
+        // para mapear "translations.0.title" al idioma correcto
+        return Object.values(form.value.translations)
+            .filter(t => t.title?.trim())
+            .map(t => t.language_id)
+    }
+
+    return { form, errors, processing, submitCreate, submitUpdate, getSubmittedTranslationsOrder }
 }

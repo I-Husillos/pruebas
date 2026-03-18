@@ -18,6 +18,7 @@
           :languages="languages"
           v-model="form.translations"
           :errors="errors"
+          :submittedOrder="getSubmittedTranslationsOrder()"
         />
 
         <!-- Configuración -->
@@ -56,6 +57,7 @@ import { useArticleCategoryForm } from '@/Composables/Admin/useArticleCategoryFo
 
 const props = defineProps({
   languages: { type: Array, required: true },
+  translations: { type: Array, default: () => [] },
 });
 
 const api = new ApiClient(usePage().props.apiToken);
@@ -65,9 +67,11 @@ const breadcrumbItems = [
   { label: 'Crear' },
 ];
 
-const { form, errors, processing, submitCreate } = useArticleCategoryForm({
+const { form, errors, processing, submitCreate, getSubmittedTranslationsOrder } = useArticleCategoryForm({
   api,
+  languages: props.languages,
   onSuccess: () => router.visit(route('admin.article-categories.index')),
+  translations: props.translations,
 })
 
 const submit = () => submitCreate()

@@ -20,13 +20,23 @@ class StorePageRequest extends FormRequest
             'localizations.*.language_id'         => 'required|integer|exists:languages,id',
             'localizations.*.market_id'           => 'required|integer|exists:markets,id',
             'localizations.*.slug'                => 'required|string|max:255|distinct',
-            'localizations.*.title'               => 'nullable|string|max:255',
+            'localizations.*.title'               => 'required|string|max:255',
             'localizations.*.excerpt'             => 'nullable|string|max:500',
             'localizations.*.description'         => 'nullable|string',
             'localizations.*.content'             => 'nullable|array',
-            'localizations.*.seo_metadata'        => 'nullable|array',
-            'localizations.*.seo_metadata.title'  => 'nullable|string|max:255',
-            'localizations.*.seo_metadata.description' => 'nullable|string|max:500',
+            'localizations.*.seo_metadata'        => 'required|array',
+            'localizations.*.seo_metadata.title'  => 'required|string|max:255',
+            'localizations.*.seo_metadata.description' => 'required|string|max:500',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'localizations.*.title.required' => 'Este campo es obligatorio.',
+            'localizations.*.seo_metadata.required' => 'Este campo es obligatorio.',
+            'localizations.*.seo_metadata.title.required' => 'Este campo es obligatorio.',
+            'localizations.*.seo_metadata.description.required' => 'Este campo es obligatorio.',
         ];
     }
 }

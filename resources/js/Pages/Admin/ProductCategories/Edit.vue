@@ -10,6 +10,7 @@
           :languages="languages"
           v-model="form.translations"
           :errors="errors"
+          :submittedOrder="getSubmittedTranslationsOrder()"
         />
 
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -57,7 +58,7 @@ const breadcrumbItems = [
   { label: 'Editar' },
 ];
 
-const { form, errors, processing, submitUpdate } = useProductCategoryForm({
+const { form, errors, processing, submitUpdate, getSubmittedTranslationsOrder } = useProductCategoryForm({
   api,
   category:  props.category,
   languages: props.languages,

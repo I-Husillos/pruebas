@@ -14,7 +14,7 @@ export function useProductForm({ api, onSuccess = null }) {
         const payload = buildProductPayload(formValue)
 
         if (payload.localizations.length === 0) {
-            errors.value = { general: 'Debes rellenar al menos una localización con título.' }
+            errors.value = { general: 'Debes rellenar los campos Título, Meta Title y Meta Description' }
             return false
         }
 

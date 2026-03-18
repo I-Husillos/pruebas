@@ -30,19 +30,22 @@
                             <label class="block text-sm font-medium text-gray-700">Estado</label>
                             <select
                                 v-model="form.status"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                :class="hasError('status')
+                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                                    : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'"
+                                class="mt-1 block w-full rounded-md shadow-sm sm:text-sm"
                             >
                                 <option value="draft">Borrador</option>
                                 <option value="published">Publicado</option>
                                 <option value="scheduled">Programado</option>
                                 <option value="pending_review">Pendiente de revisión</option>
                             </select>
-                            <p v-if="errors.status" class="mt-1 text-sm text-red-600">{{ errors.status }}</p>
+                            <p v-if="hasError('status')" class="mt-1 text-sm text-red-600">{{ getFieldError('status') }}</p>
                         </div>
                     </div>
                 </div>
 
-                <p v-if="errors.general" class="text-sm text-red-600">{{ errors.general }}</p>
+                <p v-if="hasError('general')" class="text-sm text-red-600">{{ getFieldError('general') }}</p>
 
                 <div class="flex justify-end gap-3 pt-4">
                     <Link
@@ -73,6 +76,7 @@ import LocalizationTabs from '@/Components/Admin/LocalizationTabs.vue';
 import ApiClient from '@/api/client';
 import { buildInitialPageLocalizations } from '@/Composables/Admin/usePageLocalizations';
 import { usePageForm } from '@/Composables/Admin/usePageForm';
+import { getErrorMessage, hasError as hasValidationError } from '@/utils/errors';
 
 const props = defineProps({
     page: { type: Object, required: true },
@@ -99,6 +103,9 @@ const { errors, processing, submitUpdate, removeLocalization } = usePageForm({
     api,
     onSuccess: () => router.visit(route('admin.pages.index')),
 });
+
+const hasError = (field) => hasValidationError(errors.value, field);
+const getFieldError = (field) => getErrorMessage(errors.value, field);
 
 const submit = () => submitUpdate(props.page.id, form.value);
 

@@ -12,35 +12,36 @@
             <div>
                 <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Nombre</label>
                 <div class="mt-2">
-                    <input v-model="form.name" type="text" name="name" id="name" autocomplete="name" :class="{'ring-red-300 focus:ring-red-600': errors.name, 'ring-gray-300 focus:ring-indigo-600': !errors.name}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
+                    <input v-model="form.name" type="text" name="name" id="name" autocomplete="name" :class="hasError('name') ? 'ring-red-300 focus:ring-red-600' : 'ring-gray-300 focus:ring-indigo-600'" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
                 </div>
-                <div v-if="errors.name" class="mt-2 text-sm text-red-600">{{ errors.name }}</div>
+                <div v-if="hasError('name')" class="mt-2 text-sm text-red-600">{{ getFieldError('name') }}</div>
             </div>
 
             <!-- Email -->
             <div>
                 <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email</label>
                 <div class="mt-2">
-                    <input v-model="form.email" type="email" name="email" id="email" autocomplete="email" :class="{'ring-red-300 focus:ring-red-600': errors.email, 'ring-gray-300 focus:ring-indigo-600': !errors.email}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
+                    <input v-model="form.email" type="email" name="email" id="email" autocomplete="email" :class="hasError('email') ? 'ring-red-300 focus:ring-red-600' : 'ring-gray-300 focus:ring-indigo-600'" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
                 </div>
-                <div v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email }}</div>
+                <div v-if="hasError('email')" class="mt-2 text-sm text-red-600">{{ getFieldError('email') }}</div>
             </div>
 
             <!-- Password -->
             <div>
                 <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Contraseña (Dejar en blanco para no cambiar)</label>
                 <div class="mt-2">
-                    <input v-model="form.password" type="password" name="password" id="password" :class="{'ring-red-300 focus:ring-red-600': errors.password, 'ring-gray-300 focus:ring-indigo-600': !errors.password}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
+                    <input v-model="form.password" type="password" name="password" id="password" :class="hasError('password') ? 'ring-red-300 focus:ring-red-600' : 'ring-gray-300 focus:ring-indigo-600'" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
                 </div>
-                <div v-if="errors.password" class="mt-2 text-sm text-red-600">{{ errors.password }}</div>
+                <div v-if="hasError('password')" class="mt-2 text-sm text-red-600">{{ getFieldError('password') }}</div>
             </div>
 
             <!-- Confirm Password -->
             <div v-if="form.password">
                 <label for="password_confirmation" class="block text-sm font-medium leading-6 text-gray-900">Confirmar Contraseña</label>
                 <div class="mt-2">
-                    <input v-model="form.password_confirmation" type="password" name="password_confirmation" id="password_confirmation" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                    <input v-model="form.password_confirmation" type="password" name="password_confirmation" id="password_confirmation" :class="hasError('password_confirmation') ? 'ring-red-300 focus:ring-red-600' : 'ring-gray-300 focus:ring-indigo-600'" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6" />
                 </div>
+                <div v-if="hasError('password_confirmation')" class="mt-2 text-sm text-red-600">{{ getFieldError('password_confirmation') }}</div>
             </div>
 
             <!-- Roles -->
@@ -56,12 +57,16 @@
                         </div>
                     </div>
                 </div>
-                <div v-if="errors.roles" class="mt-2 text-sm text-red-600">{{ errors.roles }}</div>
+                <div v-if="hasError('roles')" class="mt-2 text-sm text-red-600">{{ getFieldError('roles') }}</div>
             </fieldset>
+
+            <div v-if="hasError('general')" class="rounded-md bg-red-50 p-4">
+                <p class="text-sm text-red-700">{{ getFieldError('general') }}</p>
+            </div>
 
             <div class="flex items-center justify-end gap-x-6">
                 <Link :href="route('admin.users.index')" class="text-sm font-semibold leading-6 text-gray-900">Cancelar</Link>
-                <button type="submit" :disabled="processing" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Actualizar</button>
+                <button type="submit" :disabled="processing" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50">{{ processing ? 'Guardando...' : 'Actualizar' }}</button>
             </div>
         </form>
     </AdminLayout>
@@ -73,6 +78,8 @@ import { Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import ApiClient from '@/api/client';
+import { useUserForm } from '@/Composables/Admin/useUserForm';
+import { getErrorMessage, hasError as hasValidationError } from '@/utils/errors';
 
 const props = defineProps({
     user: Object,
@@ -90,24 +97,15 @@ const form = ref({
     roles: props.user.roles ?? [],
 });
 
-const errors = ref({});
-const processing = ref(false);
+const { errors, processing, submitUpdate } = useUserForm({
+    api,
+    onSuccess: () => router.visit(route('admin.users.index')),
+});
+
+const hasError = (field) => hasValidationError(errors.value, field);
+const getFieldError = (field) => getErrorMessage(errors.value, field);
 
 const submit = async () => {
-    processing.value = true;
-    errors.value = {};
-
-    try {
-        await api.put(`/api/v1/users/${props.user.id}`, form.value);
-        router.visit(route('admin.users.index'));
-    } catch (error) {
-        if (error.response?.status === 422) {
-            errors.value = error.response.data.errors ?? {};
-        } else {
-            errors.value = { general: 'Error al actualizar el usuario.' };
-        }
-    } finally {
-        processing.value = false;
-    }
+    await submitUpdate(props.user.id, form.value);
 };
 </script>
