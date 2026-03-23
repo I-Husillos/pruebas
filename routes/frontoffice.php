@@ -1,72 +1,53 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Web\HomeController;
-use App\Http\Controllers\Web\ProductController;
+use App\Http\Controllers\Web\FrontController;
 use Illuminate\Support\Facades\Route;
 
-// Standard Breeze Auth & Profile Routes
+// Auth y Perfil
 require __DIR__ . '/auth.php';
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+// Route::middleware('auth')->group(function () {
+//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// });
 
-// Redirect root to default market/language
-Route::get('/', function () {
-    return redirect()->route('home', ['market' => 'es', 'lang' => 'es']);
-});
+// Redirige la raíz al market/lang por defecto
+// Route::get('/', function () {
+//     return redirect()->route('home', ['market' => 'es', 'lang' => 'es']);
+// });
 
-// Multi-market, multi-language routes (Catch-all prefix at the end)
-Route::prefix('{market}/{lang}')->group(function () {
-    Route::get('/', [HomeController::class, 'index'])->name('home');
+// Frontoffice: multi-market / multi-language
+//
+// Filosofía de URLs:
+//   /{market}/{lang}                   → home del mercado/idioma
+//   /{market}/{lang}/{slug}            → página resuelta por SlugResolver
+//   /{market}/{lang}/{slug}/{extra}    → ídem con filtros y/o paginación
+//
+// Formato de {extra}:
+//   Pares "clave-valor" separados por '_'. No usa '/' internamente.
+//   Ejemplos:
+//     pagina-2
+//     precio-100-500_pagina-2
+//     orden-precio-asc_marca-laser_pagina-3
+//
+// El middleware 'load.market' y 'load.language' cargan las entidades de dominio
+// Market y Language desde la base de datos y las inyectan en los atributos
+// de la request para que el FrontController las consuma.
+//
+Route::prefix('{market}/{lang}')
+    ->where(['market' => '[a-z]{2}', 'lang' => '[a-z]{2}'])
+    ->middleware(['load.market', 'load.language'])
+    ->group(function () {
+        Route::get('/', [FrontController::class, 'pages'])->name('home');
 
-    // Products
-    Route::get('productos', [ProductController::class, 'index'])
-        ->name('products.index.es')
-        ->where('lang', 'es');
-    Route::get('products', [ProductController::class, 'index'])
-        ->name('products.index.en')
-        ->where('lang', 'en');
+        
+        // Catch-all: slug + extra opcional (filtros / paginación en un solo segmento separado por '_')
+        // Ejemplo: /es/es/cirugia-estetica/precio-100-500_pagina-2
+        // Route::get('{slug}/{extra?}', FrontController::class)
+        //     ->name('front.show')
+        //     ->where('slug', '[a-z0-9][a-z0-9\-]*')
+        //     ->where('extra', '[a-z0-9][a-z0-9\-\_]*');
+    });
 
-    // Product categories
-    Route::get('productos/categoria/{categorySlug}', [ProductController::class, 'index'])
-        ->name('products.category.es')
-        ->where('lang', 'es');
-    Route::get('products/category/{categorySlug}', [ProductController::class, 'index'])
-        ->name('products.category.en')
-        ->where('lang', 'en');
-
-    Route::get('productos/{slug}', [ProductController::class, 'show'])
-        ->name('products.show.es')
-        ->where('lang', 'es');
-    Route::get('products/{slug}', [ProductController::class, 'show'])
-        ->name('products.show.en')
-        ->where('lang', 'en');
-
-    // Treatments
-    Route::get('tratamientos', [\App\Http\Controllers\Web\TreatmentController::class, 'index'])
-        ->name('treatments.index.es')
-        ->where('lang', 'es');
-    Route::get('treatments', [\App\Http\Controllers\Web\TreatmentController::class, 'index'])
-        ->name('treatments.index.en')
-        ->where('lang', 'en');
-
-    Route::get('tratamientos/{slug}', [\App\Http\Controllers\Web\TreatmentController::class, 'show'])
-        ->name('treatments.show.es')
-        ->where('lang', 'es');
-
-    Route::get('treatments/{slug}', [\App\Http\Controllers\Web\TreatmentController::class, 'show'])
-        ->name('treatments.show.en')
-        ->where('lang', 'en');
-
-    // Custom Landings (catch-all for pages if not matched above, or specific prefix)
-    Route::get('p/{slug}', [\App\Http\Controllers\Web\PageController::class, 'show'])
-        ->name('pages.show');
-
-    // Public Form Page
-    Route::get('forms/{key}', [\App\Http\Controllers\Web\FormController::class, 'show'])
-        ->name('forms.show');
-});

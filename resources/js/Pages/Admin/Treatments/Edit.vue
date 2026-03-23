@@ -16,6 +16,7 @@
           :markets="markets"
           v-model="form.localizations"
           :errors="errors"
+          :forms="forms"
           :on-delete-localization="deleteLocalization"
         />
       </div>
@@ -90,6 +91,7 @@ const props = defineProps({
   treatment:  { type: Object, required: true },
   markets:    { type: Array, required: true },
   categories: { type: Array, default: () => [] },
+  forms:      { type: Array, default: () => [] },
 });
 
 const breadcrumbItems = [

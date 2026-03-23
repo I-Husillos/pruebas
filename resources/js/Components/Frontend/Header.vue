@@ -62,7 +62,7 @@
 
                     <!-- Desktop Menu -->
                     <div class="hidden lg:flex lg:items-center lg:space-x-8">
-                        <Link 
+                        <!-- <Link 
                             :href="route(`products.index.${currentLang}`, { market: currentMarket, lang: currentLang })"
                             class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors px-3 py-2 rounded-md hover:bg-gray-50"
                             :class="{ 'text-indigo-600 bg-indigo-50': route().current('products.*') }"
@@ -76,7 +76,7 @@
                         >
                             {{ translations['nav.treatments'] }}
                         </Link>
-                        
+                         -->
                         <!-- Contact Button -->
                         <a href="#contact" class="bg-indigo-600 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-0.5 transition-all">
                             Contactar

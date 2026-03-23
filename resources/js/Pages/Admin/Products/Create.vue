@@ -16,6 +16,7 @@
           :markets="markets"
           v-model="form.localizations"
           :errors="errors"
+          :forms="forms"
         />
       </div>
 
@@ -101,6 +102,7 @@ import { useProductForm } from '@/Composables/Admin/useProductForm';
 defineProps({
   markets:    { type: Array, required: true },
   categories: { type: Array, default: () => [] },
+  forms:      { type: Array, default: () => [] },
 });
 
 const breadcrumbItems = [

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\Product;
 
 use App\Http\Controllers\Admin\BaseController;
+use App\Models\Form;
 use Inertia\Response;
 use App\Models\ProductCategory;
 use App\Models\Market;
@@ -58,9 +59,15 @@ final class ProductCreateController extends BaseController
             ->filter(fn (array $m) => ! empty($m['languages']))
             ->values();
 
+        $forms = Form::query()
+            ->where('active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'key']);
+
         return $this->render('Admin/Products/Create', [
             'categories' => $categories,
             'markets'    => $markets,
+            'forms'      => $forms,
         ]);
     }
 }

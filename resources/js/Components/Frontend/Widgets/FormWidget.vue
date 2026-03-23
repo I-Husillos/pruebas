@@ -81,10 +81,23 @@ onMounted(async () => {
   if (props.widget.config?.form_id) {
     try {
       const response = await axios.get(`/api/forms/${props.widget.config.form_id}`);
-      formData.value = response.data;
+      const payload = response?.data?.data ?? response?.data ?? null;
+
+      let fields = payload?.fields ?? [];
+      if (typeof fields === 'string') {
+        try {
+          fields = JSON.parse(fields);
+        } catch {
+          fields = [];
+        }
+      }
+
+      formData.value = {
+        ...payload,
+        fields: Array.isArray(fields) ? fields : [],
+      };
       
-      // Initialize form values
-      if (formData.value.fields) {
+      if (formData.value.fields.length) {
         formData.value.fields.forEach(field => {
           formValues[field.name] = '';
         });

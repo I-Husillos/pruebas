@@ -5,16 +5,16 @@
             <!-- Row / Grid System -->
             <div v-if="block.type === 'row'" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid gap-8" :class="getGridClass(block.layout)">
-                    <div v-for="(col, cIndex) in block.columns" :key="cIndex" class="space-y-6">
+                    <div v-for="(col, cIndex) in block.columns" :key="cIndex" class="space-y-6 min-w-0">
                         <!-- Recursive Rendering for Column Blocks -->
-                        <BlockRenderer :blocks="col.blocks" />
+                        <BlockRenderer :blocks="col.blocks" :lang="lang" />
                     </div>
                 </div>
             </div>
 
             <!-- Rich Text / WYSIWYG -->
             <div v-else-if="['rich_text', 'wysiwyg'].includes(block.type)" 
-                 class="prose prose-lg mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-gray-500"
+                  class="block-rich-text prose prose-lg mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-gray-500"
                  v-html="block.data.content">
             </div>
 
@@ -30,11 +30,9 @@
                 </div>
             </div>
 
-            <!-- Form Placeholder -->
+            <!-- Form -->
             <div v-else-if="block.type === 'form'" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-6 text-center text-indigo-700">
-                    [Form ID: {{ block.data.form_id }} - Rendering to be implemented]
-                </div>
+                <FormWidget :widget="toFormWidget(block)" :lang="lang" />
             </div>
 
             <!-- HTML -->
@@ -68,6 +66,7 @@
 
 <script setup>
 import { defineProps } from 'vue';
+import FormWidget from '@/Components/Frontend/Widgets/FormWidget.vue';
 // Recursive component needs no explicit import in <script setup> but helpful to check name
 // Logic for grid classes
 const getGridClass = (layout) => {
@@ -81,10 +80,28 @@ const getGridClass = (layout) => {
     return classes[layout] || 'grid-cols-1';
 };
 
+const toFormWidget = (block) => ({
+    title: null,
+    config: {
+        form_id: block?.data?.form_id ?? null,
+    },
+});
+
 defineProps({
     blocks: {
         type: Array,
         default: () => [],
-    }
+    },
+    lang: {
+        type: String,
+        default: 'es',
+    },
 });
 </script>
+
+<style scoped>
+.block-rich-text :deep(*) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+</style>
