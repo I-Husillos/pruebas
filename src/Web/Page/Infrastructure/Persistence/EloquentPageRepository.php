@@ -20,6 +20,8 @@ final class EloquentPageRepository extends EloquentRepository implements PageRep
         'status'     => 'pages.status',
         'slug'       => 'page_localizations.slug',
         'title'      => 'page_localizations.title',
+        'market_id'  => 'page_localizations.market_id',
+        'language_id'=> 'page_localizations.language_id',
         'created_at' => 'pages.created_at',
         'updated_at' => 'pages.updated_at',
     ];

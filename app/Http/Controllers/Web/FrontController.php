@@ -25,6 +25,7 @@ use Termosalud\Web\Shared\Infrastructure\Slug\PageSlugResolver;
 use Src\Web\Slug\Domain\SlugResolver as DomainSlugResolver;
 use Src\Web\Slug\Domain\ResolvedContent;
 use Termosalud\Web\Page\Application\Find\FindPageBySlugQuery;
+use Termosalud\Web\Page\Application\Search\SearchPagesByCriteriaQuery;
 
 final class FrontController extends Controller
 {
@@ -34,7 +35,7 @@ final class FrontController extends Controller
         private readonly \Src\Web\ContentHandler\Infrastructure\ContentHandlerFactory $handlerFactory
     ) {}
 
-    public function pages(Request $request): Response
+    public function __invoke(Request $request): Response
     {
         $marketCode = (string) $request->route('market');
         $langCode = (string) $request->route('lang');
@@ -45,50 +46,53 @@ final class FrontController extends Controller
         $languageId = (int) ($languages->firstWhere('code', $langCode)->id ?? 0);
         $marketId = (int) ($markets->firstWhere('code', $marketCode)->id ?? 0);
 
-        // Cambia 'home' por el slug de la página concreta que quieras mostrar
-        $slug = 'home';
 
-        /** @var \Termosalud\Web\Page\Application\PageResponse|null $pageResponse */
-        $pageResponse = $this->queryBus->ask(new FindPageBySlugQuery(
-            $slug,
-            $languageId,
-            $marketId
-        ));
+        // Construir filtros correctamente para SearchPagesByCriteriaQuery
+        $filters = [
+            [
+                'field' => 'market_id',
+                'operator' => '=',
+                'value' => $marketId,
+            ],
+            [
+                'field' => 'language_id',
+                'operator' => '=',
+                'value' => $languageId,
+            ],
+        ];
+
+        // dd($filters, $marketId, $languageId);
+        $pagesResponse = $this->queryBus->ask(new SearchPagesByCriteriaQuery($filters));
+
+        $pages = $pagesResponse ? $pagesResponse->toArray()['records'] ?? [] : [];
+
         
-
-        $page = $pageResponse ? $pageResponse->toArray() : null;
-
-        
-        if (!$page) {
-            $page = [
-                'localizations' => [],
-                'status' => 'not-found',
-                'message' => 'Página no encontrada o no configurada.'
-            ];
-        }
-
-        return Inertia::render('/', [
-            'pages' => $page,
+        return Inertia::render('Home', [
+            'pages' => $pages,
+            'markets' => $markets,
+            'languages' => $languages,
+            'market' => $marketCode,
+            'lang' => $langCode,
         ]);
     }
 
     // Página dinámica por slug (solo páginas, paso a paso)
-    public function __invoke(Request $request, string $market, string $language, string $slug, ?string $extra = null): Response
-    {
-        // 1. Obtener market/language de la request (middleware los fija en atributos)
-        $market = $request->attributes->get('resolvedMarket');
-        $language = $request->attributes->get('resolvedLanguage');
+    // public function __invoke(Request $request, string $market, string $language, string $slug, ?string $extra = null): Response
+    // {
+    //     // 1. Obtener market/language de la request (middleware los fija en atributos)
+    //     $market = $request->attributes->get('resolvedMarket');
+    //     $language = $request->attributes->get('resolvedLanguage');
 
 
-        // Usar el SlugResolver desacoplado (devuelve ResolvedContent)
-        $resolved = $this->slugResolver->resolve($slug, $market->id(), $language->id());
+    //     // Usar el SlugResolver desacoplado (devuelve ResolvedContent)
+    //     $resolved = $this->slugResolver->resolve($slug, $market->id(), $language->id());
 
-        // 3. Parsear $extra a parámetros si aplica (para filtros, paginación, etc.)
-        $params = $this->parseExtraSegments($extra ?? '');
+    //     // 3. Parsear $extra a parámetros si aplica (para filtros, paginación, etc.)
+    //     $params = $this->parseExtraSegments($extra ?? '');
 
-        // 4. Renderizar usando la factory (por ahora solo soporta Page)
-        return $this->handlerFactory->handle($resolved->entity, $params);
-    }
+    //     // 4. Renderizar usando la factory (por ahora solo soporta Page)
+    //     return $this->handlerFactory->handle($resolved->entity, $params);
+    // }
 
     /**
      * Parsea el segmento extra de la URL en parámetros clave-valor.

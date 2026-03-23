@@ -40,9 +40,9 @@ Route::prefix('{market}/{lang}')
     ->where(['market' => '[a-z]{2}', 'lang' => '[a-z]{2}'])
     ->middleware(['load.market', 'load.language'])
     ->group(function () {
-        Route::get('/', [FrontController::class, 'pages'])->name('home');
+        Route::get('/', FrontController::class)->name('home');
 
-        
+
         // Catch-all: slug + extra opcional (filtros / paginación en un solo segmento separado por '_')
         // Ejemplo: /es/es/cirugia-estetica/precio-100-500_pagina-2
         // Route::get('{slug}/{extra?}', FrontController::class)

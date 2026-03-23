@@ -26,9 +26,9 @@ use Termosalud\Web\TreatmentCategory\Domain\TreatmentCategoryRepository;
 use Termosalud\Web\TreatmentCategory\Infrastructure\Persistence\EloquentTreatmentCategoryRepository;
 use Termosalud\Web\User\Domain\UserRepository;
 use Termosalud\Web\User\Infrastructure\Persistence\EloquentUserRepository;
-use Src\Web\Slug\Infrastructure\SlugResolver;
 use Src\Web\ContentHandler\Infrastructure\ContentHandlerFactory;
 use Src\Web\Slug\Domain\PageSlugResolver;
+use Src\Web\Slug\Domain\SlugResolver; // Adding this line for clarity
 
 class RepositoryServiceProvider extends ServiceProvider
 {
