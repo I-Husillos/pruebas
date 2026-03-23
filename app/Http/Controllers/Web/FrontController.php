@@ -66,9 +66,24 @@ final class FrontController extends Controller
 
         $pages = $pagesResponse ? $pagesResponse->toArray()['records'] ?? [] : [];
 
-        
+        // Procesar cada página con el factory (si aplica)
+        $processedPages = [];
+        foreach ($pages as $page) {
+            try {
+                $processed = $this->handlerFactory->handle($page, []);
+                // Si el factory devuelve una respuesta Inertia, extrae los props
+                if (is_object($processed) && method_exists($processed, 'getProps')) {
+                    $processedPages[] = $processed->getProps();
+                } else {
+                    $processedPages[] = $processed;
+                }
+            } catch (\Throwable $e) {
+                $processedPages[] = $page;
+            }
+        }
+
         return Inertia::render('Home', [
-            'pages' => $pages,
+            'pages' => $processedPages,
             'markets' => $markets,
             'languages' => $languages,
             'market' => $marketCode,

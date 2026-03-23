@@ -2,18 +2,18 @@
     <FrontendLayout :current-market="market" :current-lang="lang" :markets="markets" :languages="languages">
         <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
             <template v-if="pages && pages.length">
-                <div v-for="page in pages" :key="page.id" class="mb-12">
-                    <template v-if="page.name === 'about-us'">
+                <div v-for="pageObj in pages" :key="getPage(pageObj)?.id || pageObj.id" class="mb-12">
+                    <template v-if="getPage(pageObj)?.name === 'about-us'">
                         <h2 class="text-2xl font-semibold mb-2">Sobre Nosotros</h2>
-                        <BlockRenderer :blocks="parseContent(getLocalization(page)?.content)" :lang="lang" />
+                        <BlockRenderer :blocks="parseContent(getLocalization(getPage(pageObj))?.content)" :lang="lang" />
                     </template>
-                    <template v-else-if="page.name === 'contact'">
+                    <template v-else-if="getPage(pageObj)?.name === 'contact'">
                         <h2 class="text-2xl font-semibold mb-2">Contacto</h2>
-                        <BlockRenderer :blocks="parseContent(getLocalization(page)?.content)" :lang="lang" />
+                        <BlockRenderer :blocks="parseContent(getLocalization(getPage(pageObj))?.content)" :lang="lang" />
                     </template>
                     <template v-else>
-                        <h2 class="text-2xl font-semibold mb-2">{{ getLocalization(page)?.title }}</h2>
-                        <BlockRenderer :blocks="parseContent(getLocalization(page)?.content)" :lang="lang" />
+                        <h2 class="text-2xl font-semibold mb-2">{{ getLocalization(getPage(pageObj))?.title }}</h2>
+                        <BlockRenderer :blocks="parseContent(getLocalization(getPage(pageObj))?.content)" :lang="lang" />
                     </template>
                 </div>
             </template>
@@ -25,6 +25,10 @@
 </template>
 
 <script setup>
+// Devuelve la entidad page, ya sea como page.page (factory) o el objeto crudo
+function getPage(obj) {
+    return obj.page || obj;
+}
 import FrontendLayout from '@/Layouts/FrontendLayout.vue';
 import BlockRenderer from '@/Components/BlockRenderer.vue';
 import { computed, watch } from 'vue';
