@@ -69,6 +69,21 @@ final class EloquentArticleCategoryRepository extends EloquentRepository impleme
         $this->model->destroy($id);
     }
 
+
+    public function findBySlug(string $slug, int $languageId): ?ArticleCategory
+    {
+        $model = $this->model
+            ->whereHas('translations', function ($query) use ($slug, $languageId) {
+                $query->where('slug', $slug)
+                    ->where('language_id', $languageId);
+            })
+            ->with('translations')
+            ->first();
+
+        return $model ? $this->toDomain($model) : null;
+    }
+
+    
     public function searchByCriteria(Criteria $criteria): array
     {
         $eloquentCriteria = EloquentCriteriaConverter::convert($criteria, self::CRITERIA_TO_ELOQUENT_FIELDS);

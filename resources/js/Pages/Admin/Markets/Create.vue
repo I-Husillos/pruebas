@@ -38,10 +38,9 @@
               <select v-model="form.region" id="region"
                 :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors.region}"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                <option value="Europe">Europa</option>
-                <option value="Americas">América</option>
-                <option value="Asia">Asia</option>
-                <option value="Global">Global</option>
+                <option v-for="region in regions" :key="region.code" :value="region.code">
+                  {{ region.name }}
+                </option>
               </select>
               <p v-if="errors.region" class="mt-1 text-sm text-red-600">{{ errors.region }}</p>
             </div>
@@ -144,7 +143,8 @@ import { ref } from 'vue';
 import ApiClient from '@/api/client';
 
 const props = defineProps({
-  languages: { type: Array, default: () => [] },
+  languages: { type: Array,  default: () => [] },
+  regions:   { type: Array,  default: () => [] },
 });
 
 const breadcrumbItems = [

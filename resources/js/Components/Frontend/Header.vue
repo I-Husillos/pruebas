@@ -49,7 +49,7 @@
                 <div class="flex justify-between h-20">
                     <!-- Logo -->
                     <div class="flex items-center">
-                        <Link :href="route('home', { market: currentMarket, lang: currentLang })" class="flex-shrink-0 flex items-center gap-2 group">
+                        <Link :href="route('front', { market: currentMarket, lang: currentLang })" class="flex-shrink-0 flex items-center gap-2 group">
                             <!-- Logo Icon (Placeholder) -->
                             <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:bg-indigo-700 transition-colors">
                                 T

@@ -4,95 +4,106 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\BaseController;
 use Dba\DddSkeleton\Shared\Domain\Bus\Query\QueryBus;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use Termosalud\Web\Product\Application\Search\SearchProductsByCriteriaQuery;
-use Termosalud\Web\Language\Domain\Language;
-use Termosalud\Web\Language\Domain\LanguageRepository;
-use Termosalud\Web\Market\Domain\Market;
-use Termosalud\Web\Market\Domain\MarketRepository;
-use Termosalud\Web\Page\Application\Find\FindPageByIdQuery;
-use Termosalud\Web\Shared\Application\Front\ContentHandlerFactory;
-use Termosalud\Web\Shared\Domain\Slug\ResolvedSlug;
-use Termosalud\Web\Shared\Domain\Slug\SlugResolver;
 
-use Termosalud\Web\Shared\Infrastructure\Slug\PageSlugResolver;
-use Src\Web\Slug\Domain\SlugResolver as DomainSlugResolver;
-use Src\Web\Slug\Domain\ResolvedContent;
 use Termosalud\Web\Page\Application\Find\FindPageBySlugQuery;
+use Termosalud\Web\Article\Application\Find\FindArticleBySlugQuery;
+use Termosalud\Web\ArticleCategory\Application\Find\FindArticleCategoryBySlugQuery;
+use Termosalud\Web\Product\Application\Find\FindProductBySlugQuery;
+use Termosalud\Web\Treatment\Application\Find\FindTreatmentBySlugQuery;
 
-final class FrontController extends Controller
+final class FrontController extends BaseController
 {
     public function __construct(
         private readonly QueryBus $queryBus,
-        private readonly DomainSlugResolver $slugResolver,
-        private readonly \Src\Web\ContentHandler\Infrastructure\ContentHandlerFactory $handlerFactory
     ) {}
 
-    public function pages(Request $request): Response
-    {
-        $marketCode = (string) $request->route('market');
-        $langCode = (string) $request->route('lang');
-
-        $markets = DB::table('markets')->where('active', true)->orderBy('priority')->get();
-        $languages = DB::table('languages')->where('active', true)->get();
-
-        $languageId = (int) ($languages->firstWhere('code', $langCode)->id ?? 0);
-        $marketId = (int) ($markets->firstWhere('code', $marketCode)->id ?? 0);
-
-        // Cambia 'home' por el slug de la página concreta que quieras mostrar
-        $slug = 'home';
-
-        /** @var \Termosalud\Web\Page\Application\PageResponse|null $pageResponse */
-        $pageResponse = $this->queryBus->ask(new FindPageBySlugQuery(
-            $slug,
-            $languageId,
-            $marketId
-        ));
-        
-
-        $page = $pageResponse ? $pageResponse->toArray() : null;
-
-        
-        if (!$page) {
-            $page = [
-                'localizations' => [],
-                'status' => 'not-found',
-                'message' => 'Página no encontrada o no configurada.'
-            ];
-        }
-
-        return Inertia::render('/', [
-            'pages' => $page,
-        ]);
-    }
-
-    // Página dinámica por slug (solo páginas, paso a paso)
     public function __invoke(Request $request, string $market, string $language, string $slug, ?string $extra = null): Response
     {
-        // 1. Obtener market/language de la request (middleware los fija en atributos)
-        $market = $request->attributes->get('resolvedMarket');
-        $language = $request->attributes->get('resolvedLanguage');
+        $markets = $request->attributes->get('resolvedMarket');
+        $languages = $request->attributes->get('resolvedLanguage');
 
+        $extraParams = $extra ? $this->parseExtraSegments($extra) : [];
+        $currentPage = isset($extraParams['pagina']) ? (int) $extraParams['pagina'] : 1;
 
-        // Usar el SlugResolver desacoplado (devuelve ResolvedContent)
-        $resolved = $this->slugResolver->resolve($slug, $market->id(), $language->id());
+        $contentType = null;
+        $content = null;
 
-        // 3. Parsear $extra a parámetros si aplica (para filtros, paginación, etc.)
-        $params = $this->parseExtraSegments($extra ?? '');
+        
+        $page = $this->queryBus->ask(new FindPageBySlugQuery($slug, $languages->id(), $markets->id()));
+        if ($page) {
+            $contentType = 'page';
+            $content = $page->toArray();
+        }
 
-        // 4. Renderizar usando la factory (por ahora solo soporta Page)
-        return $this->handlerFactory->handle($resolved->entity, $params);
+        if (!$content) {
+            $article = $this->queryBus->ask(new FindArticleBySlugQuery($slug, $languages->id(), $markets->id()));
+            if ($article) {
+                $contentType = 'article';
+                $content = $article->toArray();
+            }
+        }
+
+        if (!$content) {
+            $product = $this->queryBus->ask(new FindProductBySlugQuery($slug, $languages->id(), $markets->id()));
+            if ($product) {
+                $contentType = 'product';
+                $content = $product->toArray();
+            }
+        }
+
+        if (!$content) {
+            $treatment = $this->queryBus->ask(new FindTreatmentBySlugQuery($slug, $languages->id(), $markets->id()));
+            if ($treatment) {
+                $contentType = 'treatment';
+                $content = $treatment->toArray();
+            }
+        }
+
+        if (!$content) {
+            $articleCategory = $this->queryBus->ask(
+                new FindArticleCategoryBySlugQuery(
+                    slug:       $slug,
+                    languageId: $languages->id(),
+                    page:       $currentPage,
+                    perPage:    12,
+                    filters:    $extraParams,
+                )
+            );
+            if ($articleCategory) {
+                $contentType = 'article_category';
+                $content     = $articleCategory;
+            }
+        }
+
+        // Response que deberíamos obtener de cada iteración
+        FrontofficeResponse FrontofficeResolver 
+        $foPage = new \stdClass();
+        $foPage->component = match($contentType) {
+            'page' => 'Pages/Show',
+            'article' => 'Articles/Show',
+            'article_category' => 'Articles/Category',
+            'product' => 'Products/Show',
+            'treatment' => 'Treatments/Show',
+            default => 'Errors/NotFound',
+        };
+        
+        $foPage->props = [
+            $contentType ?? 'content' => $content,
+            'market' => $market,
+            'lang' => $language,
+        ];
+
+        return Inertia::render($foPage->component, $foPage->props);
     }
 
     /**
      * Parsea el segmento extra de la URL en parámetros clave-valor.
-     * Ejemplo: "precio-100-500_pagina-2" => ['precio' => ['100', '500'], 'pagina' => '2']
+     * Ejemplo: "precio-100-500_pagina-2" ['precio' ['100', '500'], 'pagina' '2']
      */
     private function parseExtraSegments(string $extra): array
     {

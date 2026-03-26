@@ -21,6 +21,8 @@ final class LoadMarket
             abort(404);
         }
 
+        $allMarkets = $this->marketRepository->findAllActive();
+
         $market = $this->marketRepository->findByCode(strtoupper($marketCode));
 
         if ($market === null || $market->id() === null) {
@@ -28,6 +30,7 @@ final class LoadMarket
         }
 
         $request->attributes->set('resolvedMarket', $market);
+        $request->attributes->set('allMarkets', $allMarkets);
 
         return $next($request);
     }

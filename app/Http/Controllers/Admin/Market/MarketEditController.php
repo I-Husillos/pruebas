@@ -16,12 +16,19 @@ final class MarketEditController extends BaseController
     {
         $market = Market::query()->findOrFail($id);
         $languages = Language::where('active', 1)->get(['id', 'code', 'name']);
-        $regions = Market::query()->distinct()->pluck('region');
+        // Obtener regiones distintas de la base de datos y formatearlas para el select
+        $regionsRaw = Market::query()->distinct()->pluck('region')->filter()->values();
+        $regionOptions = $regionsRaw->map(function ($region) {
+            return [
+                'code' => $region,
+                'name' => str_replace('_', ' ', $region), // Puedes mejorar el formateo si lo deseas
+            ];
+        });
 
         return Inertia::render('Admin/Markets/Edit', [
             'market' => $market->toArray(),
             'languages' => $languages,
-            'regions' => $regions,
+            'regions' => $regionOptions,
         ]);
     }
 }

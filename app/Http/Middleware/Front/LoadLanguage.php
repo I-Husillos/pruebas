@@ -23,11 +23,14 @@ final class LoadLanguage
 
         $language = $this->languageRepository->findByCode(strtolower($languageCode));
 
+        $allLanguages = $this->languageRepository->findAllActive();
+
         if ($language === null || $language->id() === null) {
             abort(404);
         }
 
         $request->attributes->set('resolvedLanguage', $language);
+        $request->attributes->set('allLanguages', $allLanguages);
 
         return $next($request);
     }

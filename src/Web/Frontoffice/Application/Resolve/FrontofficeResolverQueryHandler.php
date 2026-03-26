@@ -1,0 +1,1 @@
+iterador de resolvers que se le pasan el slug, el idioma y el mercado y devuelve un response con el componente y las props a renderizar

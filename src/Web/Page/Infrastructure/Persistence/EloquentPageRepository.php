@@ -20,6 +20,8 @@ final class EloquentPageRepository extends EloquentRepository implements PageRep
         'status'     => 'pages.status',
         'slug'       => 'page_localizations.slug',
         'title'      => 'page_localizations.title',
+        'market_id'  => 'page_localizations.market_id',
+        'language_id'=> 'page_localizations.language_id',
         'created_at' => 'pages.created_at',
         'updated_at' => 'pages.updated_at',
     ];
@@ -75,14 +77,18 @@ final class EloquentPageRepository extends EloquentRepository implements PageRep
         $model = $this->model->newQuery()
             ->whereHas('localizations', function ($q) use ($slug, $languageId, $marketId): void {
                 $q->where('slug', $slug)
-                  ->where('language_id', $languageId)
-                  ->where('market_id', $marketId);
+                ->where('language_id', $languageId)
+                ->where('market_id', $marketId);
             })
-            ->with('localizations')
+            ->with(['localizations' => function ($q) use ($languageId, $marketId): void {
+                $q->where('language_id', $languageId)
+                ->where('market_id', $marketId);
+            }])
             ->first();
 
         return $model ? $this->toDomain($model) : null;
     }
+
 
     public function remove(int $id): void
     {

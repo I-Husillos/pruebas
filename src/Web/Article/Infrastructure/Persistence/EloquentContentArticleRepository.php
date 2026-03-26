@@ -109,7 +109,10 @@ final class EloquentContentArticleRepository extends EloquentRepository implemen
                     ->where('language_id', $languageId)
                     ->where('market_id', $marketId);
             })
-            ->with('localizations')
+            ->with(['localizations' => function ($q) use ($languageId, $marketId): void {
+                $q->where('language_id', $languageId)
+                ->where('market_id', $marketId);
+            }])
             ->first();
 
         return $model ? $this->toDomain($model) : null;

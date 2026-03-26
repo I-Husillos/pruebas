@@ -12,6 +12,8 @@ interface TreatmentRepository
 
     public function search(int $id): ?Treatment;
 
+    public function findBySlug(string $slug, int $languageId, int $marketId): ?Treatment;
+
     /** @return Treatment[] */
     public function searchByCriteria(Criteria $criteria): array;
 

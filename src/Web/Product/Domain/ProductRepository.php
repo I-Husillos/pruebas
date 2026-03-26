@@ -12,6 +12,8 @@ interface ProductRepository
 
     public function search(int $id): ?Product;
 
+    public function findBySlug(string $slug, int $languageId, int $marketId): ?Product;
+
     /** @return Product[] */
     public function searchByCriteria(Criteria $criteria): array;
 

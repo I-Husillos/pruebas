@@ -29,11 +29,23 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        // Obtener el token Passport de la sesión si existe
+        $apiToken = $request->session()->get('passport_token');
+
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
             ],
+            'apiToken' => $apiToken,
+            'markets' => fn() => array_map(
+                fn($m) => $m->toPrimitives(),
+                $request->attributes->get('allMarkets') ?? []
+            ),
+            'languages' => fn() => array_map(
+                fn($l) => $l->toPrimitives(),
+                $request->attributes->get('allLanguages') ?? []
+            ),
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

@@ -149,6 +149,7 @@ import ApiClient from '@/api/client';
 const props = defineProps({
   market:    { type: Object, required: true },
   languages: { type: Array,  default: () => [] },
+  regions:   { type: Array,  default: () => [] },
 });
 
 const breadcrumbItems = [

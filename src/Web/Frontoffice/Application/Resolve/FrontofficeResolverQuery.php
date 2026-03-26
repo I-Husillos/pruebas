@@ -1,0 +1,1 @@
+inmutable de slug, con parametros y todo el cuento

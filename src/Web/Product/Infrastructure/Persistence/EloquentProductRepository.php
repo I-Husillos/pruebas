@@ -75,6 +75,23 @@ final class EloquentProductRepository extends EloquentRepository implements Prod
         return $model ? $this->toDomain($model) : null;
     }
 
+    public function findBySlug(string $slug, int $languageId, int $marketId): ?Product
+    {
+        $model = $this->model->newQuery()
+            ->whereHas('localizations', function ($q) use ($slug, $languageId, $marketId): void {
+                $q->where('slug', $slug)
+                ->where('language_id', $languageId)
+                ->where('market_id', $marketId);
+            })
+            ->with(['localizations' => function ($q) use ($languageId, $marketId): void {
+                $q->where('language_id', $languageId)
+                ->where('market_id', $marketId);
+            }])
+            ->first();
+
+        return $model ? $this->toDomain($model) : null;
+    }
+
     public function searchByCriteria(Criteria $criteria): array
     {
         $eloquentCriteria = EloquentCriteriaConverter::convert($criteria, self::CRITERIA_TO_ELOQUENT_FIELDS);

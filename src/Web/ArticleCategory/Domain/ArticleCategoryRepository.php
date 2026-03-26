@@ -17,5 +17,7 @@ interface ArticleCategoryRepository
 
     public function search(int $id): ?ArticleCategory;
 
+    public function findBySlug(string $slug, int $languageId): ?ArticleCategory;
+
     public function remove(int $id): void;
 }

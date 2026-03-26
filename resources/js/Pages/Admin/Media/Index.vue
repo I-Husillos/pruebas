@@ -9,11 +9,10 @@
           <div>
             <h1 class="text-3xl font-bold text-gray-900">Galería de Medios</h1>
             <p class="mt-2 text-sm text-gray-600">
-              Todos los archivos multimedia subidos ({{ media.length }} archivos)
+              Todos los archivos multimedia subidos ({{ media.length }} archivos únicos)
             </p>
           </div>
-          
-          <!-- Upload Button -->
+
           <button
             @click="showUploadModal = true"
             class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -35,9 +34,7 @@
             <button
               @click="filter = 'all'"
               :class="[
-                filter === 'all'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                filter === 'all' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
                 'whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium'
               ]"
             >
@@ -46,9 +43,7 @@
             <button
               @click="filter = 'image'"
               :class="[
-                filter === 'image'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                filter === 'image' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
                 'whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium'
               ]"
             >
@@ -57,9 +52,7 @@
             <button
               @click="filter = 'video'"
               :class="[
-                filter === 'video'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                filter === 'video' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
                 'whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium'
               ]"
             >
@@ -72,7 +65,7 @@
         <div v-if="filteredMedia.length > 0" class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           <div
             v-for="item in filteredMedia"
-            :key="item.path"
+            :key="item.name"
             class="group relative aspect-square overflow-hidden rounded-lg bg-gray-100 shadow-sm hover:shadow-md transition-shadow"
           >
             <!-- Image Preview -->
@@ -82,7 +75,7 @@
               :alt="item.name"
               class="h-full w-full object-cover"
             />
-            
+
             <!-- Video Preview -->
             <div v-else class="relative h-full w-full bg-gray-900 flex items-center justify-center">
               <svg class="h-16 w-16 text-white opacity-75" fill="currentColor" viewBox="0 0 20 20">
@@ -90,10 +83,10 @@
               </svg>
             </div>
 
-            <!-- Overlay with actions -->
+            <!-- Overlay con acciones -->
             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
               <div class="flex space-x-2">
-                <!-- Copy URL -->
+                <!-- Copiar URL -->
                 <button
                   @click="copyUrl(item.url)"
                   class="rounded-full bg-white p-2 text-gray-700 hover:bg-gray-100 transition"
@@ -104,7 +97,7 @@
                   </svg>
                 </button>
 
-                <!-- View -->
+                <!-- Ver -->
                 <a
                   :href="item.url"
                   target="_blank"
@@ -117,7 +110,7 @@
                   </svg>
                 </a>
 
-                <!-- Delete -->
+                <!-- Eliminar -->
                 <button
                   @click="deleteMedia(item)"
                   class="rounded-full bg-white p-2 text-gray-700 hover:bg-gray-100 transition"
@@ -128,10 +121,20 @@
               </div>
             </div>
 
-            <!-- Info -->
+            <!-- Info con mercados -->
             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
               <p class="truncate font-medium">{{ item.name }}</p>
               <p class="text-gray-300">{{ formatSize(item.size) }}</p>
+              <!-- Mercados donde está disponible -->
+              <div class="mt-1 flex flex-wrap gap-1">
+                <span
+                  v-for="market in item.markets"
+                  :key="market"
+                  class="inline-flex items-center rounded-full bg-indigo-500 bg-opacity-80 px-2 py-0.5 text-xs font-medium text-white"
+                >
+                  {{ market.toUpperCase() }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -152,10 +155,8 @@
     <!-- Upload Modal -->
     <div v-if="showUploadModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
       <div class="flex min-h-screen items-center justify-center px-4 py-6 text-center">
-        <!-- Background overlay -->
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showUploadModal = false"></div>
 
-        <!-- Modal panel -->
         <div class="relative z-10 w-full max-w-lg rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl sm:p-6">
           <div>
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100">
@@ -193,18 +194,9 @@
               <p class="mt-2 text-sm text-gray-600">
                 <span class="font-medium text-indigo-600">Haz clic para seleccionar</span> o arrastra archivos aquí
               </p>
-              <p class="mt-1 text-xs text-gray-500">
-                Múltiples archivos permitidos
-              </p>
+              <p class="mt-1 text-xs text-gray-500">Múltiples archivos permitidos</p>
             </div>
-            <input
-              ref="fileInput"
-              type="file"
-              multiple
-              accept="image/*,video/*"
-              class="hidden"
-              @change="handleFileSelect"
-            />
+            <input ref="fileInput" type="file" multiple accept="image/*,video/*" class="hidden" @change="handleFileSelect" />
           </div>
 
           <!-- Selected Files -->
@@ -275,19 +267,16 @@ const props = defineProps({
 
 const api = new ApiClient(usePage().props.apiToken);
 
+const breadcrumbItems = [{ label: 'Galería de Medios' }];
 
-const breadcrumbItems = [
-  { label: 'Galería de Medios' }
-];
-
-const filter = ref('all');
+const filter        = ref('all');
 const showUploadModal = ref(false);
 const selectedFiles = ref([]);
-const uploading = ref(false);
+const uploading     = ref(false);
 const uploadProgress = ref(0);
-const isDragging = ref(false);
-const fileInput = ref(null);
-const error = ref(null);
+const isDragging    = ref(false);
+const fileInput     = ref(null);
+const error         = ref(null);
 
 const images = computed(() => props.media.filter(m => m.type === 'image'));
 const videos = computed(() => props.media.filter(m => m.type === 'video'));
@@ -305,7 +294,6 @@ const formatSize = (bytes) => {
 
 const copyUrl = async (url) => {
   try {
-    // Make URL absolute
     const absoluteUrl = url.startsWith('http') ? url : window.location.origin + url;
     await navigator.clipboard.writeText(absoluteUrl);
     alert('URL copiada al portapapeles');
@@ -315,13 +303,15 @@ const copyUrl = async (url) => {
 };
 
 const deleteMedia = async (item) => {
-  const confirmMessage = `¿Estás seguro de que deseas eliminar "${item.name}"?`;
-  if (!confirm(confirmMessage)) return;
+  if (!confirm(`¿Estás seguro de que deseas eliminar "${item.name}"?\nSe eliminará de todos los mercados donde esté presente: ${item.markets.map(m => m.toUpperCase()).join(', ')}`)) return;
 
   try {
     error.value = null;
-    await api.delete(`/api/v1/media?url=${encodeURIComponent(item.url)}`);
-
+    // Eliminamos en todos los mercados donde esté presente
+    for (const market of item.markets) {
+      const marketUrl = item.url.replace(/\/uploads\/[^/]+\//, `/uploads/${market}/`);
+      await api.delete(`/api/v1/media?url=${encodeURIComponent(window.location.origin + marketUrl)}`);
+    }
     router.reload({ only: ['media'] });
   } catch (err) {
     console.error(err);
@@ -368,9 +358,7 @@ const uploadFiles = async () => {
       uploadedCount += 1;
     }
 
-    // Reload the page to show new files
     router.reload({ only: ['media'] });
-    
     closeModal();
   } catch (err) {
     console.error('Error uploading files:', err);
@@ -386,9 +374,7 @@ const closeModal = () => {
     showUploadModal.value = false;
     selectedFiles.value = [];
     isDragging.value = false;
-    if (fileInput.value) {
-      fileInput.value.value = '';
-    }
+    if (fileInput.value) fileInput.value.value = '';
   }
 };
 </script>
