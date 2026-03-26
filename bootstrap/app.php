@@ -15,6 +15,10 @@ return Application::configure(dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\DetectMarketAndLanguage::class,
         ]);
+        $middleware->alias([
+        'load.market' => \App\Http\Middleware\Front\LoadMarket::class,
+        'load.language' => \App\Http\Middleware\Front\LoadLanguage::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

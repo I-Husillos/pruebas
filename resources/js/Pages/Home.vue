@@ -1,42 +1,37 @@
 <template>
     <FrontendLayout :current-market="market" :current-lang="lang" :markets="markets" :languages="languages">
         <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-            <template v-if="contentType === 'page' && content">
-                <h2 class="text-2xl font-semibold mb-2">
-                    {{ getLocalization(content)?.title }}
-                </h2>
-                <BlockRenderer :blocks="parseContent(getLocalization(content)?.content)" :lang="lang" />
-            </template>
-            <template v-else-if="contentType === 'article' && content">
-                <article>
-                    <h1 class="text-3xl font-bold mb-4">
-                        {{ getLocalization(content)?.title }}
-                    </h1>
-                    <p class="text-sm text-gray-500 mb-6">
-                        {{ content.published_at }}
-                    </p>
-                    <BlockRenderer :blocks="parseContent(getLocalization(content)?.content)" :lang="lang" />
-                </article>
+            <template v-if="page && page.localizations && page.localizations.length">
+                <div v-if="localization">
+                    <h1 class="text-3xl font-bold mb-4">{{ localization.title }}</h1>
+                    <p class="text-lg text-gray-600 mb-2" v-if="localization.excerpt">{{ localization.excerpt }}</p>
+                    <div class="mb-4" v-if="localization.description">{{ localization.description }}</div>
+                    <BlockRenderer v-if="localization.content" :blocks="contentBlocks(localization.content)" />
+                </div>
+                <div v-else class="text-center text-gray-400">No hay contenido para este idioma.</div>
             </template>
             <template v-else>
-                <p class="text-gray-500">Contenido no encontrado.</p>
+                <div class="text-center text-gray-400">{{ 'No hay contenido para esta página.' }}</div>
             </template>
         </div>
     </FrontendLayout>
 </template>
 
 <script setup>
+// Devuelve la entidad page, ya sea como page.page (factory) o el objeto crudo
+function getPage(obj) {
+    return obj.page || obj;
+}
 import FrontendLayout from '@/Layouts/FrontendLayout.vue';
 import BlockRenderer from '@/Components/BlockRenderer.vue';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 
 const props = defineProps({
     market: String,
     lang: String,
     markets: Array,
     languages: Array,
-    content: Object,
-    contentType: String,
+    page: Object,
 });
 
 console.log(props.languages, props.markets);
@@ -44,18 +39,11 @@ console.log(props.languages, props.markets);
 
 // Buscar la localización correspondiente al idioma actual
 const localization = computed(() => {
-    if (!props.content) return null;
-    return props.content.localizations.find(
+    if (!props.page || !props.page.localizations) return null;
+    return props.page.localizations.find(
         loc => String(loc.language_id) === String(props.languages.find(l => l.code === props.lang)?.id)
     );
 });
-
-function getLocalization(page) {
-    if (!page || !page.localizations) return null;
-    const langObj = props.languages.find(l => l.code === props.lang);
-    if (!langObj) return page.localizations[0] || null;
-    return page.localizations.find(loc => String(loc.language_id) === String(langObj.id)) || page.localizations[0] || null;
-}
 
 
 const parseContent = (content) => {
